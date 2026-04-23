@@ -532,16 +532,16 @@ fetchP();
 fetchNews();
 setInterval(fetchP,60000);
 </script>
-<script src="ethers.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js"></script>
 </div>
 <script>
 var pin=localStorage.getItem('pin')||'0000';
 var pi='';
 function rd(){var d=document.getElementById('dots');d.innerHTML='';for(var i=0;i<4;i++){d.innerHTML+='<div style="width:14px;height:14px;border-radius:50%;border:2px solid '+(i<pi.length?'#00e5a0':'#1e2430')+';background:'+(i<pi.length?'#00e5a0':'transparent')+';"></div>';}}
 function pp(n){if(pi.length>=4)return;pi+=n;rd();
-function toggleTheme(){document.body.classList.toggle('light');localStorage.setItem('theme',document.body.classList.contains('light')?'light':'dark');}
+
 if(localStorage.getItem('theme')==='light')document.body.classList.add('light');
-function toggleTheme(){document.body.classList.toggle('light');localStorage.setItem('theme',document.body.classList.contains('light')?'light':'dark');}
+
 if(localStorage.getItem('theme')==='light')document.body.classList.add('light');if(pi.length===4){setTimeout(function(){if(pi===pin){document.getElementById('pin').style.display='none';}else{pi='';rd();document.querySelector('#pin div:nth-child(4)').style.color='#ff4560';}},200);}}
 function pc(){pi=pi.slice(0,-1);rd();}
 function ps(){document.getElementById('pin').style.display='none';}
