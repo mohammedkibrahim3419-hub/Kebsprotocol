@@ -14,6 +14,8 @@ app.use("/invoices", require("./routes/invoices"));
 app.use("/prices", require("./routes/prices"));
 app.use("/chat", require("./routes/chat"));
 app.use("/portfolio", require("./routes/portfolio"));
+app.use("/nl", require("./routes/nl"));
+app.use("/marketplace", require("./routes/marketplace"));
 
 app.get("/docs", (req, res) => {
   res.setHeader("Content-Type", "text/html");
