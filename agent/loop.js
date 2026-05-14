@@ -1,3 +1,5 @@
+
+const { registerAgent } = require("./registry");
 require("dotenv").config({ path: require("path").resolve(__dirname, "../.env") });
 const { getBalances } = require("./wallet");
 const { logEvent } = require("./monitor");
@@ -45,3 +47,5 @@ function getLogs(n = 30) { return logs.slice(-n); }
 function isRunning() { return running; }
 
 module.exports = { start, stop, getLogs, isRunning };
+
+registerAgent("kebs-agent-1", { wallet: process.env.AGENT_WALLET_ADDRESS, contract: process.env.KEBS_AGENT_CONTRACT_ADDRESS, capabilities: ["swap","payment","monitor","p2p"], version: "1.0.0" });

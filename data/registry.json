@@ -1,0 +1,18 @@
+{
+  "agents": [
+    {
+      "agentId": "kebs-agent-1",
+      "wallet": "0xdcaad8c79c9032fdb56b197781b18428c515c09e",
+      "contract": "0xa787715ddcc735b84f9df26dc3d13f2e0371a368",
+      "capabilities": [
+        "swap",
+        "payment",
+        "monitor",
+        "p2p"
+      ],
+      "version": "1.0.0",
+      "registeredAt": "2026-05-14T02:06:39.643Z",
+      "active": true
+    }
+  ]
+}
