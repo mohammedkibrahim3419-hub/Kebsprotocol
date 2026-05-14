@@ -105,7 +105,7 @@
     <div class="log-box" id="logs"></div>
   </div>
 
-</div>
+<div class="card" style="grid-column:1/-1;"><h2>Transaction History</h2><div class="log-box" id="txHistory"><div style="color:#546e7a;font-size:12px;">No transactions yet</div></div></div></div>
 
 <script src="https://cdn.ethers.io/lib/ethers-5.7.2.umd.min.js"></script>
 <script>
@@ -234,3 +234,29 @@ setInterval(refresh, 10000);
 </script>
 </body>
 </html>
+<script>
+async function fetchTxHistory() {
+  try {
+    const r = await fetch('/transactions');
+    const txs = await r.json();
+    const box = document.getElementById('txHistory');
+    if (!txs.length) {
+      box.innerHTML = '<div style="color:#546e7a;font-size:12px;">No transactions yet</div>';
+      return;
+    }
+    box.innerHTML = txs.map(tx => `
+      <div style="border-bottom:1px solid #0f2040;padding:8px 0;font-size:11px;">
+        <div style="display:flex;justify-content:space-between;">
+          <span style="color:#4fc3f7">${tx.type}</span>
+          <span style="color:${tx.status==='success'?'#69f0ae':'#ff8a80'}">${tx.status}</span>
+        </div>
+        <div style="color:#546e7a">${tx.time?.slice(0,19).replace('T',' ')}</div>
+        <div style="color:#81d4fa">Amount: ${tx.amount}</div>
+        ${tx.hash ? `<div style="color:#37474f;word-break:break-all">TX: ${tx.hash}</div>` : ''}
+      </div>
+    `).join('');
+  } catch(e) {}
+}
+fetchTxHistory();
+setInterval(fetchTxHistory, 15000);
+</script>
