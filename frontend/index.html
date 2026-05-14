@@ -105,7 +105,7 @@
     <div class="log-box" id="logs"></div>
   </div>
 
-<div class="card" style="grid-column:1/-1;"><h2>Transaction History</h2><div class="log-box" id="txHistory"><div style="color:#546e7a;font-size:12px;">No transactions yet</div></div></div></div>
+<div class="card" style="grid-column:1/-1;"><h2>Token Staking</h2><div class="stat"><span>Total Staked</span><span class="val" id="totalStaked">-</span></div><div class="stat"><span>Stakers</span><span class="val" id="stakerCount">-</span></div><div class="stat"><span>Reward Rate</span><span class="val" id="rewardRate">-</span></div><div class="stat"><span>Your Stake</span><span class="val" id="yourStake">0 USDC</span></div><div class="stat"><span>Pending Reward</span><span class="val" id="pendingReward">0 USDC</span></div><div class="stat"><span>Total Earned</span><span class="val" id="totalEarned">0 USDC</span></div><div class="btns" style="margin-top:12px"><input id="stakeAmount" placeholder="Amount USDC" type="number" style="background:#0a0f1e;border:1px solid #1e3a5f;color:#e0e6f0;padding:8px 12px;border-radius:8px;font-family:inherit;font-size:12px;width:120px;"/><button class="btn btn-start" onclick="doStake()">Stake</button><button class="btn btn-stop" onclick="doUnstake()">Unstake</button><button class="btn btn-refresh" onclick="doClaim()">Claim</button></div><div id="stakeResult" style="margin-top:8px;font-size:11px;color:#69f0ae;"></div></div><div class="card" style="grid-column:1/-1;"><h2>Transaction History</h2><div class="log-box" id="txHistory"><div style="color:#546e7a;font-size:12px;">No transactions yet</div></div></div></div>
 
 <script src="https://cdn.ethers.io/lib/ethers-5.7.2.umd.min.js"></script>
 <script>
