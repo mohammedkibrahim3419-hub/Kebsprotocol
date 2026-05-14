@@ -13,6 +13,7 @@ app.use("/bridge", require("./routes/bridge"));
 app.use("/invoices", require("./routes/invoices"));
 app.use("/prices", require("./routes/prices"));
 app.use("/chat", require("./routes/chat"));
+app.use("/portfolio", require("./routes/portfolio"));
 
 app.get("/", (req, res) => {
   res.setHeader("Content-Type", "text/html");
