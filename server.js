@@ -17,6 +17,9 @@ app.use("/portfolio", require("./routes/portfolio"));
 app.use("/nl", require("./routes/nl"));
 app.use("/marketplace", require("./routes/marketplace"));
 
+app.get("/landing", (req, res) => { res.setHeader("Content-Type","text/html"); res.sendFile(require("path").join(__dirname,"frontend","landing.html")); });
+app.get("/dashboard", (req, res) => { res.setHeader("Content-Type","text/html"); res.sendFile(require("path").join(__dirname,"frontend","index.html")); });
+
 app.get("/docs", (req, res) => {
   res.setHeader("Content-Type", "text/html");
   res.sendFile(path.join(__dirname, "frontend", "docs.html"));
@@ -24,7 +27,7 @@ app.get("/docs", (req, res) => {
 
 app.get("/", (req, res) => {
   res.setHeader("Content-Type", "text/html");
-  res.sendFile(path.join(__dirname, "frontend", "index.html"));
+  res.sendFile(path.join(__dirname, "frontend", "landing.html"));
 });
 
 app.listen(process.env.PORT || 3000, () =>
