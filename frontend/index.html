@@ -128,6 +128,7 @@
 </div>
 <div class="card" style="grid-column:1/-1;"><h2>Cross-Chain Bridge</h2><div style="font-size:12px;color:#546e7a;margin-bottom:12px;">Bridge USDC between Arc Testnet and other chains using Circle CCTP</div><div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;"><select id="fromChain" style="background:#0a0f1e;border:1px solid #1e3a5f;color:#e0e6f0;padding:8px;border-radius:8px;font-family:inherit;font-size:12px;"><option value="arc">Arc Testnet</option><option value="sepolia">Ethereum Sepolia</option><option value="base_sepolia">Base Sepolia</option></select><span style="color:#4fc3f7;padding:8px;">→</span><select id="toChain" style="background:#0a0f1e;border:1px solid #1e3a5f;color:#e0e6f0;padding:8px;border-radius:8px;font-family:inherit;font-size:12px;"><option value="sepolia">Ethereum Sepolia</option><option value="arc">Arc Testnet</option><option value="base_sepolia">Base Sepolia</option></select></div><div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;"><input id="bridgeAmount" placeholder="Amount USDC" type="number" style="background:#0a0f1e;border:1px solid #1e3a5f;color:#e0e6f0;padding:8px 12px;border-radius:8px;font-family:inherit;font-size:12px;width:150px;"/><input id="bridgeRecipient" placeholder="Recipient address" style="background:#0a0f1e;border:1px solid #1e3a5f;color:#e0e6f0;padding:8px 12px;border-radius:8px;font-family:inherit;font-size:12px;flex:1;"/></div><button class="btn btn-start" onclick="doBridge()">Bridge USDC</button><button class="btn btn-refresh" onclick="fillMyAddress()">Use My Address</button><div id="bridgeResult" style="margin-top:12px;font-size:11px;color:#69f0ae;"></div><div id="bridgeHistory" style="margin-top:12px;"></div></div><div class="card" style="grid-column:1/-1;"><h2>Cross-Chain Bridge</h2><p style="font-size:12px;color:#546e7a;margin-bottom:12px;">Bridge USDC between chains via Circle CCTP</p><div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;"><select id="fromChain" style="background:#0a0f1e;border:1px solid #1e3a5f;color:#e0e6f0;padding:8px;border-radius:8px;font-size:12px;"><option value="arc">Arc Testnet</option><option value="sepolia">Sepolia</option><option value="base_sepolia">Base Sepolia</option></select><span style="color:#4fc3f7;padding:8px;">to</span><select id="toChain" style="background:#0a0f1e;border:1px solid #1e3a5f;color:#e0e6f0;padding:8px;border-radius:8px;font-size:12px;"><option value="sepolia">Sepolia</option><option value="arc">Arc Testnet</option><option value="base_sepolia">Base Sepolia</option></select></div><input id="bridgeAmount" placeholder="Amount USDC" type="number" style="background:#0a0f1e;border:1px solid #1e3a5f;color:#e0e6f0;padding:8px 12px;border-radius:8px;font-size:12px;width:150px;margin-bottom:8px;"/><br/><input id="bridgeRecipient" placeholder="Recipient address" style="background:#0a0f1e;border:1px solid #1e3a5f;color:#e0e6f0;padding:8px 12px;border-radius:8px;font-size:12px;width:100%;margin-bottom:8px;"/><button class="btn btn-start" onclick="doBridge()">Bridge</button><button class="btn btn-refresh" onclick="if(mmAddress)document.getElementById('bridgeRecipient').value=mmAddress;">My Address</button><div id="bridgeResult" style="margin-top:8px;font-size:11px;color:#69f0ae;"></div></div><div class="card" style="grid-column:1/-1;"><h2>Token Staking</h2><div class="stat"><span>Total Staked</span><span class="val" id="totalStaked">-</span></div><div class="stat"><span>Stakers</span><span class="val" id="stakerCount">-</span></div><div class="stat"><span>Reward Rate</span><span class="val" id="rewardRate">-</span></div><div class="stat"><span>Your Stake</span><span class="val" id="yourStake">0 USDC</span></div><div class="stat"><span>Pending Reward</span><span class="val" id="pendingReward">0 USDC</span></div><div class="stat"><span>Total Earned</span><span class="val" id="totalEarned">0 USDC</span></div><div class="btns" style="margin-top:12px"><input id="stakeAmount" placeholder="Amount USDC" type="number" style="background:#0a0f1e;border:1px solid #1e3a5f;color:#e0e6f0;padding:8px 12px;border-radius:8px;font-family:inherit;font-size:12px;width:120px;"/><button class="btn btn-start" onclick="doStake()">Stake</button><button class="btn btn-stop" onclick="doUnstake()">Unstake</button><button class="btn btn-refresh" onclick="doClaim()">Claim</button></div><div id="stakeResult" style="margin-top:8px;font-size:11px;color:#69f0ae;"></div></div><div class="card" style="grid-column:1/-1;"><h2>Transaction History</h2><div class="log-box" id="txHistory"><div style="color:#546e7a;font-size:12px;">No transactions yet</div></div></div></div>
 
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.ethers.io/lib/ethers-5.7.2.umd.min.js"></script>
 <script>
 let mmProvider = null;
@@ -318,6 +319,164 @@ async function cancelInvoice(id) {
 
 fetchInvoices();
 setInterval(fetchInvoices, 20000);
+
+
+let priceChartInstance = null;
+let currentCoin = 'eth';
+
+async function fetchPriceData() {
+  try {
+    const r = await fetch('/prices');
+    const d = await r.json();
+    const { latest } = d;
+    if (latest.usdc) {
+      document.getElementById('priceUsdc').textContent = '
+</html>
+<script>
+async function fetchTxHistory() {
+  try {
+    const r = await fetch('/transactions');
+    const txs = await r.json();
+    const box = document.getElementById('txHistory');
+    if (!txs.length) {
+      box.innerHTML = '<div style="color:#546e7a;font-size:12px;">No transactions yet</div>';
+      return;
+    }
+    box.innerHTML = txs.map(tx => `
+      <div style="border-bottom:1px solid #0f2040;padding:8px 0;font-size:11px;">
+        <div style="display:flex;justify-content:space-between;">
+          <span style="color:#4fc3f7">${tx.type}</span>
+          <span style="color:${tx.status==='success'?'#69f0ae':'#ff8a80'}">${tx.status}</span>
+        </div>
+        <div style="color:#546e7a">${tx.time?.slice(0,19).replace('T',' ')}</div>
+        <div style="color:#81d4fa">Amount: ${tx.amount}</div>
+        ${tx.hash ? `<div style="color:#37474f;word-break:break-all">TX: ${tx.hash}</div>` : ''}
+      </div>
+    `).join('');
+  } catch(e) {}
+}
+fetchTxHistory();
+setInterval(fetchTxHistory, 15000);
+</script>
+ + (latest.usdc.price||0).toFixed(4);
+      const c = latest.usdc.change||0;
+      document.getElementById('changeUsdc').textContent = (c>=0?'+':'')+c.toFixed(2)+'%';
+      document.getElementById('changeUsdc').style.color = c>=0?'#69f0ae':'#ff8a80';
+    }
+    if (latest.eth) {
+      document.getElementById('priceEth').textContent = '
+</html>
+<script>
+async function fetchTxHistory() {
+  try {
+    const r = await fetch('/transactions');
+    const txs = await r.json();
+    const box = document.getElementById('txHistory');
+    if (!txs.length) {
+      box.innerHTML = '<div style="color:#546e7a;font-size:12px;">No transactions yet</div>';
+      return;
+    }
+    box.innerHTML = txs.map(tx => `
+      <div style="border-bottom:1px solid #0f2040;padding:8px 0;font-size:11px;">
+        <div style="display:flex;justify-content:space-between;">
+          <span style="color:#4fc3f7">${tx.type}</span>
+          <span style="color:${tx.status==='success'?'#69f0ae':'#ff8a80'}">${tx.status}</span>
+        </div>
+        <div style="color:#546e7a">${tx.time?.slice(0,19).replace('T',' ')}</div>
+        <div style="color:#81d4fa">Amount: ${tx.amount}</div>
+        ${tx.hash ? `<div style="color:#37474f;word-break:break-all">TX: ${tx.hash}</div>` : ''}
+      </div>
+    `).join('');
+  } catch(e) {}
+}
+fetchTxHistory();
+setInterval(fetchTxHistory, 15000);
+</script>
+ + (latest.eth.price||0).toLocaleString();
+      const c = latest.eth.change||0;
+      document.getElementById('changeEth').textContent = (c>=0?'+':'')+c.toFixed(2)+'%';
+      document.getElementById('changeEth').style.color = c>=0?'#69f0ae':'#ff8a80';
+    }
+    if (latest.btc) {
+      document.getElementById('priceBtc').textContent = '
+</html>
+<script>
+async function fetchTxHistory() {
+  try {
+    const r = await fetch('/transactions');
+    const txs = await r.json();
+    const box = document.getElementById('txHistory');
+    if (!txs.length) {
+      box.innerHTML = '<div style="color:#546e7a;font-size:12px;">No transactions yet</div>';
+      return;
+    }
+    box.innerHTML = txs.map(tx => `
+      <div style="border-bottom:1px solid #0f2040;padding:8px 0;font-size:11px;">
+        <div style="display:flex;justify-content:space-between;">
+          <span style="color:#4fc3f7">${tx.type}</span>
+          <span style="color:${tx.status==='success'?'#69f0ae':'#ff8a80'}">${tx.status}</span>
+        </div>
+        <div style="color:#546e7a">${tx.time?.slice(0,19).replace('T',' ')}</div>
+        <div style="color:#81d4fa">Amount: ${tx.amount}</div>
+        ${tx.hash ? `<div style="color:#37474f;word-break:break-all">TX: ${tx.hash}</div>` : ''}
+      </div>
+    `).join('');
+  } catch(e) {}
+}
+fetchTxHistory();
+setInterval(fetchTxHistory, 15000);
+</script>
+ + (latest.btc.price||0).toLocaleString();
+      const c = latest.btc.change||0;
+      document.getElementById('changeBtc').textContent = (c>=0?'+':'')+c.toFixed(2)+'%';
+      document.getElementById('changeBtc').style.color = c>=0?'#69f0ae':'#ff8a80';
+    }
+    updateChart(d.history);
+  } catch(e) {}
+}
+
+function updateChart(history) {
+  const data = history[currentCoin] || [];
+  if (!data.length) return;
+  const labels = data.map(d => d.time.slice(11,16));
+  const prices = data.map(d => d.price);
+  const colors = { eth: '#4fc3f7', btc: '#ffd54f', usdc: '#69f0ae' };
+  const color = colors[currentCoin] || '#4fc3f7';
+  const ctx = document.getElementById('priceChart').getContext('2d');
+  if (priceChartInstance) priceChartInstance.destroy();
+  priceChartInstance = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [{
+        label: currentCoin.toUpperCase() + ' Price (USD)',
+        data: prices,
+        borderColor: color,
+        backgroundColor: color + '22',
+        borderWidth: 2,
+        pointRadius: 2,
+        fill: true,
+        tension: 0.4
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { labels: { color: '#e0e6f0', font: { size: 11 } } } },
+      scales: {
+        x: { ticks: { color: '#546e7a', font: { size: 10 } }, grid: { color: '#0f2040' } },
+        y: { ticks: { color: '#546e7a', font: { size: 10 } }, grid: { color: '#0f2040' } }
+      }
+    }
+  });
+}
+
+function showChart(coin) {
+  currentCoin = coin;
+  fetchPriceData();
+}
+
+fetchPriceData();
+setInterval(fetchPriceData, 60000);
 
 </script>
 </body>
