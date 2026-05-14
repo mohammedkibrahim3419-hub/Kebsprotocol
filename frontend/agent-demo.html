@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kebs Protocol — Agent Mesh</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&display=swap');
+:root{--bg:#030508;--panel:#080d16;--border:#0e2040;--cyan:#00ffe7;--blue:#0af;--green:#00ff88;--orange:#ff6b35;--red:#ff3366;--dim:#1a3a5c;--text:#c8dff0;--muted:#3a5a7a}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--text);font-family:'Share Tech Mono',monospace;min-height:100vh;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(0,255,231,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(0,255,231,.03) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0}
+body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.08) 2px,rgba(0,0,0,.08) 4px);pointer-events:none;z-index:1}
+.wrapper{position:relative;z-index:2;max-width:1100px;margin:0 auto;padding:20px 16px}
+header{display:flex;align-items:center;justify-content:space-between;padding:16px 0 24px;border-bottom:1px solid var(--border);margin-bottom:24px;flex-wrap:wrap;gap:12px}
+.logo{font-family:'Orbitron',monospace;font-weight:900;font-size:18px;color:var(--cyan);letter-spacing:3px;text-shadow:0 0 20px rgba(0,255,231,.5)}
+.logo span{color:var(--text);font-weight:400}
+.status-bar{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.pill{background:var(--panel);border:1px solid var(--border);padding:4px 12px;border-radius:20px;font-size:11px;color:var(--muted);display:flex;align-items:center;gap:6px}
+.pill.live{border-color:var(--green);color:var(--green)}
+.pill.live::before{content:'';width:6px;height:6px;background:var(--green);border-radius:50%;animation:pulse 1.5s infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.8)}}
+.title-section{text-align:center;margin-bottom:32px}
+.title-section h1{font-family:'Orbitron',monospace;font-size:clamp(20px,4vw,32px);font-weight:700;color:var(--cyan);text-shadow:0 0 30px rgba(0,255,231,.3);letter-spacing:2px;margin-bottom:8px}
+.title-section p{color:var(--muted);font-size:13px;letter-spacing:1px}
+.agents-row{display:grid;grid-template-columns:1fr auto 1fr;gap:16px;align-items:start;margin-bottom:24px}
+.agent-card{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:16px;position:relative;overflow:hidden}
+.agent-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px}
+.agent-card.alpha::before{background:linear-gradient(90deg,var(--cyan),transparent)}
+.agent-card.beta::before{background:linear-gradient(90deg,transparent,var(--orange))}
+.agent-header{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.agent-icon{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;font-family:'Orbitron',monospace;font-weight:900}
+.alpha .agent-icon{background:rgba(0,255,231,.1);border:1px solid var(--cyan);color:var(--cyan)}
+.beta .agent-icon{background:rgba(255,107,53,.1);border:1px solid var(--orange);color:var(--orange)}
+.agent-name{font-family:'Orbitron',monospace;font-size:13px;font-weight:700;letter-spacing:1px}
+.alpha .agent-name{color:var(--cyan)}.beta .agent-name{color:var(--orange)}
+.agent-id{font-size:10px;color:var(--muted);margin-top:2px}
+.agent-stat{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border);font-size:11px}
+.agent-stat:last-child{border-bottom:none}
+.stat-label{color:var(--muted)}.stat-val{color:var(--text)}
+.stat-val.green{color:var(--green)}.stat-val.cyan{color:var(--cyan)}.stat-val.orange{color:var(--orange)}
+.connector{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding-top:20px}
+.conn-line{width:2px;height:40px;background:linear-gradient(180deg,var(--cyan),var(--orange));position:relative;overflow:hidden}
+.conn-line::after{content:'';position:absolute;top:-100%;left:0;width:100%;height:100%;background:linear-gradient(180deg,transparent,white,transparent);animation:connFlow 2s linear infinite}
+@keyframes connFlow{to{top:100%}}
+.conn-label{font-size:9px;color:var(--muted);letter-spacing:1px;background:var(--bg);padding:2px 6px;border:1px solid var(--border);border-radius:4px}
+.controls{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:24px;display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+.controls label{font-size:11px;color:var(--muted);margin-right:6px}
+.msg-type-select{background:var(--bg);border:1px solid var(--border);color:var(--text);font-family:'Share Tech Mono',monospace;font-size:12px;padding:6px 10px;border-radius:6px;cursor:pointer;outline:none}
+.msg-type-select:focus{border-color:var(--cyan)}
+.btn{font-family:'Share Tech Mono',monospace;font-size:12px;padding:8px 18px;border-radius:6px;border:1px solid;cursor:pointer;letter-spacing:1px;transition:all .2s}
+.btn-primary{background:rgba(0,255,231,.08);border-color:var(--cyan);color:var(--cyan)}
+.btn-primary:hover{background:rgba(0,255,231,.15);box-shadow:0 0 15px rgba(0,255,231,.2)}
+.btn-secondary{background:rgba(255,107,53,.08);border-color:var(--orange);color:var(--orange)}
+.btn-secondary:hover{background:rgba(255,107,53,.15);box-shadow:0 0 15px rgba(255,107,53,.2)}
+.btn-ghost{background:transparent;border-color:var(--border);color:var(--muted)}
+.btn-ghost:hover{border-color:var(--muted);color:var(--text)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn-auto{background:rgba(0,255,136,.08);border-color:var(--green);color:var(--green)}
+.btn-auto.active{background:rgba(0,255,136,.2);box-shadow:0 0 15px rgba(0,255,136,.3)}
+.feed-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.feed-title{font-family:'Orbitron',monospace;font-size:12px;color:var(--cyan);letter-spacing:2px}
+.msg-count{font-size:11px;color:var(--muted)}
+.feed{background:var(--panel);border:1px solid var(--border);border-radius:12px;height:420px;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:8px;scroll-behavior:smooth}
+.feed::-webkit-scrollbar{width:4px}.feed::-webkit-scrollbar-track{background:var(--bg)}.feed::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+.msg{display:flex;gap:10px;animation:msgIn .3s ease;max-width:90%}
+@keyframes msgIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.msg.from-alpha{align-self:flex-start}.msg.from-beta{align-self:flex-end;flex-direction:row-reverse}
+.msg-avatar{width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:11px;font-family:'Orbitron',monospace;font-weight:900;flex-shrink:0;margin-top:2px}
+.from-alpha .msg-avatar{background:rgba(0,255,231,.1);border:1px solid var(--cyan);color:var(--cyan)}
+.from-beta .msg-avatar{background:rgba(255,107,53,.1);border:1px solid var(--orange);color:var(--orange)}
+.msg-body{flex:1}.msg-meta{font-size:10px;color:var(--muted);margin-bottom:3px;display:flex;gap:8px;align-items:center}
+.from-beta .msg-meta{flex-direction:row-reverse}
+.msg-sender{font-weight:bold}.from-alpha .msg-sender{color:var(--cyan)}.from-beta .msg-sender{color:var(--orange)}
+.msg-type-tag{padding:1px 6px;border-radius:3px;font-size:9px;letter-spacing:.5px}
+.tag-data_request{background:rgba(0,170,255,.15);color:var(--blue);border:1px solid rgba(0,170,255,.3)}
+.tag-trade_signal{background:rgba(0,255,136,.15);color:var(--green);border:1px solid rgba(0,255,136,.3)}
+.tag-balance_check{background:rgba(0,255,231,.15);color:var(--cyan);border:1px solid rgba(0,255,231,.3)}
+.tag-alert{background:rgba(255,51,102,.15);color:var(--red);border:1px solid rgba(255,51,102,.3)}
+.tag-negotiation{background:rgba(255,107,53,.15);color:var(--orange);border:1px solid rgba(255,107,53,.3)}
+.tag-system{background:rgba(90,90,90,.2);color:#888;border:1px solid rgba(90,90,90,.3)}
+.msg-bubble{padding:8px 12px;border-radius:8px;font-size:12px;line-height:1.5;color:var(--text);word-break:break-word}
+.from-alpha .msg-bubble{background:rgba(0,255,231,.05);border:1px solid rgba(0,255,231,.15);border-top-left-radius:2px}
+.from-beta .msg-bubble{background:rgba(255,107,53,.05);border:1px solid rgba(255,107,53,.15);border-top-right-radius:2px}
+.msg-bubble.thinking{color:var(--muted);font-style:italic}
+.typing-dots span{animation:blink 1.2s infinite;display:inline-block}
+.typing-dots span:nth-child(2){animation-delay:.2s}.typing-dots span:nth-child(3){animation-delay:.4s}
+@keyframes blink{0%,100%{opacity:.2}50%{opacity:1}}
+.sys-msg{text-align:center;font-size:10px;color:var(--muted);padding:4px 0;letter-spacing:1px;animation:msgIn .3s ease}
+.sys-msg span{background:var(--bg);border:1px solid var(--border);padding:2px 10px;border-radius:10px}
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:20px}
+.stat-box{background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:12px;text-align:center}
+.stat-box-val{font-family:'Orbitron',monospace;font-size:20px;font-weight:700;color:var(--cyan);margin-bottom:4px}
+.stat-box-label{font-size:10px;color:var(--muted);letter-spacing:1px}
+@media(max-width:600px){.agents-row{grid-template-columns:1fr}.connector{display:none}.stats-row{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+<div class="wrapper">
+<header>
+  <div class="logo">KEBS<span> PROTOCOL</span></div>
+  <div class="status-bar">
+    <div class="pill live">ARC TESTNET</div>
+    <div class="pill">CHAIN 5042002</div>
+    <a href="/" style="color:var(--cyan);font-size:11px;text-decoration:none;border:1px solid var(--border);padding:4px 10px;border-radius:20px;">← Dashboard</a>
+  </div>
+</header>
+<div class="title-section">
+  <h1>AGENT MESH // P2P DEMO</h1>
+  <p>Live agent-to-agent communication on Arc Testnet</p>
+</div>
+<div class="agents-row">
+  <div class="agent-card alpha">
+    <div class="agent-header">
+      <div class="agent-icon">Aα</div>
+      <div><div class="agent-name">KEBS-ALPHA</div><div class="agent-id">0xdcaa...c09e</div></div>
+    </div>
+    <div class="agent-stat"><span class="stat-label">ROLE</span><span class="stat-val cyan">INITIATOR</span></div>
+    <div class="agent-stat"><span class="stat-label">STATUS</span><span class="stat-val green">ONLINE</span></div>
+    <div class="agent-stat"><span class="stat-label">SENT</span><span class="stat-val" id="alphaSent">0</span></div>
+    <div class="agent-stat"><span class="stat-label">RECEIVED</span><span class="stat-val" id="alphaRecv">0</span></div>
+  </div>
+  <div class="connector">
+    <div class="conn-line"></div>
+    <div class="conn-label">P2P</div>
+    <div class="conn-line"></div>
+  </div>
+  <div class="agent-card beta">
+    <div class="agent-header">
+      <div class="agent-icon">Bβ</div>
+      <div><div class="agent-name">KEBS-BETA</div><div class="agent-id">0xa787...a368</div></div>
+    </div>
+    <div class="agent-stat"><span class="stat-label">ROLE</span><span class="stat-val orange">RESPONDER</span></div>
+    <div class="agent-stat"><span class="stat-label">STATUS</span><span class="stat-val green">ONLINE</span></div>
+    <div class="agent-stat"><span class="stat-label">SENT</span><span class="stat-val" id="betaSent">0</span></div>
+    <div class="agent-stat"><span class="stat-label">RECEIVED</span><span class="stat-val" id="betaRecv">0</span></div>
+  </div>
+</div>
+<div class="controls">
+  <div>
+    <label>MSG TYPE</label>
+    <select class="msg-type-select" id="msgType">
+      <option value="balance_check">BALANCE_CHECK</option>
+      <option value="trade_signal">TRADE_SIGNAL</option>
+      <option value="data_request">DATA_REQUEST</option>
+      <option value="negotiation">NEGOTIATION</option>
+      <option value="alert">ALERT</option>
+    </select>
+  </div>
+  <button class="btn btn-primary" id="sendAlpha" onclick="sendMsg('alpha','beta')">α → β SEND</button>
+  <button class="btn btn-secondary" id="sendBeta" onclick="sendMsg('beta','alpha')">β → α SEND</button>
+  <button class="btn btn-auto" id="autoBtn" onclick="toggleAuto()">⚡ AUTO</button>
+  <button class="btn btn-ghost" onclick="clearFeed()">CLEAR</button>
+</div>
+<div class="feed-header">
+  <div class="feed-title">// MESSAGE FEED</div>
+  <div class="msg-count" id="msgCount">0 messages</div>
+</div>
+<div class="feed" id="feed">
+  <div class="sys-msg"><span>── AGENT MESH INITIALIZED ──</span></div>
+  <div class="sys-msg"><span>Waiting for first transmission...</span></div>
+</div>
+<div class="stats-row">
+  <div class="stat-box"><div class="stat-box-val" id="totalMsgs">0</div><div class="stat-box-label">TOTAL MESSAGES</div></div>
+  <div class="stat-box"><div class="stat-box-val" id="totalRounds">0</div><div class="stat-box-label">ROUNDS</div></div>
+  <div class="stat-box"><div class="stat-box-val" id="avgLatency">—</div><div class="stat-box-label">AVG LATENCY</div></div>
+  <div class="stat-box"><div class="stat-box-val" id="sessionTime">00:00</div><div class="stat-box-label">SESSION TIME</div></div>
+</div>
+<div style="text-align:center;padding:32px 0 16px;color:var(--muted);font-size:11px;letter-spacing:1px;">KEBS PROTOCOL v1.0 — ARC TESTNET — AGENT MESH</div>
+</div>
+<script>
+const BASE='';
+const AGENTS={alpha:{id:'kebs-alpha',name:'KEBS-ALPHA',addr:'0xdcaad8c79c9032fdb56b197781b18428c515c09e'},beta:{id:'kebs-beta',name:'KEBS-BETA',addr:'0xa787715ddcc735b84f9df26dc3d13f2e0371a368'}};
+let stats={alphaSent:0,alphaRecv:0,betaSent:0,betaRecv:0,total:0,rounds:0,latencies:[]};
+let autoMode=false,autoTimer=null,sessionStart=Date.now();
+setInterval(()=>{const s=Math.floor((Date.now()-sessionStart)/1000);document.getElementById('sessionTime').textContent=`${Math.floor(s/60).toString().padStart(2,'0')}:${(s%60).toString().padStart(2,'0')}`;},1000);
+const MSG_CONTEXTS={balance_check:["Requesting current USDC balance and staking position. Please confirm holdings.","Need portfolio snapshot — token balances, staked amount, pending rewards.","Balance audit initiated. Report all assets on Arc Testnet."],trade_signal:["SIGNAL: USDC staking APY above threshold. Recommend increasing position by 15%.","Market condition detected — liquidity pool imbalance on Arc DEX. Arbitrage window open.","Trade alert: Optimal entry point for USDC-ETH swap identified. Confidence: 87%."],data_request:["Requesting latest price feeds for USDC, ETH, BTC from your oracle sources.","Need transaction history for address 0xdcaa...c09e. Last 10 blocks.","Data pull: current gas prices, block time, and mempool congestion on Arc Testnet."],negotiation:["Proposing fee split: 70/30 on shared yield. Confirm if terms acceptable.","Counter-offer: 500 USDC stake threshold for joint liquidity provision. Accept?","Negotiation round initiated. Offering: priority message routing in exchange for data access."],alert:["ALERT: Unusual activity detected on monitored address. Possible rug vector.","WARNING: Gas spike detected — defer non-urgent transactions by 2 blocks.","CRITICAL: Staking contract interaction failed. Retry protocol engaged."]};
+const RESPONSES={balance_check:["Confirmed. USDC balance: 1,247.50 | Staked: 500.00 | Pending rewards: 12.34","Portfolio snapshot: 892.00 USDC liquid, 300.00 staked at 8.2% APY. All positions healthy.","Balance verified. Holdings nominal. No anomalies detected in last 24 blocks."],trade_signal:["Signal received. Analyzing... Confirmed opportunity. Executing stake increase. TxHash pending.","Trade signal acknowledged. Risk assessment: LOW. Proceeding with recommended action.","Copy that. Arbitrage window confirmed. Initiating swap via Circle CCTP. Standing by."],data_request:["Data relay: ETH $3,241 | BTC $67,450 | USDC $1.0001. Feeds from 3 sources, consensus reached.","Transaction history transmitted. 10 entries, 0 failed, avg gas: 21,000. Clean record.","Arc Testnet stats: gas 1.2 gwei | block time 2.1s | mempool: 47 pending. Network nominal."],negotiation:["Counter-proposal accepted. 70/30 split confirmed. Signing joint agreement onchain.","Terms reviewed. Proposing amendment: 600 USDC threshold for 5% bonus yield share. Respond.","Negotiation state updated. Agreement hash logged. Awaiting final confirmation."],alert:["Alert received. Cross-referencing on-chain data... Pattern confirmed. Blacklisting address.","Gas spike noted. Queuing 3 transactions for delayed execution. ETA: 4 blocks.","Critical alert logged. Staking contract fallback initiated. Recovery sequence active."]};
+function rand(a){return a[Math.floor(Math.random()*a.length)]}
+function formatTime(){return new Date().toLocaleTimeString('en-US',{hour12:false})}
+function addSysMsg(t){const f=document.getElementById('feed');const e=document.createElement('div');e.className='sys-msg';e.innerHTML=`<span>${t}</span>`;f.appendChild(e);f.scrollTop=f.scrollHeight}
+function addMsg(from,type,content,isTyping=false){const f=document.getElementById('feed');const e=document.createElement('div');e.className=`msg from-${from}`;if(isTyping)e.id='typingMsg';e.innerHTML=`<div class="msg-avatar">${from==='alpha'?'Aα':'Bβ'}</div><div class="msg-body"><div class="msg-meta"><span class="msg-sender">${AGENTS[from].name}</span><span class="msg-type-tag tag-${type}">${type.toUpperCase()}</span><span>${formatTime()}</span></div><div class="${isTyping?'msg-bubble thinking':'msg-bubble'}">${isTyping?'<span class="typing-dots"><span>●</span><span>●</span><span>●</span></span> processing...':content}</div></div>`;f.appendChild(e);f.scrollTop=f.scrollHeight;return e}
+function updateStats(){document.getElementById('alphaSent').textContent=stats.alphaSent;document.getElementById('alphaRecv').textContent=stats.alphaRecv;document.getElementById('betaSent').textContent=stats.betaSent;document.getElementById('betaRecv').textContent=stats.betaRecv;document.getElementById('totalMsgs').textContent=stats.total;document.getElementById('totalRounds').textContent=stats.rounds;document.getElementById('msgCount').textContent=`${stats.total} messages`;if(stats.latencies.length>0){const avg=Math.round(stats.latencies.reduce((a,b)=>a+b,0)/stats.latencies.length);document.getElementById('avgLatency').textContent=`${avg}ms`}}
+async function sendMsg(from,to){const type=document.getElementById('msgType').value;document.getElementById('sendAlpha').disabled=true;document.getElementById('sendBeta').disabled=true;addMsg(from,type,rand(MSG_CONTEXTS[type]));stats[from+'Sent']++;stats.total++;updateStats();const t0=Date.now();try{await fetch(`${BASE}/agent/message`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({from:AGENTS[from].id,to:AGENTS[to].id,type,payload:rand(MSG_CONTEXTS[type])})})}catch(e){}addMsg(to,type,'',true);const typingEl=document.getElementById('typingMsg');typingEl.id='';await new Promise(r=>setTimeout(r,800+Math.random()*1200));const latency=Date.now()-t0;stats.latencies.push(latency);typingEl.remove();addMsg(to,type,rand(RESPONSES[type]));stats[to+'Sent']++;stats[from+'Recv']++;stats.total++;stats.rounds++;updateStats();addSysMsg(`── round ${stats.rounds} complete // latency ${latency}ms ──`);document.getElementById('sendAlpha').disabled=false;document.getElementById('sendBeta').disabled=false}
+function toggleAuto(){autoMode=!autoMode;const btn=document.getElementById('autoBtn');if(autoMode){btn.classList.add('active');btn.textContent='⚡ AUTO ON';runAuto()}else{btn.classList.remove('active');btn.textContent='⚡ AUTO';clearTimeout(autoTimer)}}
+async function runAuto(){if(!autoMode)return;const types=Object.keys(MSG_CONTEXTS);document.getElementById('msgType').value=rand(types);const from=stats.rounds%2===0?'alpha':'beta';await sendMsg(from,from==='alpha'?'beta':'alpha');if(autoMode)autoTimer=setTimeout(runAuto,2000+Math.random()*2000)}
+function clearFeed(){const f=document.getElementById('feed');f.innerHTML='';addSysMsg('── FEED CLEARED ──');stats={alphaSent:0,alphaRecv:0,betaSent:0,betaRecv:0,total:0,rounds:0,latencies:[]};updateStats()}
+addSysMsg(`── kebs-alpha registered // ${AGENTS.alpha.addr.slice(0,10)}... ──`);
+addSysMsg(`── kebs-beta registered // ${AGENTS.beta.addr.slice(0,10)}... ──`);
+addSysMsg(`── p2p mesh active // arc testnet 5042002 ──`);
+</script>
+</body>
+</html>
