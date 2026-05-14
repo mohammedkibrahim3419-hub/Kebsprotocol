@@ -15,6 +15,11 @@ app.use("/prices", require("./routes/prices"));
 app.use("/chat", require("./routes/chat"));
 app.use("/portfolio", require("./routes/portfolio"));
 
+app.get("/docs", (req, res) => {
+  res.setHeader("Content-Type", "text/html");
+  res.sendFile(path.join(__dirname, "frontend", "docs.html"));
+});
+
 app.get("/", (req, res) => {
   res.setHeader("Content-Type", "text/html");
   res.sendFile(path.join(__dirname, "frontend", "index.html"));
