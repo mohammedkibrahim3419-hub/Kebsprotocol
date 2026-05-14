@@ -10,6 +10,7 @@ app.use("/protocol", require("./routes/protocol"));
 app.use("/transactions", require("./routes/transactions").router);
 app.use("/staking", require("./routes/staking"));
 app.use("/bridge", require("./routes/bridge"));
+app.use("/invoices", require("./routes/invoices"));
 
 app.get("/", (req, res) => {
   res.setHeader("Content-Type", "text/html");

@@ -105,6 +105,27 @@
     <div class="log-box" id="logs"></div>
   </div>
 
+
+<div class="card" style="grid-column:1/-1;">
+  <h2>Invoices</h2>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px;">
+    <div class="stat" style="flex:1;min-width:100px;"><span>Total</span><span class="val" id="invTotal">0</span></div>
+    <div class="stat" style="flex:1;min-width:100px;"><span>Paid</span><span class="val" id="invPaid">0</span></div>
+    <div class="stat" style="flex:1;min-width:100px;"><span>Pending</span><span class="val" id="invPending">0</span></div>
+    <div class="stat" style="flex:1;min-width:100px;"><span>Volume</span><span class="val" id="invVolume">0 USDC</span></div>
+  </div>
+  <div style="margin:12px 0;padding:12px;background:#060d1a;border-radius:8px;">
+    <div style="font-size:12px;color:#4fc3f7;margin-bottom:8px;">Create Invoice</div>
+    <input id="invTo" placeholder="Bill to (address)" style="background:#0a0f1e;border:1px solid #1e3a5f;color:#e0e6f0;padding:8px;border-radius:8px;font-size:12px;width:100%;margin-bottom:6px;"/>
+    <input id="invAmount" placeholder="Amount USDC" type="number" style="background:#0a0f1e;border:1px solid #1e3a5f;color:#e0e6f0;padding:8px;border-radius:8px;font-size:12px;width:100%;margin-bottom:6px;"/>
+    <input id="invDesc" placeholder="Description" style="background:#0a0f1e;border:1px solid #1e3a5f;color:#e0e6f0;padding:8px;border-radius:8px;font-size:12px;width:100%;margin-bottom:6px;"/>
+    <input id="invDue" placeholder="Due date (optional)" type="date" style="background:#0a0f1e;border:1px solid #1e3a5f;color:#e0e6f0;padding:8px;border-radius:8px;font-size:12px;width:100%;margin-bottom:6px;"/>
+    <button class="btn btn-start" onclick="createInvoice()">Create Invoice</button>
+    <button class="btn btn-refresh" onclick="if(mmAddress)document.getElementById('invTo').value=mmAddress;">My Address</button>
+    <div id="invResult" style="margin-top:6px;font-size:11px;color:#69f0ae;"></div>
+  </div>
+  <div id="invList" style="max-height:300px;overflow-y:auto;"></div>
+</div>
 <div class="card" style="grid-column:1/-1;"><h2>Cross-Chain Bridge</h2><div style="font-size:12px;color:#546e7a;margin-bottom:12px;">Bridge USDC between Arc Testnet and other chains using Circle CCTP</div><div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;"><select id="fromChain" style="background:#0a0f1e;border:1px solid #1e3a5f;color:#e0e6f0;padding:8px;border-radius:8px;font-family:inherit;font-size:12px;"><option value="arc">Arc Testnet</option><option value="sepolia">Ethereum Sepolia</option><option value="base_sepolia">Base Sepolia</option></select><span style="color:#4fc3f7;padding:8px;">→</span><select id="toChain" style="background:#0a0f1e;border:1px solid #1e3a5f;color:#e0e6f0;padding:8px;border-radius:8px;font-family:inherit;font-size:12px;"><option value="sepolia">Ethereum Sepolia</option><option value="arc">Arc Testnet</option><option value="base_sepolia">Base Sepolia</option></select></div><div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;"><input id="bridgeAmount" placeholder="Amount USDC" type="number" style="background:#0a0f1e;border:1px solid #1e3a5f;color:#e0e6f0;padding:8px 12px;border-radius:8px;font-family:inherit;font-size:12px;width:150px;"/><input id="bridgeRecipient" placeholder="Recipient address" style="background:#0a0f1e;border:1px solid #1e3a5f;color:#e0e6f0;padding:8px 12px;border-radius:8px;font-family:inherit;font-size:12px;flex:1;"/></div><button class="btn btn-start" onclick="doBridge()">Bridge USDC</button><button class="btn btn-refresh" onclick="fillMyAddress()">Use My Address</button><div id="bridgeResult" style="margin-top:12px;font-size:11px;color:#69f0ae;"></div><div id="bridgeHistory" style="margin-top:12px;"></div></div><div class="card" style="grid-column:1/-1;"><h2>Cross-Chain Bridge</h2><p style="font-size:12px;color:#546e7a;margin-bottom:12px;">Bridge USDC between chains via Circle CCTP</p><div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;"><select id="fromChain" style="background:#0a0f1e;border:1px solid #1e3a5f;color:#e0e6f0;padding:8px;border-radius:8px;font-size:12px;"><option value="arc">Arc Testnet</option><option value="sepolia">Sepolia</option><option value="base_sepolia">Base Sepolia</option></select><span style="color:#4fc3f7;padding:8px;">to</span><select id="toChain" style="background:#0a0f1e;border:1px solid #1e3a5f;color:#e0e6f0;padding:8px;border-radius:8px;font-size:12px;"><option value="sepolia">Sepolia</option><option value="arc">Arc Testnet</option><option value="base_sepolia">Base Sepolia</option></select></div><input id="bridgeAmount" placeholder="Amount USDC" type="number" style="background:#0a0f1e;border:1px solid #1e3a5f;color:#e0e6f0;padding:8px 12px;border-radius:8px;font-size:12px;width:150px;margin-bottom:8px;"/><br/><input id="bridgeRecipient" placeholder="Recipient address" style="background:#0a0f1e;border:1px solid #1e3a5f;color:#e0e6f0;padding:8px 12px;border-radius:8px;font-size:12px;width:100%;margin-bottom:8px;"/><button class="btn btn-start" onclick="doBridge()">Bridge</button><button class="btn btn-refresh" onclick="if(mmAddress)document.getElementById('bridgeRecipient').value=mmAddress;">My Address</button><div id="bridgeResult" style="margin-top:8px;font-size:11px;color:#69f0ae;"></div></div><div class="card" style="grid-column:1/-1;"><h2>Token Staking</h2><div class="stat"><span>Total Staked</span><span class="val" id="totalStaked">-</span></div><div class="stat"><span>Stakers</span><span class="val" id="stakerCount">-</span></div><div class="stat"><span>Reward Rate</span><span class="val" id="rewardRate">-</span></div><div class="stat"><span>Your Stake</span><span class="val" id="yourStake">0 USDC</span></div><div class="stat"><span>Pending Reward</span><span class="val" id="pendingReward">0 USDC</span></div><div class="stat"><span>Total Earned</span><span class="val" id="totalEarned">0 USDC</span></div><div class="btns" style="margin-top:12px"><input id="stakeAmount" placeholder="Amount USDC" type="number" style="background:#0a0f1e;border:1px solid #1e3a5f;color:#e0e6f0;padding:8px 12px;border-radius:8px;font-family:inherit;font-size:12px;width:120px;"/><button class="btn btn-start" onclick="doStake()">Stake</button><button class="btn btn-stop" onclick="doUnstake()">Unstake</button><button class="btn btn-refresh" onclick="doClaim()">Claim</button></div><div id="stakeResult" style="margin-top:8px;font-size:11px;color:#69f0ae;"></div></div><div class="card" style="grid-column:1/-1;"><h2>Transaction History</h2><div class="log-box" id="txHistory"><div style="color:#546e7a;font-size:12px;">No transactions yet</div></div></div></div>
 
 <script src="https://cdn.ethers.io/lib/ethers-5.7.2.umd.min.js"></script>
@@ -232,6 +253,72 @@ function refresh() { fetchW(); fetchS(); }
 refresh();
 setInterval(refresh, 10000);
 async function doBridge(){const f=document.getElementById("fromChain").value,t=document.getElementById("toChain").value,a=document.getElementById("bridgeAmount").value,r=document.getElementById("bridgeRecipient").value,res=document.getElementById("bridgeResult");if(!a||!r){res.textContent="Fill all fields";return;}if(f===t){res.textContent="Same chain!";return;}res.textContent="Initiating...";try{const x=await fetch("/bridge/transfer",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({fromChain:f,toChain:t,amount:a,recipient:r})});const d=await x.json();res.textContent=d.success?"Bridge initiated! CCTP processing...":"Error: "+d.error;}catch(e){res.textContent="Error: "+e.message;}}
+
+async function fetchInvoices() {
+  try {
+    const r = await fetch('/invoices/stats');
+    const s = await r.json();
+    document.getElementById('invTotal').textContent = s.total;
+    document.getElementById('invPaid').textContent = s.paid;
+    document.getElementById('invPending').textContent = s.pending;
+    document.getElementById('invVolume').textContent = (s.totalValue||0).toFixed(2) + ' USDC';
+    const addr = mmAddress || '';
+    const url = addr ? '/invoices?address=' + addr : '/invoices';
+    const r2 = await fetch(url);
+    const invs = await r2.json();
+    const list = document.getElementById('invList');
+    if (!invs.length) { list.innerHTML = '<div style="color:#546e7a;font-size:12px;padding:8px;">No invoices yet</div>'; return; }
+    list.innerHTML = invs.map(inv => 
+      '<div style="border:1px solid #1e3a5f;border-radius:8px;padding:10px;margin-bottom:8px;">' +
+      '<div style="display:flex;justify-content:space-between;margin-bottom:4px;">' +
+      '<span style="color:#4fc3f7;font-size:12px;">' + inv.id + '</span>' +
+      '<span style="color:' + (inv.status==='paid'?'#69f0ae':inv.status==='cancelled'?'#ff8a80':'#ffd54f') + ';font-size:11px;">' + inv.status.toUpperCase() + '</span>' +
+      '</div>' +
+      '<div style="font-size:12px;color:#81d4fa;">' + inv.description + '</div>' +
+      '<div style="font-size:12px;color:#e0e6f0;margin:4px 0;">' + inv.amount + ' USDC</div>' +
+      '<div style="font-size:10px;color:#546e7a;">To: ' + inv.to.slice(0,10) + '...</div>' +
+      (inv.status==='pending' ? 
+        '<div style="display:flex;gap:6px;margin-top:6px;">' +
+        '<button class="btn btn-start" style="padding:4px 8px;font-size:10px;" onclick="payInvoice(''+inv.id+'')">Mark Paid</button>' +
+        '<button class="btn btn-stop" style="padding:4px 8px;font-size:10px;" onclick="cancelInvoice(''+inv.id+'')">Cancel</button>' +
+        '</div>' : '') +
+      (inv.txHash ? '<div style="font-size:9px;color:#37474f;word-break:break-all;">TX: '+inv.txHash+'</div>' : '') +
+      '</div>'
+    ).join('');
+  } catch(e) {}
+}
+
+async function createInvoice() {
+  const to = document.getElementById('invTo').value;
+  const amount = document.getElementById('invAmount').value;
+  const desc = document.getElementById('invDesc').value;
+  const due = document.getElementById('invDue').value;
+  const result = document.getElementById('invResult');
+  if (!to || !amount || !desc) { result.textContent = 'Fill in all required fields'; return; }
+  const from = mmAddress || 'kebs-agent-1';
+  try {
+    const r = await fetch('/invoices/create', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ from, to, amount, description: desc, dueDate: due }) });
+    const d = await r.json();
+    result.textContent = 'Invoice created: ' + d.id;
+    fetchInvoices();
+  } catch(e) { result.textContent = 'Error: ' + e.message; }
+}
+
+async function payInvoice(id) {
+  const r = await fetch('/invoices/pay/' + id, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({}) });
+  const d = await r.json();
+  if (d.success) fetchInvoices();
+}
+
+async function cancelInvoice(id) {
+  const r = await fetch('/invoices/cancel/' + id, { method:'POST' });
+  const d = await r.json();
+  if (d.success) fetchInvoices();
+}
+
+fetchInvoices();
+setInterval(fetchInvoices, 20000);
+
 </script>
 </body>
 </html>
