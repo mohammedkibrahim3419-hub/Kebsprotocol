@@ -478,6 +478,54 @@ function showChart(coin) {
 fetchPriceData();
 setInterval(fetchPriceData, 60000);
 
+
+const chatMessages = [];
+
+function appendMessage(role, text) {
+  chatMessages.push({ role, text });
+  const box = document.getElementById('chatBox');
+  const color = role === 'user' ? '#81d4fa' : '#69f0ae';
+  const label = role === 'user' ? 'You' : 'Kebs AI';
+  box.innerHTML += '<div style="margin-bottom:10px;"><span style="color:' + color + ';font-weight:bold;">' + label + ':</span> <span style="color:#e0e6f0;">' + text + '</span></div>';
+  box.scrollTop = box.scrollHeight;
+}
+
+async function sendChat() {
+  const input = document.getElementById('chatInput');
+  const msg = input.value.trim();
+  if (!msg) return;
+  input.value = '';
+  appendMessage('user', msg);
+  appendMessage('assistant', 'Thinking...');
+  try {
+    const r = await fetch('/chat/message', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: msg })
+    });
+    const d = await r.json();
+    const box = document.getElementById('chatBox');
+    const divs = box.querySelectorAll('div');
+    divs[divs.length-1].innerHTML = '<span style="color:#69f0ae;font-weight:bold;">Kebs AI:</span> <span style="color:#e0e6f0;">' + (d.reply || d.error) + '</span>';
+    box.scrollTop = box.scrollHeight;
+  } catch(e) {
+    appendMessage('assistant', 'Error: ' + e.message);
+  }
+}
+
+function quickChat(msg) {
+  document.getElementById('chatInput').value = msg;
+  sendChat();
+}
+
+async function clearChat() {
+  await fetch('/chat/history', { method: 'DELETE' });
+  document.getElementById('chatBox').innerHTML = '';
+  chatMessages.length = 0;
+}
+
+appendMessage('assistant', 'Hello! I am the Kebs Protocol AI agent. Ask me anything about DeFi, Arc Testnet, staking, bridging, or your wallet!');
+
 </script>
 </body>
 </html>
