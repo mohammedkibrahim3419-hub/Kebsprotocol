@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kebs Protocol API Docs</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:#0a0f1e; color:#e0e6f0; font-family:'Courier New',monospace; }
+header { background:#0d1530; border-bottom:1px solid #1e3a5f; padding:16px 24px; display:flex; align-items:center; justify-content:space-between; }
+header h1 { color:#4fc3f7; font-size:20px; letter-spacing:2px; }
+.badge { background:#1a3a5c; color:#4fc3f7; padding:2px 10px; border-radius:20px; font-size:11px; }
+.container { max-width:900px; margin:0 auto; padding:24px; }
+.section { margin-bottom:40px; }
+.section h2 { color:#4fc3f7; font-size:15px; letter-spacing:1px; text-transform:uppercase; margin-bottom:16px; padding-bottom:8px; border-bottom:1px solid #1e3a5f; }
+.endpoint { background:#0d1530; border:1px solid #1e3a5f; border-radius:12px; padding:20px; margin-bottom:12px; }
+.endpoint-header { display:flex; align-items:center; gap:12px; margin-bottom:8px; flex-wrap:wrap; }
+.method { padding:4px 12px; border-radius:6px; font-size:12px; font-weight:bold; }
+.get { background:#1b5e20; color:#69f0ae; }
+.post { background:#1a3a5c; color:#4fc3f7; }
+.delete { background:#b71c1c; color:#ff8a80; }
+.path { color:#81d4fa; font-size:14px; font-weight:bold; }
+.desc { color:#90a4ae; font-size:13px; margin-bottom:8px; }
+.code { background:#060d1a; border:1px solid #1e3a5f; border-radius:8px; padding:12px; font-size:11px; color:#69f0ae; overflow-x:auto; white-space:pre; margin-top:8px; }
+.try-btn { background:#1a3a5c; color:#4fc3f7; border:1px solid #4fc3f7; padding:6px 14px; border-radius:6px; font-family:inherit; font-size:12px; cursor:pointer; margin-top:8px; }
+.res-box { background:#060d1a; border:1px solid #1e3a5f; border-radius:8px; padding:12px; margin-top:8px; font-size:11px; color:#69f0ae; display:none; white-space:pre-wrap; word-break:break-all; max-height:200px; overflow-y:auto; }
+.nav { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:24px; }
+.nav a { color:#4fc3f7; text-decoration:none; font-size:12px; padding:4px 12px; border:1px solid #1e3a5f; border-radius:20px; }
+.info { background:#0d1530; border-left:3px solid #4fc3f7; padding:12px 16px; border-radius:0 8px 8px 0; margin-bottom:16px; font-size:13px; color:#90a4ae; }
+.param { display:flex; gap:12px; padding:6px 0; border-bottom:1px solid #0f2040; font-size:12px; }
+.param:last-child { border-bottom:none; }
+.pname { color:#4fc3f7; min-width:120px; }
+.ptype { color:#ffd54f; min-width:80px; }
+.pdesc { color:#90a4ae; }
+.req { color:#ff8a80; font-size:10px; margin-left:4px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>KEBS PROTOCOL</h1>
+  <div style="display:flex;gap:8px;align-items:center;">
+    <span class="badge">API v1.0</span>
+    <span class="badge">Arc Testnet</span>
+    <a href="/" style="color:#4fc3f7;font-size:12px;text-decoration:none;border:1px solid #1e3a5f;padding:4px 10px;border-radius:20px;">Dashboard</a>
+  </div>
+</header>
+<div class="container">
+  <div class="section">
+    <h2>Overview</h2>
+    <div class="info">Base URL: <strong style="color:#69f0ae">https://kebsprotocol.onrender.com</strong><br><br>All endpoints return JSON. No authentication required for read endpoints.</div>
+    <div class="nav">
+      <a href="#agent">Agent</a>
+      <a href="#portfolio">Portfolio</a>
+      <a href="#staking">Staking</a>
+      <a href="#bridge">Bridge</a>
+      <a href="#invoices">Invoices</a>
+      <a href="#prices">Prices</a>
+      <a href="#protocol">Protocol</a>
+      <a href="#chat">Chat</a>
+    </div>
+  </div>
+
+  <div class="section" id="agent">
+    <h2>Agent</h2>
+    <div class="endpoint">
+      <div class="endpoint-header"><span class="method get">GET</span><span class="path">/agent/wallet</span></div>
+      <div class="desc">Get agent wallet address and balances</div>
+      <button class="try-btn" onclick="tryApi('/agent/wallet','r1')">Try it</button>
+      <div class="res-box" id="r1"></div>
+    </div>
+    <div class="endpoint">
+      <div class="endpoint-header"><span class="method get">GET</span><span class="path">/agent/status</span></div>
+      <div class="desc">Get agent running status and recent logs</div>
+      <button class="try-btn" onclick="tryApi('/agent/status','r2')">Try it</button>
+      <div class="res-box" id="r2"></div>
+    </div>
+    <div class="endpoint">
+      <div class="endpoint-header"><span class="method post">POST</span><span class="path">/agent/start</span></div>
+      <div class="desc">Start the autonomous agent loop</div>
+      <div class="code">Body: { "interval": 60000 }</div>
+    </div>
+    <div class="endpoint">
+      <div class="endpoint-header"><span class="method post">POST</span><span class="path">/agent/stop</span></div>
+      <div class="desc">Stop the autonomous agent loop</div>
+    </div>
+    <div class="endpoint">
+      <div class="endpoint-header"><span class="method get">GET</span><span class="path">/agent/monitor</span></div>
+      <div class="desc">Get monitored addresses and on-chain events</div>
+      <button class="try-btn" onclick="tryApi('/agent/monitor','r3')">Try it</button>
+      <div class="res-box" id="r3"></div>
+    </div>
+  </div>
+
+  <div class="section" id="portfolio">
+    <h2>Portfolio</h2>
+    <div class="endpoint">
+      <div class="endpoint-header"><span class="method get">GET</span><span class="path">/portfolio/:address</span></div>
+      <div class="desc">Get full token portfolio for any wallet address</div>
+      <button class="try-btn" onclick="tryApi('/portfolio','r4')">Try agent portfolio</button>
+      <div class="res-box" id="r4"></div>
+    </div>
+    <div class="endpoint">
+      <div class="endpoint-header"><span class="method post">POST</span><span class="path">/portfolio/token</span></div>
+      <div class="desc">Add a custom ERC20 token to track</div>
+      <div class="code">Body: { "address": "0x...", "tokenAddress": "0x..." }</div>
+    </div>
+  </div>
+
+  <div class="section" id="staking">
+    <h2>Staking</h2>
+    <div class="endpoint">
+      <div class="endpoint-header"><span class="method get">GET</span><span class="path">/staking/stats</span></div>
+      <div class="desc">Get global staking statistics</div>
+      <button class="try-btn" onclick="tryApi('/staking/stats','r5')">Try it</button>
+      <div class="res-box" id="r5"></div>
+    </div>
+    <div class="endpoint">
+      <div class="endpoint-header"><span class="method post">POST</span><span class="path">/staking/stake</span></div>
+      <div class="desc">Stake USDC to earn rewards</div>
+      <div class="code">Body: { "address": "0x...", "amount": 10 }</div>
+    </div>
+    <div class="endpoint">
+      <div class="endpoint-header"><span class="method post">POST</span><span class="path">/staking/unstake</span></div>
+      <div class="desc">Unstake USDC and collect rewards</div>
+      <div class="code">Body: { "address": "0x...", "amount": 10 }</div>
+    </div>
+    <div class="endpoint">
+      <div class="endpoint-header"><span class="method post">POST</span><span class="path">/staking/claim</span></div>
+      <div class="desc">Claim pending staking rewards</div>
+      <div class="code">Body: { "address": "0x..." }</div>
+    </div>
+  </div>
+
+  <div class="section" id="bridge">
+    <h2>Bridge</h2>
+    <div class="endpoint">
+      <div class="endpoint-header"><span class="method get">GET</span><span class="path">/bridge/chains</span></div>
+      <div class="desc">Get list of supported chains</div>
+      <button class="try-btn" onclick="tryApi('/bridge/chains','r6')">Try it</button>
+      <div class="res-box" id="r6"></div>
+    </div>
+    <div class="endpoint">
+      <div class="endpoint-header"><span class="method post">POST</span><span class="path">/bridge/transfer</span></div>
+      <div class="desc">Bridge USDC between chains via Circle CCTP</div>
+      <div class="code">Body: { "fromChain": "arc", "toChain": "sepolia", "amount": 1, "recipient": "0x..." }</div>
+    </div>
+  </div>
+
+  <div class="section" id="invoices">
+    <h2>Invoices</h2>
+    <div class="endpoint">
+      <div class="endpoint-header"><span class="method get">GET</span><span class="path">/invoices</span></div>
+      <div class="desc">Get all invoices. Filter: ?address=0x...</div>
+      <button class="try-btn" onclick="tryApi('/invoices','r7')">Try it</button>
+      <div class="res-box" id="r7"></div>
+    </div>
+    <div class="endpoint">
+      <div class="endpoint-header"><span class="method get">GET</span><span class="path">/invoices/stats</span></div>
+      <div class="desc">Get invoice statistics</div>
+      <button class="try-btn" onclick="tryApi('/invoices/stats','r8')">Try it</button>
+      <div class="res-box" id="r8"></div>
+    </div>
+    <div class="endpoint">
+      <div class="endpoint-header"><span class="method post">POST</span><span class="path">/invoices/create</span></div>
+      <div class="desc">Create a new USDC invoice</div>
+      <div class="code">Body: { "from": "0x...", "to": "0x...", "amount": 10, "description": "Service fee", "dueDate": "2026-06-01" }</div>
+    </div>
+    <div class="endpoint">
+      <div class="endpoint-header"><span class="method post">POST</span><span class="path">/invoices/pay/:id</span></div>
+      <div class="desc">Mark invoice as paid</div>
+      <div class="code">Body: { "txHash": "0x..." }</div>
+    </div>
+  </div>
+
+  <div class="section" id="prices">
+    <h2>Prices</h2>
+    <div class="endpoint">
+      <div class="endpoint-header"><span class="method get">GET</span><span class="path">/prices/latest</span></div>
+      <div class="desc">Get latest prices for USDC, ETH, BTC</div>
+      <button class="try-btn" onclick="tryApi('/prices/latest','r9')">Try it</button>
+      <div class="res-box" id="r9"></div>
+    </div>
+    <div class="endpoint">
+      <div class="endpoint-header"><span class="method get">GET</span><span class="path">/prices/history/:coin</span></div>
+      <div class="desc">Get price history (usdc, eth, btc)</div>
+    </div>
+  </div>
+
+  <div class="section" id="protocol">
+    <h2>Protocol</h2>
+    <div class="endpoint">
+      <div class="endpoint-header"><span class="method get">GET</span><span class="path">/protocol/info</span></div>
+      <div class="desc">Get protocol info and capabilities</div>
+      <button class="try-btn" onclick="tryApi('/protocol/info','r10')">Try it</button>
+      <div class="res-box" id="r10"></div>
+    </div>
+    <div class="endpoint">
+      <div class="endpoint-header"><span class="method get">GET</span><span class="path">/protocol/agents</span></div>
+      <div class="desc">Discover all registered agents</div>
+      <button class="try-btn" onclick="tryApi('/protocol/agents','r11')">Try it</button>
+      <div class="res-box" id="r11"></div>
+    </div>
+  </div>
+
+  <div class="section" id="chat">
+    <h2>AI Chat</h2>
+    <div class="endpoint">
+      <div class="endpoint-header"><span class="method post">POST</span><span class="path">/chat/message</span></div>
+      <div class="desc">Send a message to the Kebs Protocol Claude AI</div>
+      <div class="code">Body: { "message": "What is my agent balance?" }</div>
+    </div>
+    <div class="endpoint">
+      <div class="endpoint-header"><span class="method get">GET</span><span class="path">/chat/history</span></div>
+      <div class="desc">Get chat history</div>
+      <button class="try-btn" onclick="tryApi('/chat/history','r12')">Try it</button>
+      <div class="res-box" id="r12"></div>
+    </div>
+  </div>
+
+  <div style="text-align:center;padding:40px 0;color:#37474f;font-size:12px;">
+    Kebs Protocol v1.0 — Built on Arc Testnet — Powered by Circle USDC
+  </div>
+</div>
+<script>
+async function tryApi(endpoint, id) {
+  const box = document.getElementById(id);
+  box.style.display = 'block';
+  box.textContent = 'Loading...';
+  try {
+    const r = await fetch(endpoint);
+    const d = await r.json();
+    box.textContent = JSON.stringify(d, null, 2);
+  } catch(e) { box.textContent = 'Error: ' + e.message; }
+}
+</script>
+</body>
+</html>
