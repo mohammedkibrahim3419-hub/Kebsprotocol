@@ -3,7 +3,7 @@ require("dotenv").config({ path: require("path").resolve(__dirname, "../.env") }
 
 const provider = new ethers.JsonRpcProvider(
   process.env.RPC_URL,
-  1244,
+  5042002,
   { staticNetwork: true }
 );
 
