@@ -30,6 +30,24 @@ app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "frontend", "landing.html"));
 });
 
+
+// Auto-start agent on boot
+try {
+  const loop = require('./agent/loop');
+  loop.start(30000);
+  console.log('[KEBS] Agent auto-started on boot');
+} catch(e) {
+  console.log('[KEBS] Agent start error:', e.message);
+}
+
+// Keep-alive ping every 14 minutes
+setInterval(() => {
+  const http = require('http');
+  http.get('http://localhost:' + (process.env.PORT || 3000) + '/agent/status', (r) => {
+    console.log('[KEBS] Keep-alive ping OK');
+  }).on('error', () => {});
+}, 14 * 60 * 1000);
+
 app.listen(process.env.PORT || 3000, () =>
   console.log("Kebs Protocol running on http://localhost:" + (process.env.PORT || 3000))
 );
