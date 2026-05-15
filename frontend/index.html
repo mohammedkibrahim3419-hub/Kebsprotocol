@@ -254,8 +254,10 @@ async function start() { await fetch('/agent/start',{method:'POST',headers:{'Con
 async function stop() { await fetch('/agent/stop',{method:'POST'}); refresh(); }
 function refresh() { fetchW(); fetchS(); }
 
+window.onerror = function(e){console.error("JS Error:",e);};
 refresh();
 setInterval(refresh, 10000);
+fetchS();
 async function doBridge(){const f=document.getElementById("fromChain").value,t=document.getElementById("toChain").value,a=document.getElementById("bridgeAmount").value,r=document.getElementById("bridgeRecipient").value,res=document.getElementById("bridgeResult");if(!a||!r){res.textContent="Fill all fields";return;}if(f===t){res.textContent="Same chain!";return;}res.textContent="Initiating...";try{const x=await fetch("/bridge/transfer",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({fromChain:f,toChain:t,amount:a,recipient:r})});const d=await x.json();res.textContent=d.success?"Bridge initiated! CCTP processing...":"Error: "+d.error;}catch(e){res.textContent="Error: "+e.message;}}
 
 async function fetchInvoices() {
