@@ -255,6 +255,10 @@ async function stop() { await fetch('/agent/stop',{method:'POST'}); refresh(); }
 function refresh() { fetchW(); fetchS(); }
 
 window.onerror = function(e){console.error("JS Error:",e);};
+window.onerror = function(msg,src,line){
+  document.getElementById("statusBadge").textContent = "ERR:"+line;
+  return false;
+};
 refresh();
 setInterval(refresh, 10000);
 fetchS();
