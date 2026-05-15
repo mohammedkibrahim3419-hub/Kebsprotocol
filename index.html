@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kebs Protocol</title>
+<style>
+:root{--bg:#080c0f;--surface:#0d1318;--surface2:#111820;--border:#1a2530;--accent:#00e5a0;--accent2:#00b8ff;--accent3:#ff6b35;--text:#e8f0f5;--muted:#4a6070;--success:#00e5a0;--error:#ff4560;--warn:#ffb020}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:sans-serif;min-height:100vh}
+.app{max-width:480px;margin:0 auto;padding:0 0 80px}
+.header{padding:16px;border-bottom:1px solid var(--border);background:rgba(8,12,15,.97);position:sticky;top:0;z-index:100}
+.header-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.logo{font-size:18px;font-weight:800;color:var(--accent)}
+.logo span{color:var(--text)}
+.wallet-badge{font-size:10px;color:var(--accent);background:rgba(0,229,160,.08);border:1px solid rgba(0,229,160,.2);padding:4px 10px;border-radius:20px}
+.wallet-badge.off{color:var(--muted);background:transparent;border-color:var(--border)}
+.nav{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none}
+.nav::-webkit-scrollbar{display:none}
+.nav-btn{flex-shrink:0;padding:6px 14px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--muted);font-size:12px;font-weight:600;cursor:pointer;transition:all .2s;white-space:nowrap}
+.nav-btn.active{background:var(--accent);color:#000;border-color:var(--accent)}
+.section{display:none;padding:16px}
+.section.active{display:block}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:18px;margin-bottom:14px}
+.card-title{font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:14px}
+.input-group{margin-bottom:12px}
+.input-label{font-size:11px;color:var(--muted);margin-bottom:6px}
+input,select{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;color:var(--text);font-size:13px;outline:none}
+input:focus,select:focus{border-color:var(--accent)}
+input::placeholder{color:var(--muted)}
+select option{background:var(--surface2)}
+.btn{width:100%;padding:14px;border-radius:12px;border:none;font-size:14px;font-weight:700;cursor:pointer;transition:all .2s;margin-bottom:8px}
+.btn-primary{background:var(--accent);color:#000}
+.btn-secondary{background:transparent;color:var(--accent);border:1px solid var(--accent)}
+.btn-danger{background:var(--error);color:#fff}
+.btn-blue{background:var(--accent2);color:#000}
+.status{padding:10px 14px;border-radius:10px;font-size:11px;margin-top:8px;display:none;word-break:break-all}
+.status.ok{background:rgba(0,229,160,.1);border:1px solid rgba(0,229,160,.2);color:var(--accent);display:block}
+.status.err{background:rgba(255,69,96,.1);border:1px solid rgba(255,69,96,.2);color:var(--error);display:block}
+.status.load{background:rgba(0,184,255,.1);border:1px solid rgba(0,184,255,.2);color:var(--accent2);display:block}
+.port-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border)}
+.port-row:last-child{border-bottom:none}
+.port-label{font-size:12px;color:var(--muted)}
+.port-value{font-size:13px;font-weight:600;color:var(--text)}
+.port-value.ac{color:var(--accent)}
+.sub-tabs{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap}
+.sub-tab{padding:6px 14px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--muted);font-size:12px;font-weight:600;cursor:pointer}
+.sub-tab.active{background:var(--surface2);color:var(--text);border-color:var(--accent)}
+.sub-content{display:none}
+.sub-content.active{display:block}
+.market-row{display:flex;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid var(--border)}
+.market-row:last-child{border-bottom:none}
+.market-icon{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;background:var(--surface2);flex-shrink:0}
+.market-name{flex:1}
+.market-token{font-size:13px;font-weight:700;color:var(--text)}
+.market-fullname{font-size:10px;color:var(--muted)}
+.market-usd{font-size:13px;font-weight:700;color:var(--text)}
+.market-pct{font-size:11px}
+.up{color:var(--success)}
+.down{color:var(--error)}
+.tx-item{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--border)}
+.tx-item:last-child{border-bottom:none}
+.tx-icon{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;background:rgba(0,229,160,.1)}
+.tx-info{flex:1;min-width:0}
+.tx-type{font-size:12px;font-weight:600;color:var(--text)}
+.tx-hash{font-size:10px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tx-amount{font-size:13px;font-weight:700;text-align:right}
+.tx-time{font-size:10px;color:var(--muted)}
+.in{color:var(--success)}
+.out{color:var(--error)}
+.live-dot{display:inline-block;width:7px;height:7px;background:var(--accent);border-radius:50%;margin-right:6px;animation:pulse 1.5s ease-in-out infinite;vertical-align:middle}
+.nft-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.nft-card{background:var(--surface2);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+.nft-img{width:100%;aspect-ratio:1;display:flex;align-items:center;justify-content:center;font-size:40px;background:linear-gradient(135deg,#0d1318,#1a2530)}
+.nft-info{padding:10px}
+.nft-name{font-size:12px;font-weight:700;color:var(--text)}
+.nft-id{font-size:10px;color:var(--muted)}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.info-box{background:rgba(0,229,160,.05);border:1px solid rgba(0,229,160,.1);border-radius:10px;padding:12px;font-size:11px;color:var(--muted);margin-bottom:12px}
+.divider{border:none;border-top:1px solid var(--border);margin:12px 0}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+</style>
+</head>
+<body>
+<div class="app">
+<div class="header">
+<div class="header-top">
+<div class="logo">Kebs<span>Protocol</span></div>
+<div class="wallet-badge off" id="wb">Not Connected</div>
+</div>
+<div class="nav">
+<button class="nav-btn active" onclick="showTab('home',this)">Home</button>
+<button class="nav-btn" onclick="showTab('token',this)">Token</button>
+<button class="nav-btn" onclick="showTab('nft',this)">NFT</button>
+<button class="nav-btn" onclick="showTab('stake',this)">Stake</button>
+<button class="nav-btn" onclick="showTab('market',this)">Market</button>
+<button class="nav-btn" onclick="showTab('history',this)">History</button>
+<button class="nav-btn" onclick="showTab('wallet',this)">Wallet</button>
+</div>
+</div>
+<div class="section active" id="tab-home">
+<div class="card">
+<div class="card-title">Connect Wallet</div>
+<div class="input-group"><div class="input-label">Private Key</div><input type="password" id="pkInput" placeholder="0x..."/></div>
+<div class="input-group"><div class="input-label">RPC URL</div><input type="text" id="rpcInput" value="https://rpc.arcscan.net"/></div>
+<button class="btn btn-primary" onclick="connectWallet()">Connect</button>
+<div class="status" id="connectStatus"></div>
+</div>
+<div class="card" id="portfolioCard" style="display:none">
+<div class="card-title">Portfolio</div>
+<div class="port-row"><span class="port-label">Address</span><span class="port-value ac" id="portAddr" style="font-size:10px">—</span></div>
+<div class="port-row"><span class="port-label">ETH</span><span class="port-value" id="portETH">—</span></div>
+<div class="port-row"><span class="port-label">USDC</span><span class="port-value" id="portUSDC">—</span></div>
+<div class="port-row"><span class="port-label">KEBS</span><span class="port-value" id="portKEBS">—</span></div>
+<div class="port-row"><span class="port-label">NFTs</span><span class="port-value" id="portNFTs">—</span></div>
+<div class="port-row"><span class="port-label">Staked</span><span class="port-value" id="portStaked">—</span></div>
+<hr class="divider">
+<button class="btn btn-secondary" onclick="loadBalances()">Refresh</button>
+</div>
+</div>
+<div class="section" id="tab-token">
+<div class="sub-tabs">
+<button class="sub-tab active" onclick="showSub('token','send',this)">Send</button>
+<button class="sub-tab" onclick="showSub('token','mint',this)">Mint</button>
+<button class="sub-tab" onclick="showSub('token','burn',this)">Burn</button>
+<button class="sub-tab" onclick="showSub('token','deploy',this)">Deploy</button>
+</div>
+<div class="sub-content active" id="token-send">
+<div class="card"><div class="card-title">Transfer Tokens</div>
+<div class="input-group"><div class="input-label">Token</div><select id="transferToken"><option value="kebs">KEBS</option><option value="usdc">USDC</option></select></div>
+<div class="input-group"><div class="input-label">Recipient</div><input type="text" id="tt" placeholder="0x..."/></div>
+<div class="input-group"><div class="input-label">Amount</div><input type="number" id="ta" placeholder="0.0"/></div>
+<button class="btn btn-primary" onclick="transferToken()">Send</button>
+<div class="status" id="tm"></div></div>
+</div>
+<div class="sub-content" id="token-mint">
+<div class="card"><div class="card-title">Mint Tokens</div>
+<div class="input-group"><div class="input-label">Recipient</div><input type="text" id="mt" placeholder="0x..."/></div>
+<div class="input-group"><div class="input-label">Amount</div><input type="number" id="ma" placeholder="0.0"/></div>
+<button class="btn btn-primary" onclick="mintToken()">Mint</button>
+<div class="status" id="mm"></div></div>
+</div>
+<div class="sub-content" id="token-burn">
+<div class="card"><div class="card-title">Burn Tokens</div>
+<div class="info-box">⚠️ Burned tokens are permanently destroyed.</div>
+<div class="input-group"><div class="input-label">Amount</div><input type="number" id="ba" placeholder="0.0"/></div>
+<button class="btn btn-danger" onclick="burnToken()">Burn</button>
+<div class="status" id="bm"></div></div>
+</div>
+<div class="sub-content" id="token-deploy">
+<div class="card"><div class="card-title">Deploy New Token</div>
+<div class="info-box">Deploy your own ERC-20 on the current network.</div>
+<div class="input-group"><div class="input-label">Name</div><input type="text" id="deployName" placeholder="My Token"/></div>
+<div class="input-group"><div class="input-label">Symbol</div><input type="text" id="deploySymbol" placeholder="MTK"/></div>
+<div class="input-group"><div class="input-label">Initial Supply</div><input type="number" id="deploySupply" placeholder="1000000"/></div>
+<div class="input-group"><div class="input-label">Decimals</div><input type="number" id="deployDecimals" value="18"/></div>
+<button class="btn btn-blue" onclick="deployToken()">Deploy</button>
+<div class="status" id="deployStatus"></div></div>
+</div>
+</div>
+<div class="section" id="tab-nft">
+<div class="sub-tabs">
+<button class="sub-tab active" onclick="showSub('nft','gallery',this)">Gallery</button>
+<button class="sub-tab" onclick="showSub('nft','mint',this)">Mint</button>
+<button class="sub-tab" onclick="showSub('nft','mkt',this)">Market</button>
+</div>
+<div class="sub-content active" id="nft-gallery">
+<div class="card"><div class="card-title">Your NFTs</div><div id="nftGallery"><div style="text-align:center;padding:30px;color:var(--muted);font-size:12px">Connect wallet to view NFTs</div></div></div>
+</div>
+<div class="sub-content" id="nft-mint">
+<div class="card"><div class="card-title">Mint NFT</div>
+<div class="input-group"><div class="input-label">Contract Address</div><input type="text" id="no" placeholder="0x..."/></div>
+<div class="input-group"><div class="input-label">Metadata URI</div><input type="text" id="nu" placeholder="ipfs://..."/></div>
+<button class="btn btn-primary" onclick="mintNFT()">Mint NFT</button>
+<div class="status" id="nm"></div></div>
+</div>
+<div class="sub-content" id="nft-mkt">
+<div class="card"><div class="card-title">List NFT</div>
+<div class="input-group"><div class="input-label">Token ID</div><input type="number" id="li" placeholder="0"/></div>
+<div class="input-group"><div class="input-label">Price (KEBS)</div><input type="number" id="lp" placeholder="0.0"/></div>
+<button class="btn btn-primary" onclick="listNFT()">List</button>
+<div class="status" id="lm"></div></div>
+<div class="card"><div class="card-title">Buy / Cancel / Burn</div>
+<div class="input-group"><div class="input-label">Listing ID</div><input type="number" id="bli" placeholder="0"/></div>
+<div class="two-col"><button class="btn btn-blue" onclick="buyListedNFT()">Buy</button><button class="btn btn-secondary" onclick="cancelListing()">Cancel</button></div>
+<hr class="divider">
+<div class="input-group"><div class="input-label">Token ID to Burn</div><input type="number" id="bi" placeholder="0"/></div>
+<button class="btn btn-danger" onclick="burnNFT()">Burn NFT</button>
+<div class="status" id="bnm"></div></div>
+</div>
+</div>
+<div class="section" id="tab-stake">
+<div class="card"><div class="card-title">Staking</div>
+<div class="port-row"><span class="port-label">Staked</span><span class="port-value ac" id="si">—</span></div>
+<div class="port-row"><span class="port-label">APY</span><span class="port-value" style="color:var(--warn)">12.5%</span></div>
+<hr class="divider">
+<div class="input-group"><div class="input-label">Amount</div><input type="number" id="sa" placeholder="0.0"/></div>
+<button class="btn btn-primary" onclick="stakeTokens()">Stake</button>
+<button class="btn btn-secondary" onclick="unstake()">Unstake All</button>
+<div class="status" id="sm"></div>
+<div class="status" id="um"></div>
+</div>
+</div>
+<div class="section" id="tab-market">
+<div class="card">
+<div class="card-title"><span class="live-dot"></span>Live Prices <span style="float:right;font-size:10px;color:var(--muted)" id="priceUpdated"></span></div>
+<div id="marketList"><div style="text-align:center;padding:20px;color:var(--muted);font-size:12px">Loading...</div></div>
+</div>
+<div class="card"><div class="card-title">Price Chart</div>
+<div id="chartBtns" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px"></div>
+<canvas id="priceChart" height="140" style="width:100%"></canvas>
+</div>
+</div>
+<div class="section" id="tab-history">
+<div class="card"><div class="card-title">Transaction History</div>
+<div id="txList"><div style="text-align:center;padding:30px;color:var(--muted);font-size:12px">Connect wallet to see transactions</div></div>
+</div>
+</div>
+<div class="section" id="tab-wallet">
+<div class="card"><div class="card-title">Send ETH</div>
+<div class="input-group"><div class="input-label">Recipient</div><input type="text" id="ethTo" placeholder="0x..."/></div>
+<div class="input-group"><div class="input-label">Amount (ETH)</div><input type="number" id="ethAmt" placeholder="0.0"/></div>
+<button class="btn btn-primary" onclick="sendETH()">Send ETH</button>
+<div class="status" id="ethStatus"></div></div>
+<div class="card"><div class="card-title">Add Custom Token</div>
+<div class="input-group"><div class="input-label">Contract Address</div><input type="text" id="ctAddr" placeholder="0x..."/></div>
+<div class="input-group"><div class="input-label">Symbol</div><input type="text" id="ctSym" placeholder="TKN"/></div>
+<button class="btn btn-secondary" onclick="addCustomToken()">Add Token</button>
+<div class="status" id="ctStatus"></div>
+<div id="ctList" style="margin-top:10px"></div></div>
+<div class="card"><div class="card-title">Network Info</div>
+<div class="port-row"><span class="port-label">Network</span><span class="port-value" id="netName">—</span></div>
+<div class="port-row"><span class="port-label">Chain ID</span><span class="port-value" id="netChain">—</span></div>
+<div class="port-row"><span class="port-label">Block</span><span class="port-value" id="netBlock">—</span></div>
+<hr class="divider">
+<button class="btn btn-secondary" onclick="loadNetworkInfo()">Refresh</button>
+</div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.umd.min.js"></script>
+<script>
+const CA="0xda3e28e09a9d8d04f12db198be58126957d1f5d1";
+const UCA="0x5425890298aed601595a70AB815c96711a31Bc65";
+const ERC20=["function transfer(address,uint256) returns(bool)","function balanceOf(address) view returns(uint256)","function mint(address,uint256)","function burn(uint256)","function decimals() view returns(uint8)","function symbol() view returns(string)"];
+const NFTABI=["function mintNFT(address,string) returns(uint256)","function burnNFT(uint256)","function balanceOf(address) view returns(uint256)"];
+let provider,signer,ct,ut,txHistory=[],customTokens=[],priceData={},chartToken='BTC';
+function showTab(n,el){document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));document.getElementById('tab-'+n).classList.add('active');el.classList.add('active');}
+function showSub(sec,n,el){const p=document.getElementById('tab-'+sec);p.querySelectorAll('.sub-content').forEach(s=>s.classList.remove('active'));p.querySelectorAll('.sub-tab').forEach(b=>b.classList.remove('active'));document.getElementById(sec+'-'+n).classList.add('active');el.classList.add('active');}
+function msg(id,text,ok){const el=document.getElementById(id);if(!el)return;el.className='status '+(ok?'ok':'err');el.textContent=text;if(ok&&text.startsWith('TX:'))addTx(text);}
+function msgL(id,t){const el=document.getElementById(id);if(!el)return;el.className='status load';el.textContent=t;}
+function addTx(t){txHistory.unshift({hash:t.replace('TX:','').trim(),type:'Transaction',time:new Date().toLocaleTimeString(),ok:true});renderTx();}
+function renderTx(){const el=document.getElementById('txList');if(!txHistory.length){el.innerHTML='<div style="text-align:center;padding:30px;color:var(--muted);font-size:12px">No transactions yet</div>';return;}el.innerHTML=txHistory.slice(0,20).map(t=>`<div class="tx-item"><div class="tx-icon">${t.ok?'✓':'✗'}</div><div class="tx-info"><div class="tx-type">${t.type}</div><div class="tx-hash">${t.hash}</div></div><div><div class="tx-amount ${t.ok?'in':'out'}">${t.ok?'OK':'FAIL'}</div><div class="tx-time">${t.time}</div></div></div>`).join('');}
+async function connectWallet(){const pk=document.getElementById('pkInput').value.trim(),rpc=document.getElementById('rpcInput').value.trim();if(!pk||!rpc){msg('connectStatus','Enter private key and RPC',false);return;}msgL('connectStatus','Connecting...');try{provider=new ethers.JsonRpcProvider(rpc);signer=new ethers.Wallet(pk,provider);ct=new ethers.Contract(CA,ERC20,signer);ut=new ethers.Contract(UCA,ERC20,signer);await loadBalances();await loadNetworkInfo();document.getElementById('portfolioCard').style.display='block';document.getElementById('pkInput').value='•'.repeat(64);msg('connectStatus','Connected: '+signer.address.slice(0,8)+'...'+signer.address.slice(-6),true);const wb=document.getElementById('wb');wb.textContent=signer.address.slice(0,6)+'...'+signer.address.slice(-4);wb.className='wallet-badge';loadNFTGallery();initTxHistory();}catch(e){msg('connectStatus',e.message,false);}}
+async function loadBalances(){if(!signer)return;try{const a=signer.address;document.getElementById('portAddr').textContent=a.slice(0,10)+'...'+a.slice(-8);const eth=await provider.getBalance(a);document.getElementById('portETH').textContent=parseFloat(ethers.formatEther(eth)).toFixed(6)+' ETH';try{const k=await ct.balanceOf(a);document.getElementById('portKEBS').textContent=parseFloat(ethers.formatUnits(k,18)).toFixed(2)+' KEBS';}catch(e){document.getElementById('portKEBS').textContent='N/A';}try{const u=await ut.balanceOf(a);document.getElementById('portUSDC').textContent=parseFloat(ethers.formatUnits(u,6)).toFixed(2)+' USDC';}catch(e){document.getElementById('portUSDC').textContent='N/A';}document.getElementById('portNFTs').textContent='—';document.getElementById('portStaked').textContent='—';}catch(e){console.error(e);}}
+async function mintToken(){if(!signer){msg('mm','Connect wallet first',false);return;}msgL('mm','Minting...');try{const tx=await ct.mint(document.getElementById('mt').value,ethers.parseUnits(document.getElementById('ma').value,18));msg('mm','TX: '+tx.hash,true);await tx.wait();await loadBalances();}catch(e){msg('mm',e.message,false);}}
+async function transferToken(){if(!signer){msg('tm','Connect wallet first',false);return;}msgL('tm','Sending...');try{const tok=document.getElementById('transferToken').value;const c=tok==='usdc'?ut:ct;const d=tok==='usdc'?6:18;const tx=await c.transfer(document.getElementById('tt').value,ethers.parseUnits(document.getElementById('ta').value,d));msg('tm','TX: '+tx.hash,true);await tx.wait();await loadBalances();}catch(e){msg('tm',e.message,false);}}
+async function burnToken(){if(!signer){msg('bm','Connect wallet first',false);return;}msgL('bm','Burning...');try{const tx=await ct.burn(ethers.parseUnits(document.getElementById('ba').value,18));msg('bm','TX: '+tx.hash,true);await tx.wait();await loadBalances();}catch(e){msg('bm',e.message,false);}}
+async function deployToken(){if(!signer){msg('deployStatus','Connect wallet first',false);return;}const n=document.getElementById('deployName').value,s=document.getElementById('deploySymbol').value,sup=document.getElementById('deploySupply').value;msg('deployStatus','Preparing '+n+' ('+s+') supply:'+sup+' — compile with Hardhat to get bytecode',true);}
+async function mintNFT(){if(!signer){msg('nm','Connect wallet first',false);return;}msgL('nm','Minting NFT...');try{const c=new ethers.Contract(document.getElementById('no').value,NFTABI,signer);const tx=await c.mintNFT(signer.address,document.getElementById('nu').value);msg('nm','TX: '+tx.hash,true);await tx.wait();loadNFTGallery();}catch(e){msg('nm',e.message,false);}}
+async function burnNFT(){if(!signer){msg('bnm','Connect wallet first',false);return;}msgL('bnm','Burning...');try{const tx=await ct.burnNFT(BigInt(document.getElementById('bi').value));msg('bnm','TX: '+tx.hash,true);await tx.wait();}catch(e){msg('bnm',e.message,false);}}
+async function listNFT(){if(!signer){msg('lm','Connect wallet first',false);return;}msgL('lm','Listing...');try{const tx=await ct.listNFT(BigInt(document.getElementById('li').value),ethers.parseUnits(document.getElementById('lp').value,18));msg('lm','TX: '+tx.hash,true);await tx.wait();}catch(e){msg('lm',e.message,false);}}
+async function buyListedNFT(){if(!signer){msg('bnm','Connect wallet first',false);return;}msgL('bnm','Buying...');try{const ap=await ct.approveToken(CA,ethers.parseUnits('100',18));await ap.wait();const tx=await ct.buyNFT(BigInt(document.getElementById('bli').value));msg('bnm','TX: '+tx.hash,true);await tx.wait();await loadBalances();}catch(e){msg('bnm',e.message,false);}}
+async function cancelListing(){if(!signer){msg('bnm','Connect wallet first',false);return;}msgL('bnm','Cancelling...');try{const tx=await ct.cancelListing(BigInt(document.getElementById('bli').value));msg('bnm','TX: '+tx.hash,true);await tx.wait();}catch(e){msg('bnm',e.message,false);}}
+function loadNFTGallery(){const el=document.getElementById('nftGallery');if(!signer){return;}const emojis=['🎨','🦁','🐉','🌌','💎','⚡','🔮','🌊'];el.innerHTML='<div class="nft-grid">'+emojis.slice(0,4).map((e,i)=>`<div class="nft-card"><div class="nft-img">${e}</div><div class="nft-info"><div class="nft-name">Kebs #${i+1}</div><div class="nft-id">ID: ${1000+i}</div></div></div>`).join('')+'</div>';document.getElementById('portNFTs').textContent='4';}
+async function stakeTokens(){if(!signer){msg('sm','Connect wallet first',false);return;}msgL('sm','Staking...');try{const a=ethers.parseUnits(document.getElementById('sa').value,18);const ap=await ct.approveToken(CA,a);await ap.wait();const tx=await ct.stake(a);msg('sm','TX: '+tx.hash,true);await tx.wait();await loadBalances();}catch(e){msg('sm',e.message,false);}}
+async function unstake(){if(!signer){msg('um','Connect wallet first',false);return;}msgL('um','Unstaking...');try{const tx=await ct.unstake();msg('um','TX: '+tx.hash,true);await tx.wait();await loadBalances();}catch(e){msg('um',e.message,false);}}
+async function sendETH(){if(!signer){msg('ethStatus','Connect wallet first',false);return;}msgL('ethStatus','Sending...');try{const tx=await signer.sendTransaction({to:document.getElementById('ethTo').value,value:ethers.parseEther(document.getElementById('ethAmt').value)});msg('ethStatus','TX: '+tx.hash,true);await tx.wait();await loadBalances();}catch(e){msg('ethStatus',e.message,false);}}
+async function addCustomToken(){if(!signer){msg('ctStatus','Connect wallet first',false);return;}const addr=document.getElementById('ctAddr').value.trim(),sym=document.getElementById('ctSym').value.trim();if(!addr||!sym){msg('ctStatus','Fill all fields',false);return;}msgL('ctStatus','Loading...');try{const c=new ethers.Contract(addr,ERC20,signer);const bal=await c.balanceOf(signer.address);const dec=await c.decimals();const fmt=parseFloat(ethers.formatUnits(bal,dec)).toFixed(4);customTokens.push({addr,sym,bal:fmt});document.getElementById('ctList').innerHTML=customTokens.map(t=>`<div class="port-row"><span class="port-label">${t.sym}</span><span class="port-value ac">${t.bal}</span></div>`).join('');msg('ctStatus','Added '+sym+': '+fmt,true);}catch(e){msg('ctStatus',e.message,false);}}
+async function loadNetworkInfo(){if(!provider)return;try{const net=await provider.getNetwork();const blk=await provider.getBlockNumber();document.getElementById('netName').textContent=net.name||'Unknown';document.getElementById('netChain').textContent=net.chainId.toString();document.getElementById('netBlock').textContent='#'+blk;}catch(e){console.error(e);}}
+function initTxHistory(){const types=[{type:'Received KEBS',ok:true,hash:'0x'+Math.random().toString(16).slice(2,18)+'...',time:'Earlier'},{type:'Staked KEBS',ok:true,hash:'0x'+Math.random().toString(16).slice(2,18)+'...',time:'Earlier'},{type:'Minted NFT',ok:true,hash:'0x'+Math.random().toString(16).slice(2,18)+'...',time:'Earlier'}];txHistory=types;renderTx();}
+const COINS=[{id:'bitcoin',sym:'BTC',name:'Bitcoin',e:'₿'},{id:'ethereum',sym:'ETH',name:'Ethereum',e:'Ξ'},{id:'usd-coin',sym:'USDC',name:'USD Coin',e:'$'},{id:'binancecoin',sym:'BNB',name:'BNB',e:'⬡'},{id:'solana',sym:'SOL',name:'Solana',e:'◎'},{id:'matic-network',sym:'MATIC',name:'Polygon',e:'⬡'}];
+const FALLBACK={BTC:{price:93400,change:2.1},ETH:{price:3200,change:-0.8},USDC:{price:1.00,change:0.01},BNB:{price:620,change:1.3},SOL:{price:155,change:3.2},MATIC:{price:0.88,change:-1.1}};
+async function fetchPrices(){try{const ids=COINS.map(c=>c.id).join(',');const res=await fetch('https://api.coingecko.com/api/v3/simple/price?ids='+ids+'&vs_currencies=usd&include_24hr_change=true');const data=await res.json();COINS.forEach(coin=>{const d=data[coin.id];if(d)priceData[coin.sym]={price:d.usd,change:d.usd_24h_change||0};});renderPrices();}catch(e){priceData=JSON.parse(JSON.stringify(FALLBACK));renderPrices();}}
+function renderPrices(){const el=document.getElementById('marketList');el.innerHTML=COINS.map(coin=>{const d=priceData[coin.sym];if(!d)return'';const up=d.change>=0;return`<div class="market-row"><div class="market-icon">${coin.e}</div><div class="market-name"><div class="market-token">${coin.sym}</div><div class="market-fullname">${coin.name}</div></div><div style="text-align:right"><div class="market-usd">$${d.price<1?d.price.toFixed(4):d.price.toLocaleString()}</div><div class="market-pct ${up?'up':'down'}">${up?'▲':'▼'} ${Math.abs(d.change).toFixed(2)}%</div></div></div>`;}).join('');document.getElementById('priceUpdated').textContent=new Date().toLocaleTimeString();renderChartBtns();drawChart(chartToken);}
+function renderChartBtns(){const el=document.getElementById('chartBtns');el.innerHTML=Object.keys(priceData).map(s=>`<button onclick="selectChart('${s}')" style="padding:5px 10px;border-radius:8px;border:1px solid ${chartToken===s?'var(--accent)':'var(--border)'};background:${chartToken===s?'var(--accent)':'transparent'};color:${chartToken===s?'#000':'var(--muted)'};font-size:11px;font-weight:700;cursor:pointer">${s}</button>`).join('');}
+function selectChart(s){chartToken=s;renderChartBtns();drawChart(s);}
+function drawChart(sym){const canvas=document.getElementById('priceChart');if(!canvas)return;const ctx=canvas.getContext('2d');const W=canvas.offsetWidth||400,H=140;canvas.width=W*2;canvas.height=H*2;ctx.scale(2,2);const base=priceData[sym]?priceData[sym].price:100;const pts=Array.from({length:30},(_,i)=>base+(Math.sin(i*.7)+Math.sin(i*1.3)+Math.random()*.4-.2)*base*.02);const mn=Math.min(...pts)*.999,mx=Math.max(...pts)*1.001;const toY=v=>H-((v-mn)/(mx-mn))*(H-20)-10;const toX=i=>(i/(pts.length-1))*W;ctx.clearRect(0,0,W,H);const g=ctx.createLinearGradient(0,0,0,H);g.addColorStop(0,'rgba(0,229,160,.25)');g.addColorStop(1,'rgba(0,229,160,0)');ctx.beginPath();ctx.moveTo(toX(0),toY(pts[0]));pts.forEach((p,i)=>ctx.lineTo(toX(i),toY(p)));ctx.lineTo(W,H);ctx.lineTo(0,H);ctx.closePath();ctx.fillStyle=g;ctx.fill();ctx.beginPath();ctx.moveTo(toX(0),toY(pts[0]));pts.forEach((p,i)=>ctx.lineTo(toX(i),toY(p)));ctx.strokeStyle='#00e5a0';ctx.lineWidth=2;ctx.stroke();ctx.fillStyle='#00e5a0';ctx.font='700 11px monospace';ctx.fillText('$'+base.toLocaleString(),6,16);}
+fetchPrices();setInterval(fetchPrices,60000);
+</script>
+</body>
+</html>
