@@ -1,3 +1,5 @@
+// Singleton - share state across requires
+if (global._kebsLoop) { module.exports = global._kebsLoop; return; }
 const { getBalances, provider } = require("./wallet");
 
 const logs = [];
@@ -88,4 +90,6 @@ function stop() {
 function getLogs(n = 30) { return logs.slice(-n); }
 function isRunning() { return running; }
 
-module.exports = { start, stop, getLogs, isRunning };
+const _exports = { start, stop, getLogs, isRunning };
+global._kebsLoop = _exports;
+module.exports = _exports;
