@@ -4,7 +4,7 @@ const { getEvents, getWatchedAddresses } = require("../agent/monitor");
 const { discoverAgents, sendRequest, getInbox } = require("../agent/p2p");
 
 let loopModule;
-try { loopModule = require("../agent/loop"); } catch(e) { loopModule = { start: ()=>({status:"unavailable"}), stop: ()=>({status:"unavailable"}), getLogs: ()=>[], isRunning: ()=>false }; }
+loopModule = global._agentLoop || { start: ()=>({status:"unavailable"}), stop: ()=>({status:"unavailable"}), getLogs: ()=>[], isRunning: ()=>false };
 
 router.post("/start", (req, res) => res.json(loopModule.start(req.body.interval)));
 router.post("/stop", (req, res) => res.json(loopModule.stop()));

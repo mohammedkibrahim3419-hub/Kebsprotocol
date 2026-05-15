@@ -34,6 +34,7 @@ app.get("/", (req, res) => {
 // Auto-start agent on boot
 try {
   const loop = require('./agent/loop');
+global._agentLoop = loop;
   loop.start(30000);
   console.log('[KEBS] Agent auto-started on boot');
 } catch(e) {
