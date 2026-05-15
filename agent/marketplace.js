@@ -1,106 +1,98 @@
+const { ethers } = require("ethers");
 const fs = require("fs");
 const path = require("path");
+require("dotenv").config({ path: path.resolve(__dirname, "../.env") });
 
-const MARKET_FILE = path.join(__dirname, "../data/marketplace.json");
+const provider = new ethers.JsonRpcProvider(process.env.RPC_URL, 5042002, { staticNetwork: true });
+const wallet = new ethers.Wallet(process.env.OWNER_PRIVATE_KEY, provider);
 
-function ensureFile() {
-  const dir = path.dirname(MARKET_FILE);
-  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-  if (!fs.existsSync(MARKET_FILE)) {
-    fs.writeFileSync(MARKET_FILE, JSON.stringify({ tasks: [], bids: [] }, null, 2));
-  }
+const abi = JSON.parse(fs.readFileSync(path.join(__dirname, "../contracts/KebsMarketplace.abi.json"), "utf8"));
+const address = process.env.KEBS_MARKETPLACE_ADDRESS;
+
+function getContract(signer) {
+  return new ethers.Contract(address, abi, signer || provider);
 }
 
-function getData() {
-  ensureFile();
-  return JSON.parse(fs.readFileSync(MARKET_FILE));
+async function getStats() {
+  try {
+    const c = getContract();
+    const s = await c.getStats();
+    return { total: s[0].toString(), open: s[1].toString(), completed: s[2].toString(), volume: ethers.formatEther(s[3]) };
+  } catch(e) { return { total: 0, open: 0, completed: 0, volume: "0", error: e.message }; }
 }
 
-function saveData(data) {
-  fs.writeFileSync(MARKET_FILE, JSON.stringify(data, null, 2));
+async function getTasks(status) {
+  try {
+    const c = getContract();
+    const tasks = await c.getOpenTasks();
+    return tasks.map(t => ({
+      id: t.id.toString(),
+      poster: t.poster,
+      title: t.title,
+      description: t.description,
+      reward: ethers.formatEther(t.reward),
+      deadline: new Date(Number(t.deadline) * 1000).toISOString(),
+      status: ["Open","Assigned","Completed","Disputed","Cancelled"][Number(t.status)],
+      assignedAgent: t.assignedAgent,
+      createdAt: new Date(Number(t.createdAt) * 1000).toISOString()
+    }));
+  } catch(e) { return []; }
 }
 
-function postTask(poster, title, description, reward, deadline) {
-  const data = getData();
-  const task = {
-    id: "TASK-" + Date.now(),
-    poster: poster.toLowerCase(),
-    title,
-    description,
-    reward: parseFloat(reward),
-    deadline: deadline || null,
-    status: "open",
-    winner: null,
-    createdAt: new Date().toISOString(),
-    bids: []
-  };
-  data.tasks.unshift(task);
-  saveData(data);
-  return task;
+async function getTask(id) {
+  try {
+    const c = getContract();
+    const t = await c.tasks(id);
+    return {
+      id: t.id.toString(),
+      poster: t.poster,
+      title: t.title,
+      description: t.description,
+      reward: ethers.formatEther(t.reward),
+      deadline: new Date(Number(t.deadline) * 1000).toISOString(),
+      status: ["Open","Assigned","Completed","Disputed","Cancelled"][Number(t.status)],
+      assignedAgent: t.assignedAgent,
+      completionProof: t.completionProof
+    };
+  } catch(e) { return null; }
 }
 
-function bidTask(taskId, bidder, proposal, price) {
-  const data = getData();
-  const task = data.tasks.find(t => t.id === taskId);
-  if (!task) return { success: false, error: "Task not found" };
-  if (task.status !== "open") return { success: false, error: "Task not open" };
-  const bid = {
-    id: "BID-" + Date.now(),
-    taskId,
-    bidder: bidder.toLowerCase(),
-    proposal,
-    price: parseFloat(price),
-    status: "pending",
-    createdAt: new Date().toISOString()
-  };
-  task.bids.push(bid);
-  data.bids.unshift(bid);
-  saveData(data);
-  return { success: true, bid };
+async function postTask(poster, title, description, reward, deadline) {
+  try {
+    const c = getContract(wallet);
+    const rewardWei = ethers.parseEther(reward.toString());
+    const deadlineTs = Math.floor(new Date(deadline).getTime() / 1000);
+    const tx = await c.postTask(title, description, deadlineTs, { value: rewardWei });
+    const receipt = await tx.wait();
+    return { success: true, hash: receipt.hash };
+  } catch(e) { return { success: false, error: e.message }; }
 }
 
-function acceptBid(taskId, bidId, posterAddress) {
-  const data = getData();
-  const task = data.tasks.find(t => t.id === taskId);
-  if (!task) return { success: false, error: "Task not found" };
-  if (task.poster !== posterAddress.toLowerCase()) return { success: false, error: "Not authorized" };
-  const bid = task.bids.find(b => b.id === bidId);
-  if (!bid) return { success: false, error: "Bid not found" };
-  task.status = "in_progress";
-  task.winner = bid.bidder;
-  bid.status = "accepted";
-  saveData(data);
-  return { success: true, task, bid };
+async function bidTask(taskId, bidder, proposal, price) {
+  try {
+    const c = getContract(wallet);
+    const tx = await c.placeBid(taskId, proposal);
+    const receipt = await tx.wait();
+    return { success: true, hash: receipt.hash };
+  } catch(e) { return { success: false, error: e.message }; }
 }
 
-function completeTask(taskId, workerAddress, result) {
-  const data = getData();
-  const task = data.tasks.find(t => t.id === taskId);
-  if (!task) return { success: false, error: "Task not found" };
-  if (task.winner !== workerAddress.toLowerCase()) return { success: false, error: "Not authorized" };
-  task.status = "completed";
-  task.result = result;
-  task.completedAt = new Date().toISOString();
-  saveData(data);
-  return { success: true, task };
+async function acceptBid(taskId, bidId, poster) {
+  try {
+    const c = getContract(wallet);
+    const tx = await c.acceptBid(taskId, bidId);
+    const receipt = await tx.wait();
+    return { success: true, hash: receipt.hash };
+  } catch(e) { return { success: false, error: e.message }; }
 }
 
-function getTasks(status) {
-  const data = getData();
-  if (!status) return data.tasks;
-  return data.tasks.filter(t => t.status === status);
-}
-
-function getTask(id) {
-  return getData().tasks.find(t => t.id === id) || null;
-}
-
-function getStats() {
-  const data = getData();
-  const open = data.tasks.filter(t => t.status === "open").length;
-  const completed = data.tasks.filter(t => t.status === "completed").length;
-  const totalRewards = data.tasks.filter(t => t.status === "completed").reduce((s, t) => s + t.reward, 0);
-  return { total: data.tasks.length, open, completed, totalRewards };
+async function completeTask(taskId, worker, result) {
+  try {
+    const c = getContract(wallet);
+    const tx = await c.submitCompletion(taskId, result);
+    const receipt = await tx.wait();
+    return { success: true, hash: receipt.hash };
+  } catch(e) { return { success: false, error: e.message }; }
 }
 
 module.exports = { postTask, bidTask, acceptBid, completeTask, getTasks, getTask, getStats };
