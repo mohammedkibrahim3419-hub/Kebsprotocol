@@ -44,7 +44,7 @@
   <h1>⬡ KEBS PROTOCOL</h1>
   <div style="display:flex;gap:8px;align-items:center;">
     <span class="badge">Arc Testnet</span>
-    <span class="badge" id="statusBadge">OFFLINE</span>
+    <span class="badge" id="statusBadge">CHECKING...</span>
     <a href="/agent-demo.html" style="color:#4fc3f7;font-size:12px;text-decoration:none;border:1px solid #1e3a5f;padding:4px 12px;border-radius:20px;background:#0d1530;">⚡ Agent Mesh</a>
     <a href="/docs.html" style="color:#4fc3f7;font-size:12px;text-decoration:none;border:1px solid #1e3a5f;padding:4px 12px;border-radius:20px;background:#0d1530;">API Docs</a>
   </div>
@@ -708,6 +708,34 @@ async function submitBid(taskId) {
 fetchMarket();
 setInterval(fetchMarket, 30000);
 
+</script>
+
+<script>
+// Direct status check - no dependencies
+(async function() {
+  try {
+    const res = await fetch('/agent/status');
+    const data = await res.json();
+    const badge = document.getElementById('statusBadge');
+    const status = document.getElementById('status');
+    if (badge) badge.textContent = data.running ? 'ONLINE' : 'OFFLINE';
+    if (badge) badge.style.color = data.running ? '#69f0ae' : '#ff5252';
+    if (status) status.textContent = data.running ? 'Running' : 'Stopped';
+  } catch(e) {
+    document.getElementById('statusBadge').textContent = 'ERR:'+e.message;
+  }
+})();
+setInterval(async function() {
+  try {
+    const res = await fetch('/agent/status');
+    const data = await res.json();
+    const badge = document.getElementById('statusBadge');
+    const status = document.getElementById('status');
+    if (badge) badge.textContent = data.running ? 'ONLINE' : 'OFFLINE';
+    if (badge) badge.style.color = data.running ? '#69f0ae' : '#ff5252';
+    if (status) status.textContent = data.running ? 'Running' : 'Stopped';
+  } catch(e) {}
+}, 5000);
 </script>
 </body>
 </html>
