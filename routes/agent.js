@@ -8,7 +8,7 @@ loopModule = global._agentLoop || { start: ()=>({status:"unavailable"}), stop: (
 
 router.post("/start", (req, res) => res.json(loopModule.start(req.body.interval)));
 router.post("/stop", (req, res) => res.json(loopModule.stop()));
-router.get("/status", (req, res) => res.json({ running: loopModule.isRunning(), logs: loopModule.getLogs() }));
+router.get("/status", (req, res) => { const loop = global._agentLoop || loopModule; res.json({ running: loop.isRunning(), logs: loop.getLogs() }); });
 router.get("/wallet", async (req, res) => { try { res.json(await getBalances()); } catch(e) { res.status(500).json({ error: e.message }); }});
 router.get("/monitor", (req, res) => res.json({ events: getEvents(), watching: getWatchedAddresses() }));
 router.get("/agents", (req, res) => res.json(discoverAgents()));
