@@ -267,43 +267,103 @@ input, select { background:#0a0f1e; border:1px solid #1e3a5f; color:#e0e6f0; pad
 let mmAddress = null, mmProvider = null, mmSigner = null;
 let priceChartInstance = null, currentCoin = 'eth';
 
-// MetaMask
+
 async function connectMM() {
-  if (!window.ethereum) { alert('MetaMask not found!'); return; }
-  const accounts = await window.ethereum.request({ method:'eth_requestAccounts' });
+  if (typeof window.ethereum === 'undefined') {
+    alert('MetaMask not found! Open this page inside MetaMask browser.');
+    return;
+  }
+  try {
+    await window.ethereum.request({ method: 'eth_requestAccounts' });
+    await loadMMAccount();
+  } catch(e) {
+    alert('Failed: ' + e.message);
+  }
+}
+
+async function loadMMAccount() {
+  if (typeof window.ethereum === 'undefined') return;
+  const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+  if (!accounts || accounts.length === 0) return;
   mmAddress = accounts[0];
   mmProvider = new ethers.providers.Web3Provider(window.ethereum);
   mmSigner = mmProvider.getSigner();
-  await updateMM();
-  window.ethereum.on('accountsChanged', a => { mmAddress=a[0]; updateMM(); });
+  showMMConnected();
 }
-async function updateMM() {
-  document.getElementById('mmOff').style.display='none';
-  document.getElementById('mmOn').style.display='block';
+
+async function showMMConnected() {
+  document.getElementById('mmOff').style.display = 'none';
+  document.getElementById('mmOn').style.display = 'block';
   document.getElementById('mmAddr').textContent = mmAddress.slice(0,8)+'...'+mmAddress.slice(-6);
-  const net = await mmProvider.getNetwork();
-  document.getElementById('mmNet').textContent = net.name+'('+net.chainId+')';
-  const bal = await mmProvider.getBalance(mmAddress);
-  document.getElementById('mmBal').textContent = parseFloat(ethers.utils.formatEther(bal)).toFixed(4)+' ETH';
-  fetchStaking(); fetchInvoices();
-}
-async function addArc() {
-  await window.ethereum.request({ method:'wallet_addEthereumChain', params:[{ chainId:'0x13A4292', chainName:'Arc Testnet', nativeCurrency:{name:'USDC',symbol:'USDC',decimals:18}, rpcUrls:['https://rpc.testnet.arc.network'], blockExplorerUrls:['https://testnet.arcscan.app'] }] });
-}
-function disconnectMM() { mmAddress=null; document.getElementById('mmOff').style.display='block'; document.getElementById('mmOn').style.display='none'; }
-function toggleSend() { const f=document.getElementById('sendForm'); f.style.display=f.style.display==='none'?'block':'none'; }
-async function sendUSDC() {
-  const to=document.getElementById('sendTo').value, amt=document.getElementById('sendAmt').value;
-  if(!to||!amt){document.getElementById('sendResult').textContent='Fill all fields';return;}
   try {
-    const usdc=new ethers.Contract('0x3600000000000000000000000000000000000000',['function transfer(address,uint256) returns(bool)','function decimals() view returns(uint8)'],mmSigner);
-    const dec=await usdc.decimals();
-    const tx=await usdc.transfer(to,ethers.utils.parseUnits(amt,dec));
-    document.getElementById('sendResult').textContent='Waiting...';
-    await tx.wait();
-    document.getElementById('sendResult').textContent='Sent! TX: '+tx.hash;
-  } catch(e){document.getElementById('sendResult').textContent='Error: '+e.message;}
+    const net = await mmProvider.getNetwork();
+    document.getElementById('mmNet').textContent = 'Chain ' + net.chainId;
+  } catch(e) {}
+  try {
+    const bal = await mmProvider.getBalance(mmAddress);
+    document.getElementById('mmBal').textContent = parseFloat(ethers.utils.formatEther(bal)).toFixed(4) + ' ETH';
+  } catch(e) {}
+  fetchStaking();
+  fetchInvoices();
 }
+
+function disconnectMM() {
+  mmAddress = null;
+  mmProvider = null;
+  mmSigner = null;
+  document.getElementById('mmOff').style.display = 'block';
+  document.getElementById('mmOn').style.display = 'none';
+}
+
+async function addArc() {
+  try {
+    await window.ethereum.request({
+      method: 'wallet_addEthereumChain',
+      params: [{
+        chainId: '0x13A4292',
+        chainName: 'Arc Testnet',
+        nativeCurrency: { name: 'USDC', symbol: 'USDC', decimals: 18 },
+        rpcUrls: ['https://rpc.testnet.arc.network'],
+        blockExplorerUrls: ['https://testnet.arcscan.app']
+      }]
+    });
+  } catch(e) { alert('Error: ' + e.message); }
+}
+
+function toggleSend() {
+  const f = document.getElementById('sendForm');
+  f.style.display = f.style.display === 'none' ? 'block' : 'none';
+}
+
+async function sendUSDC() {
+  const to = document.getElementById('sendTo').value;
+  const amt = document.getElementById('sendAmt').value;
+  if (!to || !amt) { document.getElementById('sendResult').textContent = 'Fill all fields'; return; }
+  try {
+    const usdc = new ethers.Contract(
+      '0x3600000000000000000000000000000000000000',
+      ['function transfer(address,uint256) returns(bool)', 'function decimals() view returns(uint8)'],
+      mmSigner
+    );
+    const dec = await usdc.decimals();
+    const tx = await usdc.transfer(to, ethers.utils.parseUnits(amt, dec));
+    document.getElementById('sendResult').textContent = 'Waiting...';
+    await tx.wait();
+    document.getElementById('sendResult').textContent = 'Sent! TX: ' + tx.hash;
+  } catch(e) { document.getElementById('sendResult').textContent = 'Error: ' + e.message; }
+}
+
+// Auto connect on load
+window.addEventListener('load', async () => {
+  if (typeof window.ethereum !== 'undefined') {
+    await loadMMAccount();
+    window.ethereum.on('accountsChanged', async (accounts) => {
+      if (accounts.length > 0) { mmAddress = accounts[0]; await showMMConnected(); }
+      else disconnectMM();
+    });
+    window.ethereum.on('chainChanged', () => window.location.reload());
+  }
+});
 
 // Agent
 async function fetchWallet() {
