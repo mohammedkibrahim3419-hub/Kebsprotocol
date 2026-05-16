@@ -268,7 +268,8 @@ let mmAddress = null, mmProvider = null, mmSigner = null;
 let priceChartInstance = null, currentCoin = 'eth';
 
 
-async function connectMM() {
+// replaced
+async function connectMM_backup() {
   if (typeof window.ethereum === 'undefined') {
     alert('MetaMask not found! Open this page inside MetaMask browser.');
     return;
@@ -568,6 +569,28 @@ appendChat('assistant','Hello! I am the Kebs Protocol AI. Ask me anything about 
 refresh();
 setInterval(refresh,30000);
 fetchAgentPort();
+
+async function connectMM() {
+  if (typeof window.ethereum === 'undefined') { alert('MetaMask not found!'); return; }
+  try {
+    const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+    if (accounts.length > 0) {
+      mmAddress = accounts[0];
+      mmProvider = new ethers.providers.Web3Provider(window.ethereum);
+      mmSigner = mmProvider.getSigner();
+      document.getElementById('mmOff').style.display = 'none';
+      document.getElementById('mmOn').style.display = 'block';
+      document.getElementById('mmAddr').textContent = mmAddress.slice(0,8)+'...'+mmAddress.slice(-6);
+      document.getElementById('mmNet').textContent = 'Connected';
+      document.getElementById('mmBal').textContent = 'Loading...';
+      try {
+        const bal = await mmProvider.getBalance(mmAddress);
+        document.getElementById('mmBal').textContent = parseFloat(ethers.utils.formatEther(bal)).toFixed(4) + ' ETH';
+      } catch(e) {}
+    }
+  } catch(e) { alert('Error: ' + e.message); }
+}
+
 </script>
 </body>
 </html>
