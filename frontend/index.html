@@ -479,6 +479,30 @@ async function clearChat(){await fetch('/chat/history',{method:'DELETE'});docume
 // TX History
 async function fetchTx(){try{const txs=await fetch('/transactions').then(r=>r.json());document.getElementById('txList').innerHTML=txs.length?txs.map(t=>'<div style="border-bottom:1px solid #0f2040;padding:6px 0;"><span style="color:#4fc3f7;">'+t.type+'</span> <span style="color:#69f0ae;">'+t.amount+'</span> <span style="color:'+(t.status==='success'?'#69f0ae':'#ff8a80')+'">'+t.status+'</span></div>').join(''):'<div style="color:#546e7a;">No transactions yet</div>';}catch(e){}}
 
+
+window.addEventListener('load', async () => {
+  if (window.ethereum) {
+    try {
+      const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+      if (accounts.length > 0) {
+        mmAddress = accounts[0];
+        mmProvider = new ethers.providers.Web3Provider(window.ethereum);
+        mmSigner = mmProvider.getSigner();
+        document.getElementById('mmOff').style.display = 'none';
+        document.getElementById('mmOn').style.display = 'block';
+        document.getElementById('mmAddr').textContent = mmAddress.slice(0,8)+'...'+mmAddress.slice(-6);
+        const net = await mmProvider.getNetwork();
+        document.getElementById('mmNet').textContent = net.name + '(' + net.chainId + ')';
+        const bal = await mmProvider.getBalance(mmAddress);
+        document.getElementById('mmBal').textContent = parseFloat(ethers.utils.formatEther(bal)).toFixed(4) + ' ETH';
+        fetchStaking();
+        fetchInvoices();
+        console.log('Auto-connected:', mmAddress);
+      }
+    } catch(e) { console.log('Auto-connect failed:', e.message); }
+  }
+});
+
 // Init
 appendChat('assistant','Hello! I am the Kebs Protocol AI. Ask me anything about DeFi, Arc Testnet, or your wallet!');
 refresh();
