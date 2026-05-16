@@ -1,3 +1,4 @@
+process.on("uncaughtException", e => { console.error("CRASH:", e.message, e.stack); process.exit(1); });
 require("dotenv").config();
 const express = require("express");
 const path = require("path");
