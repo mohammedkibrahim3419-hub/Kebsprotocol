@@ -3,80 +3,81 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Kebs Protocol</title>
+<title>Kebs Protocol — Dashboard</title>
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#4fc3f7">
 <style>
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { background: #0a0f1e; color: #e0e6f0; font-family: 'Courier New', monospace; }
-  header { background: #0d1530; border-bottom: 1px solid #1e3a5f; padding: 16px 24px; display: flex; align-items: center; justify-content: space-between; }
-  header h1 { font-size: 20px; color: #4fc3f7; letter-spacing: 2px; }
-  .badge { background: #1a3a5c; color: #4fc3f7; padding: 2px 10px; border-radius: 20px; font-size: 11px; }
-  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; padding: 20px; }
-  .card { background: #0d1530; border: 1px solid #1e3a5f; border-radius: 12px; padding: 20px; }
-  .card h2 { font-size: 13px; color: #4fc3f7; margin-bottom: 16px; text-transform: uppercase; letter-spacing: 1px; }
-  .stat { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #0f2040; font-size: 13px; }
-  .stat:last-child { border-bottom: none; }
-  .val { color: #81d4fa; font-weight: bold; }
-  .btn { padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; font-family: inherit; font-size: 13px; font-weight: bold; margin: 4px; }
-  .btn-start { background: #1b5e20; color: #69f0ae; }
-  .btn-stop { background: #b71c1c; color: #ff8a80; }
-  .btn-refresh { background: #1a3a5c; color: #4fc3f7; }
-  .btn-mm { background: #f6851b; color: #fff; display: flex; align-items: center; gap: 8px; padding: 10px 16px; border-radius: 8px; border: none; cursor: pointer; font-family: inherit; font-size: 13px; font-weight: bold; }
-  .btn-mm img { width: 20px; height: 20px; }
-  .btn-disconnect { background: #37474f; color: #cfd8dc; }
-  .log-box { background: #060d1a; border: 1px solid #1e3a5f; border-radius: 8px; padding: 12px; height: 200px; overflow-y: auto; font-size: 11px; line-height: 1.8; }
-  .connected { color: #69f0ae; }
-  .disconnected { color: #ff8a80; }
-  .mm-card { grid-column: 1/-1; }
-  .mm-info { display: flex; flex-direction: column; gap: 8px; }
-  .mm-addr { font-size: 12px; color: #4fc3f7; word-break: break-all; }
-  .mm-bal { font-size: 14px; color: #69f0ae; font-weight: bold; }
-  .mm-network { font-size: 12px; color: #81d4fa; }
-  .btns { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
-  .send-form { margin-top: 12px; display: none; }
-  .send-form input { background: #0a0f1e; border: 1px solid #1e3a5f; color: #e0e6f0; padding: 8px 12px; border-radius: 8px; font-family: inherit; font-size: 12px; width: 100%; margin-bottom: 8px; }
-  .btn-send { background: #1a5276; color: #85c1e9; width: 100%; }
-  .tx-result { margin-top: 8px; font-size: 11px; color: #69f0ae; word-break: break-all; }
-  @media (max-width: 600px) { .grid { grid-template-columns: 1fr; } }
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:#0a0f1e; color:#e0e6f0; font-family:'Courier New',monospace; }
+header { background:#0d1530; border-bottom:1px solid #1e3a5f; padding:14px 20px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px; }
+header h1 { font-size:18px; color:#4fc3f7; letter-spacing:2px; }
+.badges { display:flex; gap:6px; flex-wrap:wrap; align-items:center; }
+.badge { background:#1a3a5c; color:#4fc3f7; padding:3px 10px; border-radius:20px; font-size:11px; }
+.grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; padding:16px; }
+.card { background:#0d1530; border:1px solid #1e3a5f; border-radius:12px; padding:18px; }
+.card h2 { font-size:12px; color:#4fc3f7; letter-spacing:1px; margin-bottom:14px; text-transform:uppercase; }
+.full { grid-column:1/-1; }
+.stat { display:flex; justify-content:space-between; padding:7px 0; border-bottom:1px solid #0f2040; font-size:12px; }
+.stat:last-child { border-bottom:none; }
+.val { color:#81d4fa; font-weight:bold; }
+.btn { padding:9px 16px; border:none; border-radius:8px; cursor:pointer; font-family:inherit; font-size:12px; font-weight:bold; margin:3px; }
+.btn-start { background:#1b5e20; color:#69f0ae; }
+.btn-stop { background:#b71c1c; color:#ff8a80; }
+.btn-refresh { background:#1a3a5c; color:#4fc3f7; }
+.btn-mm { background:#f6851b; color:#fff; display:inline-flex; align-items:center; gap:6px; }
+.btn-disc { background:#37474f; color:#cfd8dc; }
+.log-box { background:#060d1a; border:1px solid #1e3a5f; border-radius:8px; padding:10px; height:180px; overflow-y:auto; font-size:11px; line-height:1.8; }
+input, select { background:#0a0f1e; border:1px solid #1e3a5f; color:#e0e6f0; padding:8px 12px; border-radius:8px; font-family:inherit; font-size:12px; width:100%; margin-bottom:6px; }
+.row { display:flex; gap:8px; flex-wrap:wrap; }
+.row input { flex:1; margin-bottom:0; }
+.result { margin-top:8px; font-size:11px; color:#69f0ae; word-break:break-all; }
+.chips { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:10px; }
+.chip { background:#0d1530; border:1px solid #1e3a5f; color:#4fc3f7; padding:3px 10px; border-radius:20px; font-size:11px; cursor:pointer; font-family:inherit; }
+.token-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(120px,1fr)); gap:8px; }
+.token-card { background:#060d1a; border:1px solid #1e3a5f; border-radius:8px; padding:10px; text-align:center; }
+.task-item { border:1px solid #1e3a5f; border-radius:8px; padding:10px; margin-bottom:8px; }
+.inv-item { border:1px solid #1e3a5f; border-radius:8px; padding:10px; margin-bottom:8px; }
+.mini-stats { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px; }
+.mini-stat { flex:1; min-width:80px; background:#060d1a; border-radius:8px; padding:10px; text-align:center; }
+.mini-stat .n { font-size:18px; color:#69f0ae; font-weight:bold; }
+.mini-stat .l { font-size:10px; color:#546e7a; }
+@media(max-width:500px){ .grid { grid-template-columns:1fr; } }
 </style>
-<meta http-equiv="cache-control" content="no-cache, no-store, must-revalidate"><meta http-equiv="pragma" content="no-cache"></head>
+</head>
 <body>
 <header>
   <h1>⬡ KEBS PROTOCOL</h1>
-  <div style="display:flex;gap:8px;align-items:center;">
+  <div class="badges">
     <span class="badge">Arc Testnet</span>
-    <span class="badge" id="statusBadge">CHECKING...</span>
-    <a href="/agent-demo.html" style="color:#4fc3f7;font-size:12px;text-decoration:none;border:1px solid #1e3a5f;padding:4px 12px;border-radius:20px;background:#0d1530;">⚡ Agent Mesh</a>
-    <a href="/docs.html" style="color:#4fc3f7;font-size:12px;text-decoration:none;border:1px solid #1e3a5f;padding:4px 12px;border-radius:20px;background:#0d1530;">API Docs</a>
+    <span class="badge" id="statusBadge">OFFLINE</span>
+    <a href="/landing" style="color:#4fc3f7;font-size:11px;text-decoration:none;border:1px solid #1e3a5f;padding:3px 10px;border-radius:20px;">Home</a>
+    <a href="/docs" style="color:#4fc3f7;font-size:11px;text-decoration:none;border:1px solid #1e3a5f;padding:3px 10px;border-radius:20px;">API Docs</a>
   </div>
 </header>
+
 <div class="grid">
 
-  <!-- MetaMask Card -->
-  <div class="card mm-card">
+  <!-- MetaMask -->
+  <div class="card full">
     <h2>🦊 MetaMask Wallet</h2>
-    <div id="mmDisconnected">
-      <p style="font-size:13px;color:#546e7a;margin-bottom:12px;">Connect your wallet to send USDC and interact with Kebs Protocol</p>
-      <button class="btn-mm" onclick="connectMM()">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/3/36/MetaMask_Fox.svg" onerror="this.style.display='none'"/>
-        Connect MetaMask
-      </button>
+    <div id="mmOff">
+      <p style="font-size:12px;color:#546e7a;margin-bottom:10px;">Connect wallet to send USDC and interact with Kebs Protocol</p>
+      <button class="btn btn-mm" onclick="connectMM()">Connect MetaMask</button>
     </div>
-    <div id="mmConnected" style="display:none;">
-      <div class="mm-info">
-        <div class="stat"><span>Address</span><span class="val mm-addr" id="mmAddr">-</span></div>
-        <div class="stat"><span>Network</span><span class="val mm-network" id="mmNetwork">-</span></div>
-        <div class="stat"><span>Balance</span><span class="val mm-bal" id="mmBal">-</span></div>
+    <div id="mmOn" style="display:none;">
+      <div class="stat"><span>Address</span><span class="val" id="mmAddr">-</span></div>
+      <div class="stat"><span>Network</span><span class="val" id="mmNet">-</span></div>
+      <div class="stat"><span>Balance</span><span class="val" id="mmBal">-</span></div>
+      <div style="margin-top:10px;">
+        <button class="btn btn-mm" onclick="addArc()">Add Arc Testnet</button>
+        <button class="btn btn-disc" onclick="disconnectMM()">Disconnect</button>
+        <button class="btn btn-refresh" onclick="toggleSend()">Send USDC</button>
       </div>
-      <div class="btns">
-        <button class="btn btn-mm" onclick="addArcNetwork()">Add Arc Testnet</button>
-        <button class="btn btn-disconnect" onclick="disconnectMM()">Disconnect</button>
-        <button class="btn btn-send" onclick="toggleSend()">Send USDC</button>
-      </div>
-      <div class="send-form" id="sendForm">
-        <input id="sendTo" placeholder="Recipient address (0x...)"/>
-        <input id="sendAmount" placeholder="Amount in USDC" type="number"/>
-        <button class="btn btn-send" onclick="sendUSDC()">Send</button>
-        <div class="tx-result" id="txResult"></div>
+      <div id="sendForm" style="display:none;margin-top:10px;">
+        <input id="sendTo" placeholder="Recipient (0x...)"/>
+        <input id="sendAmt" placeholder="Amount USDC" type="number"/>
+        <button class="btn btn-start" onclick="sendUSDC()">Send</button>
+        <div class="result" id="sendResult"></div>
       </div>
     </div>
   </div>
@@ -84,814 +85,405 @@
   <!-- Agent Wallet -->
   <div class="card">
     <h2>Agent Wallet</h2>
-    <div class="stat"><span>Address</span><span class="val" id="addr">-</span></div>
-    <div class="stat"><span>ARC</span><span class="val" id="arc">-</span></div>
-    <div class="stat"><span>USDC</span><span class="val" id="usdc">-</span></div>
+    <div class="stat"><span>Address</span><span class="val" id="agentAddr">-</span></div>
+    <div class="stat"><span>ARC</span><span class="val" id="agentArc">-</span></div>
+    <div class="stat"><span>USDC</span><span class="val" id="agentUsdc">-</span></div>
+    <div class="stat"><span>Updated</span><span class="val" id="agentTime">-</span></div>
   </div>
 
   <!-- Control -->
   <div class="card">
     <h2>Agent Control</h2>
-    <div class="stat"><span>Status</span><span class="val" id="status">Offline</span></div>
+    <div class="stat"><span>Status</span><span class="val" id="agentStatus">-</span></div>
     <div class="stat"><span>Network</span><span class="val">Arc Testnet</span></div>
-    <div class="btns">
-      <button class="btn btn-start" onclick="start()">START</button>
-      <button class="btn btn-stop" onclick="stop()">STOP</button>
-      <button class="btn btn-refresh" onclick="refresh()">REFRESH</button>
+    <div style="margin-top:10px;">
+      <button class="btn btn-start" onclick="startAgent()">▶ START</button>
+      <button class="btn btn-stop" onclick="stopAgent()">■ STOP</button>
+      <button class="btn btn-refresh" onclick="refresh()">↻</button>
     </div>
   </div>
 
   <!-- Logs -->
-  <div class="card" style="grid-column:1/-1;">
+  <div class="card full">
     <h2>Agent Logs</h2>
-    <div class="log-box" id="logs"></div>
+    <div class="log-box" id="logBox"></div>
   </div>
 
+  <!-- NL Transactions -->
+  <div class="card full">
+    <h2>Natural Language Transactions</h2>
+    <div class="chips">
+      <button class="chip" onclick="nlQ('send 5 USDC to 0x000')">Send USDC</button>
+      <button class="chip" onclick="nlQ('stake 10 USDC')">Stake</button>
+      <button class="chip" onclick="nlQ('claim my rewards')">Claim</button>
+      <button class="chip" onclick="nlQ('bridge 2 USDC to sepolia')">Bridge</button>
+      <button class="chip" onclick="nlQ('invoice 20 USDC for design work')">Invoice</button>
+    </div>
+    <div class="row" style="margin-bottom:8px;">
+      <input id="nlInput" placeholder='e.g. "send 5 USDC to 0x..." or "stake 10 USDC"' onkeydown="if(event.key==='Enter')parseNL()"/>
+      <button class="btn btn-refresh" onclick="parseNL()" style="margin:0;">Parse</button>
+      <button class="btn btn-start" onclick="executeNL()" style="margin:0;">Execute</button>
+    </div>
+    <div id="nlParsed" style="background:#060d1a;border:1px solid #1e3a5f;border-radius:8px;padding:10px;font-size:12px;display:none;margin-bottom:8px;"></div>
+    <div class="result" id="nlResult"></div>
+  </div>
 
-<div class="card" style="grid-column:1/-1;">
-  <h2>Invoices</h2>
-  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px;">
-    <div class="stat" style="flex:1;min-width:100px;"><span>Total</span><span class="val" id="invTotal">0</span></div>
-    <div class="stat" style="flex:1;min-width:100px;"><span>Paid</span><span class="val" id="invPaid">0</span></div>
-    <div class="stat" style="flex:1;min-width:100px;"><span>Pending</span><span class="val" id="invPending">0</span></div>
-    <div class="stat" style="flex:1;min-width:100px;"><span>Volume</span><span class="val" id="invVolume">0 USDC</span></div>
+  <!-- Marketplace -->
+  <div class="card full">
+    <h2>Agent Marketplace</h2>
+    <div class="mini-stats">
+      <div class="mini-stat"><div class="n" id="mktOpen">0</div><div class="l">Open</div></div>
+      <div class="mini-stat"><div class="n" id="mktDone">0</div><div class="l">Done</div></div>
+      <div class="mini-stat"><div class="n" id="mktRew">0</div><div class="l">USDC Rewards</div></div>
+    </div>
+    <div style="background:#060d1a;border:1px solid #1e3a5f;border-radius:8px;padding:12px;margin-bottom:12px;">
+      <div style="font-size:11px;color:#4fc3f7;margin-bottom:8px;">Post Task</div>
+      <input id="mktTitle" placeholder="Task title"/>
+      <input id="mktDesc" placeholder="Description"/>
+      <div class="row">
+        <input id="mktRew" placeholder="Reward USDC" type="number"/>
+        <button class="btn btn-start" onclick="postTask()" style="margin:0;">Post</button>
+      </div>
+      <div class="result" id="mktResult"></div>
+    </div>
+    <div id="mktList" style="max-height:300px;overflow-y:auto;"></div>
   </div>
-  <div style="margin:12px 0;padding:12px;background:#060d1a;border-radius:8px;">
-    <div style="font-size:12px;color:#4fc3f7;margin-bottom:8px;">Create Invoice</div>
-    <input id="invTo" placeholder="Bill to (address)" style="background:#0a0f1e;border:1px solid #1e3a5f;color:#e0e6f0;padding:8px;border-radius:8px;font-size:12px;width:100%;margin-bottom:6px;"/>
-    <input id="invAmount" placeholder="Amount USDC" type="number" style="background:#0a0f1e;border:1px solid #1e3a5f;color:#e0e6f0;padding:8px;border-radius:8px;font-size:12px;width:100%;margin-bottom:6px;"/>
-    <input id="invDesc" placeholder="Description" style="background:#0a0f1e;border:1px solid #1e3a5f;color:#e0e6f0;padding:8px;border-radius:8px;font-size:12px;width:100%;margin-bottom:6px;"/>
-    <input id="invDue" placeholder="Due date (optional)" type="date" style="background:#0a0f1e;border:1px solid #1e3a5f;color:#e0e6f0;padding:8px;border-radius:8px;font-size:12px;width:100%;margin-bottom:6px;"/>
-    <button class="btn btn-start" onclick="createInvoice()">Create Invoice</button>
-    <button class="btn btn-refresh" onclick="if(mmAddress)document.getElementById('invTo').value=mmAddress;">My Address</button>
-    <div id="invResult" style="margin-top:6px;font-size:11px;color:#69f0ae;"></div>
+
+  <!-- Portfolio -->
+  <div class="card full">
+    <h2>Portfolio Tracker</h2>
+    <div class="row" style="margin-bottom:8px;">
+      <input id="portAddr" placeholder="Wallet address (0x...)"/>
+      <button class="btn btn-start" onclick="fetchPort()" style="margin:0;">Track</button>
+      <button class="btn btn-refresh" onclick="if(mmAddress){document.getElementById('portAddr').value=mmAddress;fetchPort();}else{alert('Connect MetaMask');}" style="margin:0;">My Wallet</button>
+      <button class="btn btn-refresh" onclick="fetchAgentPort()" style="margin:0;">Agent</button>
+    </div>
+    <input id="portToken" placeholder="Add custom token address (0x...)"/>
+    <button class="btn btn-refresh" onclick="addPortToken()">Add Token</button>
+    <div class="result" id="portResult"></div>
+    <div class="token-grid" id="portList" style="margin-top:10px;"></div>
   </div>
-  <div id="invList" style="max-height:300px;overflow-y:auto;"></div>
+
+  <!-- Staking -->
+  <div class="card full">
+    <h2>Token Staking</h2>
+    <div class="mini-stats">
+      <div class="mini-stat"><div class="n" id="stakeTotal">0</div><div class="l">Total Staked</div></div>
+      <div class="mini-stat"><div class="n" id="stakeCount">0</div><div class="l">Stakers</div></div>
+      <div class="mini-stat"><div class="n" id="stakeYours">0</div><div class="l">Your Stake</div></div>
+      <div class="mini-stat"><div class="n" id="stakePend">0</div><div class="l">Pending</div></div>
+    </div>
+    <div class="row">
+      <input id="stakeAmt" placeholder="Amount USDC" type="number"/>
+      <button class="btn btn-start" onclick="doStake()" style="margin:0;">Stake</button>
+      <button class="btn btn-stop" onclick="doUnstake()" style="margin:0;">Unstake</button>
+      <button class="btn btn-refresh" onclick="doClaim()" style="margin:0;">Claim</button>
+    </div>
+    <div class="result" id="stakeResult"></div>
+  </div>
+
+  <!-- Bridge -->
+  <div class="card full">
+    <h2>Cross-Chain Bridge</h2>
+    <p style="font-size:12px;color:#546e7a;margin-bottom:10px;">Bridge USDC between chains via Circle CCTP</p>
+    <div class="row" style="margin-bottom:8px;">
+      <select id="fromChain"><option value="arc">Arc Testnet</option><option value="sepolia">Ethereum Sepolia</option><option value="base_sepolia">Base Sepolia</option></select>
+      <span style="color:#4fc3f7;padding:8px;">→</span>
+      <select id="toChain"><option value="sepolia">Ethereum Sepolia</option><option value="arc">Arc Testnet</option><option value="base_sepolia">Base Sepolia</option></select>
+    </div>
+    <input id="bridgeAmt" placeholder="Amount USDC" type="number"/>
+    <input id="bridgeTo" placeholder="Recipient address"/>
+    <button class="btn btn-start" onclick="doBridge()">Bridge USDC</button>
+    <button class="btn btn-refresh" onclick="if(mmAddress)document.getElementById('bridgeTo').value=mmAddress;">My Address</button>
+    <div class="result" id="bridgeResult"></div>
+  </div>
+
+  <!-- Invoices -->
+  <div class="card full">
+    <h2>Invoices</h2>
+    <div class="mini-stats">
+      <div class="mini-stat"><div class="n" id="invTotal">0</div><div class="l">Total</div></div>
+      <div class="mini-stat"><div class="n" id="invPaid">0</div><div class="l">Paid</div></div>
+      <div class="mini-stat"><div class="n" id="invPend">0</div><div class="l">Pending</div></div>
+      <div class="mini-stat"><div class="n" id="invVol">0</div><div class="l">USDC Vol</div></div>
+    </div>
+    <div style="background:#060d1a;border:1px solid #1e3a5f;border-radius:8px;padding:12px;margin-bottom:10px;">
+      <div style="font-size:11px;color:#4fc3f7;margin-bottom:8px;">Create Invoice</div>
+      <input id="invTo" placeholder="Bill to (address)"/>
+      <input id="invAmt" placeholder="Amount USDC" type="number"/>
+      <input id="invDesc" placeholder="Description"/>
+      <input id="invDue" type="date"/>
+      <button class="btn btn-start" onclick="createInv()">Create</button>
+      <button class="btn btn-refresh" onclick="if(mmAddress)document.getElementById('invTo').value=mmAddress;">My Address</button>
+      <div class="result" id="invResult"></div>
+    </div>
+    <div id="invList" style="max-height:300px;overflow-y:auto;"></div>
+  </div>
+
+  <!-- Prices -->
+  <div class="card full">
+    <h2>Live Prices</h2>
+    <div class="mini-stats">
+      <div class="mini-stat"><div class="n" id="pUsdc">-</div><div class="l">USDC</div></div>
+      <div class="mini-stat"><div class="n" id="pEth">-</div><div class="l">ETH</div></div>
+      <div class="mini-stat"><div class="n" id="pBtc">-</div><div class="l">BTC</div></div>
+    </div>
+    <div class="chips">
+      <button class="chip" onclick="showChart('eth')">ETH Chart</button>
+      <button class="chip" onclick="showChart('btc')">BTC Chart</button>
+      <button class="chip" onclick="showChart('usdc')">USDC Chart</button>
+    </div>
+    <canvas id="priceChart" style="width:100%;max-height:180px;margin-top:10px;"></canvas>
+  </div>
+
+  <!-- AI Chat -->
+  <div class="card full">
+    <h2>AI Agent Chat</h2>
+    <div id="chatBox" style="background:#060d1a;border:1px solid #1e3a5f;border-radius:8px;padding:10px;height:220px;overflow-y:auto;font-size:12px;line-height:1.8;margin-bottom:10px;"></div>
+    <div class="chips">
+      <button class="chip" onclick="qChat('What is my agent balance?')">Balance?</button>
+      <button class="chip" onclick="qChat('How do I bridge USDC?')">Bridge help</button>
+      <button class="chip" onclick="qChat('Explain staking rewards')">Staking?</button>
+      <button class="chip" onclick="qChat('What is Kebs Protocol?')">About Kebs</button>
+    </div>
+    <div class="row" style="margin-top:8px;">
+      <input id="chatInput" placeholder="Ask anything..." onkeydown="if(event.key==='Enter')sendChat()"/>
+      <button class="btn btn-start" onclick="sendChat()" style="margin:0;">Send</button>
+      <button class="btn btn-refresh" onclick="clearChat()" style="margin:0;">Clear</button>
+    </div>
+  </div>
+
+  <!-- Transaction History -->
+  <div class="card full">
+    <h2>Transaction History</h2>
+    <div id="txList" style="max-height:200px;overflow-y:auto;font-size:11px;"><div style="color:#546e7a;">No transactions yet</div></div>
+  </div>
+
 </div>
-<div class="card" style="grid-column:1/-1;"><h2>Cross-Chain Bridge</h2><div style="font-size:12px;color:#546e7a;margin-bottom:12px;">Bridge USDC between Arc Testnet and other chains using Circle CCTP</div><div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;"><select id="fromChain" style="background:#0a0f1e;border:1px solid #1e3a5f;color:#e0e6f0;padding:8px;border-radius:8px;font-family:inherit;font-size:12px;"><option value="arc">Arc Testnet</option><option value="sepolia">Ethereum Sepolia</option><option value="base_sepolia">Base Sepolia</option></select><span style="color:#4fc3f7;padding:8px;">→</span><select id="toChain" style="background:#0a0f1e;border:1px solid #1e3a5f;color:#e0e6f0;padding:8px;border-radius:8px;font-family:inherit;font-size:12px;"><option value="sepolia">Ethereum Sepolia</option><option value="arc">Arc Testnet</option><option value="base_sepolia">Base Sepolia</option></select></div><div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;"><input id="bridgeAmount" placeholder="Amount USDC" type="number" style="background:#0a0f1e;border:1px solid #1e3a5f;color:#e0e6f0;padding:8px 12px;border-radius:8px;font-family:inherit;font-size:12px;width:150px;"/><input id="bridgeRecipient" placeholder="Recipient address" style="background:#0a0f1e;border:1px solid #1e3a5f;color:#e0e6f0;padding:8px 12px;border-radius:8px;font-family:inherit;font-size:12px;flex:1;"/></div><button class="btn btn-start" onclick="doBridge()">Bridge USDC</button><button class="btn btn-refresh" onclick="fillMyAddress()">Use My Address</button><div id="bridgeResult" style="margin-top:12px;font-size:11px;color:#69f0ae;"></div><div id="bridgeHistory" style="margin-top:12px;"></div></div>TYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Kebs Protocol</title>
-<style>
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { background: #0a0f1e; color: #e0e6f0; font-family: 'Courier New', monospace; }
-  header { background: #0d1530; border-bottom: 1px solid #1e3a5f; padding: 16px 24px; display: flex; align-items: center; justify-content: space-between; }
-  header h1 { font-size: 20px; color: #4fc3f7; letter-spacing: 2px; }
-  .badge { background: #1a3a5c; color: #4fc3f7; padding: 2px 10px; border-radius: 20px; font-size: 11px; }
-  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; padding: 20px; }
-  .card { background: #0d1530; border: 1px solid #1e3a5f; border-radius: 12px; padding: 20px; }
-  .card h2 { font-size: 13px; color: #4fc3f7; margin-bottom: 16px; text-transform: uppercase; letter-spacing: 1px; }
-  .stat { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #0f2040; font-size: 13px; }
-  .stat:last-child { border-bottom: none; }
-  .val { color: #81d4fa; font-weight: bold; }
-  .btn { padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; font-family: inherit; font-size: 13px; font-weight: bold; margin: 4px; }
-  .btn-start { background: #1b5e20; color: #69f0ae; }
-  .btn-stop { background: #b71c1c; color: #ff8a80; }
-  .btn-refresh { background: #1a3a5c; color: #4fc3f7; }
-  .btn-mm { background: #f6851b; color: #fff; display: flex; align-items: center; gap: 8px; padding: 10px 16px; border-radius: 8px; border: none; cursor: pointer; font-family: inherit; font-size: 13px; font-weight: bold; }
-  .btn-mm img { width: 20px; height: 20px; }
-  .btn-disconnect { background: #37474f; color: #cfd8dc; }
-  .log-box { background: #060d1a; border: 1px solid #1e3a5f; border-radius: 8px; padding: 12px; height: 200px; overflow-y: auto; font-size: 11px; line-height: 1.8; }
-  .connected { color: #69f0ae; }
-  .disconnected { color: #ff8a80; }
-  .mm-card { grid-column: 1/-1; }
-  .mm-info { display: flex; flex-direction: column; gap: 8px; }
-  .mm-addr { font-size: 12px; color: #4fc3f7; word-break: break-all; }
-  .mm-bal { font-size: 14px; color: #69f0ae; font-weight: bold; }
-  .mm-network { font-size: 12px; color: #81d4fa; }
-  .btns { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
-  .send-form { margin-top: 12px; display: none; }
-  .send-form input { background: #0a0f1e; border: 1px solid #1e3a5f; color: #e0e6f0; padding: 8px 12px; border-radius: 8px; font-family: inherit; font-size: 12px; width: 100%; margin-bottom: 8px; }
-  .btn-send { background: #1a5276; color: #85c1e9; width: 100%; }
-  .tx-result { margin-top: 8px; font-size: 11px; color: #69f0ae; word-break: break-all; }
-  @media (max-width: 600px) { .grid { grid-template-columns: 1fr; } }
-</style>
-<meta http-equiv="cache-control" content="no-cache, no-store, must-revalidate"><meta http-equiv="pragma" content="no-cache"></head>
-<body>
-<header>
-  <h1>⬡ KEBS PROTOCOL</h1>
-  <div style="display:flex;gap:8px;align-items:center;">
-    <span class="badge">Arc Testnet</span>
-    <span class="badge" id="statusBadge">CHECKING...</span>
-    <a href="/agent-demo.html" style="color:#4fc3f7;font-size:12px;text-decoration:none;border:1px solid #1e3a5f;padding:4px 12px;border-radius:20px;background:#0d1530;">⚡ Agent Mesh</a>
-    <a href="/docs.html" style="color:#4fc3f7;font-size:12px;text-decoration:none;border:1px solid #1e3a5f;padding:4px 12px;border-radius:20px;background:#0d1530;">API Docs</a>
-  </div>
-</header>
-<div class="grid">
-
-  <!-- MetaMask Card -->
-  <div class="card mm-card">
-    <h2>🦊 MetaMask Wallet</h2>
-    <div id="mmDisconnected">
-      <p style="font-size:13px;color:#546e7a;margin-bottom:12px;">Connect your wallet to send USDC and interact with Kebs Protocol</p>
-      <button class="btn-mm" onclick="connectMM()">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/3/36/MetaMask_Fox.svg" onerror="this.style.display='none'"/>
-        Connect MetaMask
-      </button>
-    </div>
-    <div id="mmConnected" style="display:none;">
-      <div class="mm-info">
-        <div class="stat"><span>Address</span><span class="val mm-addr" id="mmAddr">-</span></div>
-        <div class="stat"><span>Network</span><span class="val mm-network" id="mmNetwork">-</span></div>
-        <div class="stat"><span>Balance</span><span class="val mm-bal" id="mmBal">-</span></div>
-      </div>
-      <div class="btns">
-        <button class="btn btn-mm" onclick="addArcNetwork()">Add Arc Testnet</button>
-        <button class="btn btn-disconnect" onclick="disconnectMM()">Disconnect</button>
-        <button class="btn btn-send" onclick="toggleSend()">Send USDC</button>
-      </div>
-      <div class="send-form" id="sendForm">
-        <input id="sendTo" placeholder="Recipient address (0x...)"/>
-        <input id="sendAmount" placeholder="Amount in USDC" type="number"/>
-        <button class="btn btn-send" onclick="sendUSDC()">Send</button>
-        <div class="tx-result" id="txResult"></div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Agent Wallet -->
-  <div class="card">
-    <h2>Agent Wallet</h2>
-    <div class="stat"><span>Address</span><span class="val" id="addr">-</span></div>
-    <div class="stat"><span>ARC</span><span class="val" id="arc">-</span></div>
-    <div class="stat"><span>USDC</span><span class="val" id="usdc">-</span></div>
-  </div>
-
-  <!-- Control -->
-  <div class="card">
-    <h2>Agent Control</h2>
-    <div class="stat"><span>Status</span><span class="val" id="status">Offline</span></div>
-    <div class="stat"><span>Network</span><span class="val">Arc Testnet</span></div>
-    <div class="btns">
-      <button class="btn btn-start" onclick="start()">START</button>
-      <button class="btn btn-stop" onclick="stop()">STOP</button>
-      <button class="btn btn-refresh" onclick="refresh()">REFRESH</button>
-    </div>
-  </div>
-
-  <!-- Logs -->
-  <div class="card" style="grid-column:1/-1;">
-    <h2>Agent Logs</h2>
-    <div class="log-box" id="logs"></div>
-  </div>
-
-
-<div class="card" style="grid-column:1/-1;">
-  <h2>Invoices</h2>
-  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px;">
-    <div class="stat" style="flex:1;min-width:100px;"><span>Total</span><span class="val" id="invTotal">0</span></div>
-    <div class="stat" style="flex:1;min-width:100px;"><span>Paid</span><span class="val" id="invPaid">0</span></div>
-    <div class="stat" style="flex:1;min-width:100px;"><span>Pending</span><span class="val" id="invPending">0</span></div>
-    <div class="stat" style="flex:1;min-width:100px;"><span>Volume</span><span class="val" id="invVolume">0 USDC</span></div>
-  </div>
-  <div style="margin:12px 0;padding:12px;background:#060d1a;border-radius:8px;">
-    <div style="font-size:12px;color:#4fc3f7;margin-bottom:8px;">Create Invoice</div>
-    <input id="invTo" placeholder="Bill to (address)" style="background:#0a0f1e;border:1px solid #1e3a5f;color:#e0e6f0;padding:8px;border-radius:8px;font-size:12px;width:100%;margin-bottom:6px;"/>
-    <input id="invAmount" placeholder="Amount USDC" type="number" style="background:#0a0f1e;border:1px solid #1e3a5f;color:#e0e6f0;padding:8px;border-radius:8px;font-size:12px;width:100%;margin-bottom:6px;"/>
-    <input id="invDesc" placeholder="Description" style="background:#0a0f1e;border:1px solid #1e3a5f;color:#e0e6f0;padding:8px;border-radius:8px;font-size:12px;width:100%;margin-bottom:6px;"/>
-    <input id="invDue" placeholder="Due date (optional)" type="date" style="background:#0a0f1e;border:1px solid #1e3a5f;color:#e0e6f0;padding:8px;border-radius:8px;font-size:12px;width:100%;margin-bottom:6px;"/>
-    <button class="btn btn-start" onclick="createInvoice()">Create Invoice</button>
-    <button class="btn btn-refresh" onclick="if(mmAddress)document.getElementById('invTo').value=mmAddress;">My Address</button>
-    <div id="invResult" style="margin-top:6px;font-size:11px;color:#69f0ae;"></div>
-  </div>
-  <div id="invList" style="max-height:300px;overflow-y:auto;"></div>
-</div>
-<div class="card" style="grid-column:1/-1;"><h2>Cross-Chain Bridge</h2><div style="font-size:12px;color:#546e7a;margin-bottom:12px;">Bridge USDC between Arc Testnet and other chains using Circle CCTP</div><div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;"><select id="fromChain" style="background:#0a0f1e;border:1px solid #1e3a5f;color:#e0e6f0;padding:8px;border-radius:8px;font-family:inherit;font-size:12px;"><option value="arc">Arc Testnet</option><option value="sepolia">Ethereum Sepolia</option><option value="base_sepolia">Base Sepolia</option></select><span style="color:#4fc3f7;padding:8px;">→</span><select id="toChain" style="background:#0a0f1e;border:1px solid #1e3a5f;color:#e0e6f0;padding:8px;border-radius:8px;font-family:inherit;font-size:12px;"><option value="sepolia">Ethereum Sepolia</option><option value="arc">Arc Testnet</option><option value="base_sepolia">Base Sepolia</option></select></div><div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;"><input id="bridgeAmount" placeholder="Amount USDC" type="number" style="background:#0a0f1e;border:1px solid #1e3a5f;color:#e0e6f0;padding:8px 12px;border-radius:8px;font-family:inherit;font-size:12px;width:150px;"/><input id="bridgeRecipient" placeholder="Recipient address" style="background:#0a0f1e;border:1px solid #1e3a5f;color:#e0e6f0;padding:8px 12px;border-radius:8px;font-family:inherit;font-size:12px;flex:1;"/></div><button class="btn btn-start" onclick="doBridge()">Bridge USDC</button><button class="btn btn-refresh" onclick="fillMyAddress()">Use My Address</button><div id="bridgeResult" style="margin-top:12px;font-size:11px;color:#69f0ae;"></div><div id="bridgeHistory" style="margin-top:12px;"></div></div><div class="card" style="grid-column:1/-1;"><h2>Cross-Chain Bridge</h2><p style="font-size:12px;color:#546e7a;margin-bottom:12px;">Bridge USDC between chains via Circle CCTP</p><div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;"><select id="fromChain" style="background:#0a0f1e;border:1px solid #1e3a5f;color:#e0e6f0;padding:8px;border-radius:8px;font-size:12px;"><option value="arc">Arc Testnet</option><option value="sepolia">Sepolia</option><option value="base_sepolia">Base Sepolia</option></select><span style="color:#4fc3f7;padding:8px;">to</span><select id="toChain" style="background:#0a0f1e;border:1px solid #1e3a5f;color:#e0e6f0;padding:8px;border-radius:8px;font-size:12px;"><option value="sepolia">Sepolia</option><option value="arc">Arc Testnet</option><option value="base_sepolia">Base Sepolia</option></select></div><input id="bridgeAmount" placeholder="Amount USDC" type="number" style="background:#0a0f1e;border:1px solid #1e3a5f;color:#e0e6f0;padding:8px 12px;border-radius:8px;font-size:12px;width:150px;margin-bottom:8px;"/><br/><input id="bridgeRecipient" placeholder="Recipient address" style="background:#0a0f1e;border:1px solid #1e3a5f;color:#e0e6f0;padding:8px 12px;border-radius:8px;font-size:12px;width:100%;margin-bottom:8px;"/><button class="btn btn-start" onclick="doBridge()">Bridge</button><button class="btn btn-refresh" onclick="if(mmAddress)document.getElementById('bridgeRecipient').value=mmAddress;">My Address</button><div id="bridgeResult" style="margin-top:8px;font-size:11px;color:#69f0ae;"></div></div><div class="card" style="grid-column:1/-1;"><h2>Token Staking</h2><div class="stat"><span>Total Staked</span><span class="val" id="totalStaked">-</span></div><div class="stat"><span>Stakers</span><span class="val" id="stakerCount">-</span></div><div class="stat"><span>Reward Rate</span><span class="val" id="rewardRate">-</span></div><div class="stat"><span>Your Stake</span><span class="val" id="yourStake">0 USDC</span></div><div class="stat"><span>Pending Reward</span><span class="val" id="pendingReward">0 USDC</span></div><div class="stat"><span>Total Earned</span><span class="val" id="totalEarned">0 USDC</span></div><div class="btns" style="margin-top:12px"><input id="stakeAmount" placeholder="Amount USDC" type="number" style="background:#0a0f1e;border:1px solid #1e3a5f;color:#e0e6f0;padding:8px 12px;border-radius:8px;font-family:inherit;font-size:12px;width:120px;"/><button class="btn btn-start" onclick="doStake()">Stake</button><button class="btn btn-stop" onclick="doUnstake()">Unstake</button><button class="btn btn-refresh" onclick="doClaim()">Claim</button></div><div id="stakeResult" style="margin-top:8px;font-size:11px;color:#69f0ae;"></div></div><div class="card" style="grid-column:1/-1;"><h2>Transaction History</h2><div class="log-box" id="txHistory"><div style="color:#546e7a;font-size:12px;">No transactions yet</div></div></div></div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.ethers.io/lib/ethers-5.7.2.umd.min.js"></script>
 <script>
-let mmProvider = null;
-let mmSigner = null;
-let mmAddress = null;
+let mmAddress = null, mmProvider = null, mmSigner = null;
+let priceChartInstance = null, currentCoin = 'eth';
 
-// MetaMask Connect
+// MetaMask
 async function connectMM() {
-  if (typeof window.ethereum === 'undefined') {
-    alert('MetaMask not found! Install MetaMask browser extension or use MetaMask mobile browser.');
-    return;
-  }
-  try {
-    const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-    mmAddress = accounts[0];
-    mmProvider = new ethers.providers.Web3Provider(window.ethereum);
-    mmSigner = mmProvider.getSigner();
-    await updateMMUI();
-    window.ethereum.on('accountsChanged', async (accounts) => {
-      mmAddress = accounts[0];
-      await updateMMUI();
-    });
-    window.ethereum.on('chainChanged', async () => {
-      mmProvider = new ethers.providers.Web3Provider(window.ethereum);
-      mmSigner = mmProvider.getSigner();
-      await updateMMUI();
-    });
-  } catch(e) {
-    alert('Connection failed: ' + e.message);
-  }
+  if (!window.ethereum) { alert('MetaMask not found!'); return; }
+  const accounts = await window.ethereum.request({ method:'eth_requestAccounts' });
+  mmAddress = accounts[0];
+  mmProvider = new ethers.providers.Web3Provider(window.ethereum);
+  mmSigner = mmProvider.getSigner();
+  await updateMM();
+  window.ethereum.on('accountsChanged', a => { mmAddress=a[0]; updateMM(); });
 }
-
-async function updateMMUI() {
-  if (!mmAddress) return;
-  document.getElementById('mmDisconnected').style.display = 'none';
-  document.getElementById('mmConnected').style.display = 'block';
+async function updateMM() {
+  document.getElementById('mmOff').style.display='none';
+  document.getElementById('mmOn').style.display='block';
   document.getElementById('mmAddr').textContent = mmAddress.slice(0,8)+'...'+mmAddress.slice(-6);
-  const network = await mmProvider.getNetwork();
-  document.getElementById('mmNetwork').textContent = network.name + ' ('+network.chainId+')';
+  const net = await mmProvider.getNetwork();
+  document.getElementById('mmNet').textContent = net.name+'('+net.chainId+')';
   const bal = await mmProvider.getBalance(mmAddress);
-  document.getElementById('mmBal').textContent = parseFloat(ethers.utils.formatEther(bal)).toFixed(4) + ' ETH';
+  document.getElementById('mmBal').textContent = parseFloat(ethers.utils.formatEther(bal)).toFixed(4)+' ETH';
+  fetchStaking(); fetchInvoices();
 }
-
-async function addArcNetwork() {
-  try {
-    await window.ethereum.request({
-      method: 'wallet_addEthereumChain',
-      params: [{
-        chainId: '0x4DC',
-        chainName: 'Arc Testnet',
-        nativeCurrency: { name: 'USDC', symbol: 'USDC', decimals: 18 },
-        rpcUrls: ['https://arc-testnet.drpc.org'],
-        blockExplorerUrls: ['https://explorer.testnet.arc.network']
-      }]
-    });
-    alert('Arc Testnet added to MetaMask!');
-  } catch(e) {
-    alert('Error: ' + e.message);
-  }
+async function addArc() {
+  await window.ethereum.request({ method:'wallet_addEthereumChain', params:[{ chainId:'0x13A4292', chainName:'Arc Testnet', nativeCurrency:{name:'USDC',symbol:'USDC',decimals:18}, rpcUrls:['https://rpc.testnet.arc.network'], blockExplorerUrls:['https://testnet.arcscan.app'] }] });
 }
-
-function disconnectMM() {
-  mmAddress = null;
-  mmProvider = null;
-  mmSigner = null;
-  document.getElementById('mmDisconnected').style.display = 'block';
-  document.getElementById('mmConnected').style.display = 'none';
-}
-
-function toggleSend() {
-  const f = document.getElementById('sendForm');
-  f.style.display = f.style.display === 'none' ? 'block' : 'none';
-}
-
+function disconnectMM() { mmAddress=null; document.getElementById('mmOff').style.display='block'; document.getElementById('mmOn').style.display='none'; }
+function toggleSend() { const f=document.getElementById('sendForm'); f.style.display=f.style.display==='none'?'block':'none'; }
 async function sendUSDC() {
-  const to = document.getElementById('sendTo').value;
-  const amount = document.getElementById('sendAmount').value;
-  const result = document.getElementById('txResult');
-  if (!to || !amount) { result.textContent = 'Fill in address and amount'; return; }
+  const to=document.getElementById('sendTo').value, amt=document.getElementById('sendAmt').value;
+  if(!to||!amt){document.getElementById('sendResult').textContent='Fill all fields';return;}
   try {
-    result.textContent = 'Sending...';
-    const usdcAddress = '0x3600000000000000000000000000000000000000';
-    const abi = ['function transfer(address to, uint256 amount) returns (bool)', 'function decimals() view returns (uint8)'];
-    const usdc = new ethers.Contract(usdcAddress, abi, mmSigner);
-    const decimals = await usdc.decimals();
-    const parsed = ethers.utils.parseUnits(amount, decimals);
-    const tx = await usdc.transfer(to, parsed);
-    result.textContent = 'Waiting for confirmation...';
+    const usdc=new ethers.Contract('0x3600000000000000000000000000000000000000',['function transfer(address,uint256) returns(bool)','function decimals() view returns(uint8)'],mmSigner);
+    const dec=await usdc.decimals();
+    const tx=await usdc.transfer(to,ethers.utils.parseUnits(amt,dec));
+    document.getElementById('sendResult').textContent='Waiting...';
     await tx.wait();
-    result.textContent = 'Sent! TX: ' + tx.hash;
-  } catch(e) {
-    result.textContent = 'Error: ' + e.message;
-  }
+    document.getElementById('sendResult').textContent='Sent! TX: '+tx.hash;
+  } catch(e){document.getElementById('sendResult').textContent='Error: '+e.message;}
 }
 
-// Agent functions
-async function fetchW() {
+// Agent
+async function fetchWallet() {
   try {
-    const r = await fetch('/agent/wallet');
-    const d = await r.json();
-    document.getElementById('addr').textContent = d.address ? d.address.slice(0,8)+'...'+d.address.slice(-6) : '-';
-    document.getElementById('arc').textContent = (parseFloat(d.native)||0).toFixed(4)+' ARC';
-    document.getElementById('usdc').textContent = (parseFloat(d.usdc)||0).toFixed(2)+' USDC';
-  } catch(e) {}
+    const d=await fetch('/agent/wallet').then(r=>r.json());
+    document.getElementById('agentAddr').textContent=d.address?d.address.slice(0,8)+'...'+d.address.slice(-6):'-';
+    document.getElementById('agentArc').textContent=(parseFloat(d.native)||0).toFixed(4)+' ARC';
+    document.getElementById('agentUsdc').textContent=(parseFloat(d.usdc)||0).toFixed(2)+' USDC';
+    document.getElementById('agentTime').textContent=new Date().toLocaleTimeString();
+  } catch(e){}
 }
-
-async function fetchS() {
+async function fetchStatus() {
   try {
-    const r = await fetch('/agent/status');
-    const d = await r.json();
-    document.getElementById('status').textContent = d.running ? 'Running' : 'Stopped';
-    document.getElementById('statusBadge').textContent = d.running ? 'ONLINE' : 'OFFLINE';
-    document.getElementById('statusBadge').style.color = d.running ? '#69f0ae' : '#ff5252';
-    const b = document.getElementById('logs');
-    b.innerHTML = (d.logs||[]).map(l=>'<div style="color:#64b5f6">' + l.time.slice(11,19) + ' ' + l.msg + '</div>').join('');
-    b.scrollTop = b.scrollHeight;
-  } catch(e) {}
+    const d=await fetch('/agent/status').then(r=>r.json());
+    document.getElementById('agentStatus').textContent=d.running?'Running':'Stopped';
+    document.getElementById('statusBadge').textContent=d.running?'ONLINE':'OFFLINE';
+    const b=document.getElementById('logBox');
+    b.innerHTML=(d.logs||[]).map(l=>'<div style="color:#64b5f6">'+l.time.slice(11,19)+' '+l.msg+'</div>').join('');
+    b.scrollTop=b.scrollHeight;
+  } catch(e){}
 }
+async function startAgent(){await fetch('/agent/start',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({interval:60000})});refresh();}
+async function stopAgent(){await fetch('/agent/stop',{method:'POST'});refresh();}
+function refresh(){fetchWallet();fetchStatus();fetchPrices();fetchMarket();fetchStaking();fetchInvoices();fetchTx();fetchPort();}
 
-async function start() { await fetch('/agent/start',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({interval:60000})}); refresh(); }
-async function stop() { await fetch('/agent/stop',{method:'POST'}); refresh(); }
-function refresh() { fetchW(); fetchS(); }
-
-window.onerror = function(e){console.error("JS Error:",e);};
-window.onerror = function(msg,src,line){
-  document.getElementById("statusBadge").textContent = "ERR:"+line;
-  return false;
-};
-refresh();
-setInterval(refresh, 10000);
-fetchS();
-async function doBridge(){const f=document.getElementById("fromChain").value,t=document.getElementById("toChain").value,a=document.getElementById("bridgeAmount").value,r=document.getElementById("bridgeRecipient").value,res=document.getElementById("bridgeResult");if(!a||!r){res.textContent="Fill all fields";return;}if(f===t){res.textContent="Same chain!";return;}res.textContent="Initiating...";try{const x=await fetch("/bridge/transfer",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({fromChain:f,toChain:t,amount:a,recipient:r})});const d=await x.json();res.textContent=d.success?"Bridge initiated! CCTP processing...":"Error: "+d.error;}catch(e){res.textContent="Error: "+e.message;}}
-
-async function fetchInvoices() {
-  try {
-    const r = await fetch('/invoices/stats');
-    const s = await r.json();
-    document.getElementById('invTotal').textContent = s.total;
-    document.getElementById('invPaid').textContent = s.paid;
-    document.getElementById('invPending').textContent = s.pending;
-    document.getElementById('invVolume').textContent = (s.totalValue||0).toFixed(2) + ' USDC';
-    const addr = mmAddress || '';
-    const url = addr ? '/invoices?address=' + addr : '/invoices';
-    const r2 = await fetch(url);
-    const invs = await r2.json();
-    const list = document.getElementById('invList');
-    if (!invs.length) { list.innerHTML = '<div style="color:#546e7a;font-size:12px;padding:8px;">No invoices yet</div>'; return; }
-    list.innerHTML = invs.map(inv => 
-      '<div style="border:1px solid #1e3a5f;border-radius:8px;padding:10px;margin-bottom:8px;">' +
-      '<div style="display:flex;justify-content:space-between;margin-bottom:4px;">' +
-      '<span style="color:#4fc3f7;font-size:12px;">' + inv.id + '</span>' +
-      '<span style="color:' + (inv.status==='paid'?'#69f0ae':inv.status==='cancelled'?'#ff8a80':'#ffd54f') + ';font-size:11px;">' + inv.status.toUpperCase() + '</span>' +
-      '</div>' +
-      '<div style="font-size:12px;color:#81d4fa;">' + inv.description + '</div>' +
-      '<div style="font-size:12px;color:#e0e6f0;margin:4px 0;">' + inv.amount + ' USDC</div>' +
-      '<div style="font-size:10px;color:#546e7a;">To: ' + inv.to.slice(0,10) + '...</div>' +
-      (inv.status==='pending' ? 
-        '<div style="display:flex;gap:6px;margin-top:6px;">' +
-        '<button class="btn btn-start" style="padding:4px 8px;font-size:10px;" onclick="payInvoice(''+inv.id+'')">Mark Paid</button>' +
-        '<button class="btn btn-stop" style="padding:4px 8px;font-size:10px;" onclick="cancelInvoice(''+inv.id+'')">Cancel</button>' +
-        '</div>' : '') +
-      (inv.txHash ? '<div style="font-size:9px;color:#37474f;word-break:break-all;">TX: '+inv.txHash+'</div>' : '') +
-      '</div>'
-    ).join('');
-  } catch(e) {}
-}
-
-async function createInvoice() {
-  const to = document.getElementById('invTo').value;
-  const amount = document.getElementById('invAmount').value;
-  const desc = document.getElementById('invDesc').value;
-  const due = document.getElementById('invDue').value;
-  const result = document.getElementById('invResult');
-  if (!to || !amount || !desc) { result.textContent = 'Fill in all required fields'; return; }
-  const from = mmAddress || 'kebs-agent-1';
-  try {
-    const r = await fetch('/invoices/create', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ from, to, amount, description: desc, dueDate: due }) });
-    const d = await r.json();
-    result.textContent = 'Invoice created: ' + d.id;
-    fetchInvoices();
-  } catch(e) { result.textContent = 'Error: ' + e.message; }
-}
-
-async function payInvoice(id) {
-  const r = await fetch('/invoices/pay/' + id, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({}) });
-  const d = await r.json();
-  if (d.success) fetchInvoices();
-}
-
-async function cancelInvoice(id) {
-  const r = await fetch('/invoices/cancel/' + id, { method:'POST' });
-  const d = await r.json();
-  if (d.success) fetchInvoices();
-}
-
-fetchInvoices();
-setInterval(fetchInvoices, 20000);
-
-
-let priceChartInstance = null;
-let currentCoin = 'eth';
-
-async function fetchPriceData() {
-  try {
-    const r = await fetch('/prices');
-    const d = await r.json();
-    const { latest } = d;
-    if (latest.usdc) {
-      document.getElementById('priceUsdc').textContent = '
-</html>
-<script>
-async function fetchTxHistory() {
-  try {
-    const r = await fetch('/transactions');
-    const txs = await r.json();
-    const box = document.getElementById('txHistory');
-    if (!txs.length) {
-      box.innerHTML = '<div style="color:#546e7a;font-size:12px;">No transactions yet</div>';
-      return;
-    }
-    box.innerHTML = txs.map(tx => `
-      <div style="border-bottom:1px solid #0f2040;padding:8px 0;font-size:11px;">
-        <div style="display:flex;justify-content:space-between;">
-          <span style="color:#4fc3f7">${tx.type}</span>
-          <span style="color:${tx.status==='success'?'#69f0ae':'#ff8a80'}">${tx.status}</span>
-        </div>
-        <div style="color:#546e7a">${tx.time?.slice(0,19).replace('T',' ')}</div>
-        <div style="color:#81d4fa">Amount: ${tx.amount}</div>
-        ${tx.hash ? `<div style="color:#37474f;word-break:break-all">TX: ${tx.hash}</div>` : ''}
-      </div>
-    `).join('');
-  } catch(e) {}
-}
-fetchTxHistory();
-setInterval(fetchTxHistory, 15000);
-</script>
- + (latest.usdc.price||0).toFixed(4);
-      const c = latest.usdc.change||0;
-      document.getElementById('changeUsdc').textContent = (c>=0?'+':'')+c.toFixed(2)+'%';
-      document.getElementById('changeUsdc').style.color = c>=0?'#69f0ae':'#ff8a80';
-    }
-    if (latest.eth) {
-      document.getElementById('priceEth').textContent = '
-</html>
-<script>
-async function fetchTxHistory() {
-  try {
-    const r = await fetch('/transactions');
-    const txs = await r.json();
-    const box = document.getElementById('txHistory');
-    if (!txs.length) {
-      box.innerHTML = '<div style="color:#546e7a;font-size:12px;">No transactions yet</div>';
-      return;
-    }
-    box.innerHTML = txs.map(tx => `
-      <div style="border-bottom:1px solid #0f2040;padding:8px 0;font-size:11px;">
-        <div style="display:flex;justify-content:space-between;">
-          <span style="color:#4fc3f7">${tx.type}</span>
-          <span style="color:${tx.status==='success'?'#69f0ae':'#ff8a80'}">${tx.status}</span>
-        </div>
-        <div style="color:#546e7a">${tx.time?.slice(0,19).replace('T',' ')}</div>
-        <div style="color:#81d4fa">Amount: ${tx.amount}</div>
-        ${tx.hash ? `<div style="color:#37474f;word-break:break-all">TX: ${tx.hash}</div>` : ''}
-      </div>
-    `).join('');
-  } catch(e) {}
-}
-fetchTxHistory();
-setInterval(fetchTxHistory, 15000);
-</script>
- + (latest.eth.price||0).toLocaleString();
-      const c = latest.eth.change||0;
-      document.getElementById('changeEth').textContent = (c>=0?'+':'')+c.toFixed(2)+'%';
-      document.getElementById('changeEth').style.color = c>=0?'#69f0ae':'#ff8a80';
-    }
-    if (latest.btc) {
-      document.getElementById('priceBtc').textContent = '
-</html>
-<script>
-async function fetchTxHistory() {
-  try {
-    const r = await fetch('/transactions');
-    const txs = await r.json();
-    const box = document.getElementById('txHistory');
-    if (!txs.length) {
-      box.innerHTML = '<div style="color:#546e7a;font-size:12px;">No transactions yet</div>';
-      return;
-    }
-    box.innerHTML = txs.map(tx => `
-      <div style="border-bottom:1px solid #0f2040;padding:8px 0;font-size:11px;">
-        <div style="display:flex;justify-content:space-between;">
-          <span style="color:#4fc3f7">${tx.type}</span>
-          <span style="color:${tx.status==='success'?'#69f0ae':'#ff8a80'}">${tx.status}</span>
-        </div>
-        <div style="color:#546e7a">${tx.time?.slice(0,19).replace('T',' ')}</div>
-        <div style="color:#81d4fa">Amount: ${tx.amount}</div>
-        ${tx.hash ? `<div style="color:#37474f;word-break:break-all">TX: ${tx.hash}</div>` : ''}
-      </div>
-    `).join('');
-  } catch(e) {}
-}
-fetchTxHistory();
-setInterval(fetchTxHistory, 15000);
-</script>
- + (latest.btc.price||0).toLocaleString();
-      const c = latest.btc.change||0;
-      document.getElementById('changeBtc').textContent = (c>=0?'+':'')+c.toFixed(2)+'%';
-      document.getElementById('changeBtc').style.color = c>=0?'#69f0ae':'#ff8a80';
-    }
-    updateChart(d.history);
-  } catch(e) {}
-}
-
-function updateChart(history) {
-  const data = history[currentCoin] || [];
-  if (!data.length) return;
-  const labels = data.map(d => d.time.slice(11,16));
-  const prices = data.map(d => d.price);
-  const colors = { eth: '#4fc3f7', btc: '#ffd54f', usdc: '#69f0ae' };
-  const color = colors[currentCoin] || '#4fc3f7';
-  const ctx = document.getElementById('priceChart').getContext('2d');
-  if (priceChartInstance) priceChartInstance.destroy();
-  priceChartInstance = new Chart(ctx, {
-    type: 'line',
-    data: {
-      labels,
-      datasets: [{
-        label: currentCoin.toUpperCase() + ' Price (USD)',
-        data: prices,
-        borderColor: color,
-        backgroundColor: color + '22',
-        borderWidth: 2,
-        pointRadius: 2,
-        fill: true,
-        tension: 0.4
-      }]
-    },
-    options: {
-      responsive: true,
-      plugins: { legend: { labels: { color: '#e0e6f0', font: { size: 11 } } } },
-      scales: {
-        x: { ticks: { color: '#546e7a', font: { size: 10 } }, grid: { color: '#0f2040' } },
-        y: { ticks: { color: '#546e7a', font: { size: 10 } }, grid: { color: '#0f2040' } }
-      }
-    }
-  });
-}
-
-function showChart(coin) {
-  currentCoin = coin;
-  fetchPriceData();
-}
-
-fetchPriceData();
-setInterval(fetchPriceData, 60000);
-
-
-const chatMessages = [];
-
-function appendMessage(role, text) {
-  chatMessages.push({ role, text });
-  const box = document.getElementById('chatBox');
-  const color = role === 'user' ? '#81d4fa' : '#69f0ae';
-  const label = role === 'user' ? 'You' : 'Kebs AI';
-  box.innerHTML += '<div style="margin-bottom:10px;"><span style="color:' + color + ';font-weight:bold;">' + label + ':</span> <span style="color:#e0e6f0;">' + text + '</span></div>';
-  box.scrollTop = box.scrollHeight;
-}
-
-async function sendChat() {
-  const input = document.getElementById('chatInput');
-  const msg = input.value.trim();
-  if (!msg) return;
-  input.value = '';
-  appendMessage('user', msg);
-  appendMessage('assistant', 'Thinking...');
-  try {
-    const r = await fetch('/chat/message', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ message: msg })
-    });
-    const d = await r.json();
-    const box = document.getElementById('chatBox');
-    const divs = box.querySelectorAll('div');
-    divs[divs.length-1].innerHTML = '<span style="color:#69f0ae;font-weight:bold;">Kebs AI:</span> <span style="color:#e0e6f0;">' + (d.reply || d.error) + '</span>';
-    box.scrollTop = box.scrollHeight;
-  } catch(e) {
-    appendMessage('assistant', 'Error: ' + e.message);
-  }
-}
-
-function quickChat(msg) {
-  document.getElementById('chatInput').value = msg;
-  sendChat();
-}
-
-async function clearChat() {
-  await fetch('/chat/history', { method: 'DELETE' });
-  document.getElementById('chatBox').innerHTML = '';
-  chatMessages.length = 0;
-}
-
-appendMessage('assistant', 'Hello! I am the Kebs Protocol AI agent. Ask me anything about DeFi, Arc Testnet, staking, bridging, or your wallet!');
-
-
-async function fetchPortfolio() {
-  const addr = document.getElementById('portfolioAddr').value.trim();
-  if (!addr) { document.getElementById('portfolioResult').textContent = 'Enter a wallet address'; return; }
-  document.getElementById('portfolioResult').textContent = 'Loading...';
-  try {
-    const r = await fetch('/portfolio/' + addr);
-    const d = await r.json();
-    if (d.error) { document.getElementById('portfolioResult').textContent = 'Error: ' + d.error; return; }
-    renderPortfolio(d);
-  } catch(e) { document.getElementById('portfolioResult').textContent = 'Error: ' + e.message; }
-}
-
-function renderPortfolio(data) {
-  document.getElementById('portfolioResult').textContent = '';
-  document.getElementById('portfolioTime').textContent = 'Updated: ' + new Date(data.timestamp).toLocaleTimeString();
-  const list = document.getElementById('portfolioList');
-  list.innerHTML = data.tokens.map(t => {
-    const bal = parseFloat(t.balance);
-    const color = bal > 0 ? '#69f0ae' : '#546e7a';
-    return '<div style="background:#060d1a;border:1px solid #1e3a5f;border-radius:8px;padding:12px;text-align:center;">' +
-      '<div style="font-size:13px;color:#4fc3f7;font-weight:bold;">' + t.symbol + '</div>' +
-      '<div style="font-size:11px;color:#546e7a;margin:2px 0;">' + t.name + '</div>' +
-      '<div style="font-size:16px;color:' + color + ';font-weight:bold;">' + bal.toFixed(4) + '</div>' +
-      '</div>';
-  }).join('');
-}
-
-function trackMyWallet() {
-  if (mmAddress) {
-    document.getElementById('portfolioAddr').value = mmAddress;
-    fetchPortfolio();
-  } else {
-    alert('Connect MetaMask first!');
-  }
-}
-
-async function trackAgentWallet() {
-  try {
-    const r = await fetch('/portfolio');
-    const d = await r.json();
-    if (d.error) { document.getElementById('portfolioResult').textContent = 'Error: ' + d.error; return; }
-    document.getElementById('portfolioAddr').value = d.address;
-    renderPortfolio(d);
-  } catch(e) { document.getElementById('portfolioResult').textContent = 'Error: ' + e.message; }
-}
-
-async function addToken() {
-  const addr = document.getElementById('portfolioAddr').value.trim();
-  const token = document.getElementById('customToken').value.trim();
-  if (!addr || !token) { document.getElementById('portfolioResult').textContent = 'Enter wallet and token address'; return; }
-  try {
-    const r = await fetch('/portfolio/token', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ address: addr, tokenAddress: token }) });
-    const d = await r.json();
-    document.getElementById('portfolioResult').textContent = d.error ? 'Error: ' + d.error : 'Token added: ' + d.symbol;
-    document.getElementById('customToken').value = '';
-    fetchPortfolio();
-  } catch(e) { document.getElementById('portfolioResult').textContent = 'Error: ' + e.message; }
-}
-
-trackAgentWallet();
-
-
-let nlParsedData = null;
-
+// NL
 async function parseNL() {
-  const cmd = document.getElementById('nlInput').value.trim();
-  if (!cmd) return;
-  const addr = mmAddress || process.env.AGENT_WALLET_ADDRESS || '';
-  document.getElementById('nlResult').textContent = 'Parsing...';
+  const cmd=document.getElementById('nlInput').value.trim();
+  if(!cmd)return;
+  document.getElementById('nlResult').textContent='Parsing...';
   try {
-    const r = await fetch('/nl/parse', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ command: cmd, address: addr }) });
-    nlParsedData = await r.json();
-    const box = document.getElementById('nlParsed');
-    box.style.display = 'block';
-    if (nlParsedData.error) {
-      box.innerHTML = '<span style="color:#ff8a80">Error: ' + nlParsedData.error + '</span>';
-    } else {
-      box.innerHTML =
-        '<div style="color:#4fc3f7;margin-bottom:4px;">Parsed Command:</div>' +
-        '<div style="color:#e0e6f0;">Action: <span style="color:#69f0ae">' + nlParsedData.action + '</span></div>' +
-        (nlParsedData.amount ? '<div style="color:#e0e6f0;">Amount: <span style="color:#69f0ae">' + nlParsedData.amount + ' ' + (nlParsedData.token||'') + '</span></div>' : '') +
-        (nlParsedData.recipient ? '<div style="color:#e0e6f0;">Recipient: <span style="color:#81d4fa">' + nlParsedData.recipient + '</span></div>' : '') +
-        '<div style="color:#e0e6f0;">Confidence: <span style="color:' + (nlParsedData.confidence>70?'#69f0ae':'#ffd54f') + '">' + nlParsedData.confidence + '%</span></div>' +
-        '<div style="color:#90a4ae;margin-top:4px;">' + (nlParsedData.humanReadable||'') + '</div>';
-    }
-    document.getElementById('nlResult').textContent = '';
-  } catch(e) { document.getElementById('nlResult').textContent = 'Error: ' + e.message; }
+    const d=await fetch('/nl/parse',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({command:cmd,address:mmAddress||''})}).then(r=>r.json());
+    const box=document.getElementById('nlParsed');
+    box.style.display='block';
+    box.innerHTML=d.error?'<span style="color:#ff8a80">'+d.error+'</span>':
+      '<b style="color:#4fc3f7">'+d.action+'</b>'+(d.amount?' | '+d.amount+' '+(d.token||''):'')+
+      (d.recipient?' | To: '+d.recipient.slice(0,10)+'...':'')+
+      ' | Confidence: <span style="color:'+(d.confidence>70?'#69f0ae':'#ffd54f')+'">'+d.confidence+'%</span>'+
+      '<br><span style="color:#90a4ae">'+d.humanReadable+'</span>';
+    document.getElementById('nlResult').textContent='';
+  } catch(e){document.getElementById('nlResult').textContent='Error: '+e.message;}
 }
-
 async function executeNL() {
-  const cmd = document.getElementById('nlInput').value.trim();
-  if (!cmd) return;
-  const addr = mmAddress || '';
-  document.getElementById('nlResult').textContent = 'Executing...';
+  const cmd=document.getElementById('nlInput').value.trim();
+  if(!cmd)return;
+  document.getElementById('nlResult').textContent='Executing...';
   try {
-    const r = await fetch('/nl/execute', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ command: cmd, address: addr }) });
-    const d = await r.json();
-    document.getElementById('nlResult').textContent = d.success ? 'Success! ' + (d.result?.txHash ? 'TX: ' + d.result.txHash : JSON.stringify(d.result)) : 'Failed: ' + (d.error || d.result?.error);
-  } catch(e) { document.getElementById('nlResult').textContent = 'Error: ' + e.message; }
+    const d=await fetch('/nl/execute',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({command:cmd,address:mmAddress||''})}).then(r=>r.json());
+    document.getElementById('nlResult').textContent=d.success?'Success! '+(d.result?.txHash?'TX: '+d.result.txHash:JSON.stringify(d.result)):'Failed: '+(d.error||d.result?.error);
+  } catch(e){document.getElementById('nlResult').textContent='Error: '+e.message;}
 }
+function nlQ(cmd){document.getElementById('nlInput').value=cmd;parseNL();}
 
-function nlQuick(cmd) {
-  document.getElementById('nlInput').value = cmd;
-  parseNL();
-}
-
-
+// Marketplace
 async function fetchMarket() {
   try {
-    const r = await fetch('/marketplace/stats');
-    const s = await r.json();
-    document.getElementById('mktOpen').textContent = s.open || 0;
-    document.getElementById('mktDone').textContent = s.completed || 0;
-    document.getElementById('mktRewards').textContent = (s.totalRewards||0).toFixed(2);
-    const r2 = await fetch('/marketplace/tasks');
-    const tasks = await r2.json();
-    const box = document.getElementById('mktTasks');
-    if (!tasks.length) { box.innerHTML = '<div style="color:#546e7a;font-size:12px;padding:8px;">No tasks yet. Post the first one!</div>'; return; }
-    box.innerHTML = tasks.map(t =>
-      '<div style="border:1px solid #1e3a5f;border-radius:8px;padding:12px;margin-bottom:8px;">' +
-      '<div style="display:flex;justify-content:space-between;margin-bottom:4px;">' +
-      '<span style="color:#4fc3f7;font-size:13px;font-weight:bold;">' + t.title + '</span>' +
-      '<span style="color:' + (t.status==='open'?'#69f0ae':t.status==='completed'?'#4fc3f7':'#ffd54f') + ';font-size:11px;">' + t.status.toUpperCase() + '</span>' +
-      '</div>' +
-      '<div style="font-size:12px;color:#90a4ae;margin-bottom:4px;">' + (t.description||'') + '</div>' +
-      '<div style="font-size:13px;color:#ffd54f;font-weight:bold;margin-bottom:6px;">Reward: ' + t.reward + ' USDC</div>' +
-      '<div style="font-size:10px;color:#37474f;">Posted by: ' + t.poster.slice(0,10) + '... | Bids: ' + (t.bids?.length||0) + '</div>' +
-      (t.status==="open" && mmAddress ?
-        '<div style="margin-top:8px;display:flex;gap:6px;">' +
-        '<input id="bid-proposal-'+t.id+'" placeholder="Your proposal" style="background:#0a0f1e;border:1px solid #1e3a5f;color:#e0e6f0;padding:6px;border-radius:6px;font-size:11px;flex:1;"/>' +
-        '<input id="bid-price-'+t.id+'" placeholder="USDC" type="number" style="background:#0a0f1e;border:1px solid #1e3a5f;color:#e0e6f0;padding:6px;border-radius:6px;font-size:11px;width:70px;"/>' +
-        '<button class="btn btn-start" style="padding:4px 10px;font-size:11px;" onclick="submitBid(''+t.id+'')">Bid</button>' +
-        '</div>' : '') +
-      '</div>'
-    ).join('');
-  } catch(e) {}
+    const s=await fetch('/marketplace/stats').then(r=>r.json());
+    document.getElementById('mktOpen').textContent=s.open||0;
+    document.getElementById('mktDone').textContent=s.completed||0;
+    document.getElementById('mktRew').textContent=(s.totalRewards||0).toFixed(2);
+    const tasks=await fetch('/marketplace/tasks').then(r=>r.json());
+    document.getElementById('mktList').innerHTML=tasks.length?tasks.map(t=>
+      '<div class="task-item"><div style="display:flex;justify-content:space-between;"><span style="color:#4fc3f7;font-weight:bold;">'+t.title+'</span><span style="color:'+(t.status==='open'?'#69f0ae':'#546e7a')+'">'+t.status+'</span></div>'+
+      '<div style="color:#90a4ae;font-size:11px;">'+t.description+'</div>'+
+      '<div style="color:#ffd54f;font-size:12px;">'+t.reward+' USDC | Bids: '+(t.bids?.length||0)+'</div>'+
+      (t.status==='open'&&mmAddress?'<div class="row" style="margin-top:6px;"><input id="bp-'+t.id+'" placeholder="Proposal" style="margin:0;"/><input id="bpr-'+t.id+'" type="number" placeholder="USDC" style="width:70px;margin:0;"/><button class="btn btn-start" onclick="submitBid(\''+t.id+'\')" style="margin:0;padding:6px 10px;">Bid</button></div>':'')+'</div>'
+    ).join(''):'<div style="color:#546e7a;font-size:12px;">No tasks yet</div>';
+  } catch(e){}
 }
-
 async function postTask() {
-  const title = document.getElementById('mktTitle').value.trim();
-  const desc = document.getElementById('mktDesc').value.trim();
-  const reward = document.getElementById('mktReward').value;
-  const poster = mmAddress || 'kebs-agent-1';
-  if (!title || !reward) { document.getElementById('mktPostResult').textContent = 'Fill title and reward'; return; }
-  try {
-    const r = await fetch('/marketplace/tasks', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ poster, title, description: desc, reward }) });
-    const d = await r.json();
-    document.getElementById('mktPostResult').textContent = d.id ? 'Task posted: ' + d.id : 'Error';
-    document.getElementById('mktTitle').value = '';
-    document.getElementById('mktDesc').value = '';
-    document.getElementById('mktReward').value = '';
-    fetchMarket();
-  } catch(e) { document.getElementById('mktPostResult').textContent = 'Error: ' + e.message; }
+  const title=document.getElementById('mktTitle').value.trim(),desc=document.getElementById('mktDesc').value.trim(),reward=document.getElementById('mktRew').value,poster=mmAddress||'kebs-agent-1';
+  if(!title||!reward){document.getElementById('mktResult').textContent='Fill title and reward';return;}
+  const d=await fetch('/marketplace/tasks',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({poster,title,description:desc,reward})}).then(r=>r.json());
+  document.getElementById('mktResult').textContent=d.id?'Posted: '+d.id:'Error';
+  fetchMarket();
+}
+async function submitBid(id) {
+  const proposal=document.getElementById('bp-'+id)?.value,price=document.getElementById('bpr-'+id)?.value;
+  if(!mmAddress){alert('Connect MetaMask');return;}
+  const d=await fetch('/marketplace/tasks/'+id+'/bid',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({bidder:mmAddress,proposal,price})}).then(r=>r.json());
+  if(d.success){alert('Bid submitted!');fetchMarket();}else alert('Error: '+d.error);
 }
 
-async function submitBid(taskId) {
-  const proposal = document.getElementById('bid-proposal-'+taskId)?.value;
-  const price = document.getElementById('bid-price-'+taskId)?.value;
-  const bidder = mmAddress;
-  if (!bidder) { alert('Connect MetaMask first!'); return; }
-  if (!proposal || !price) { alert('Fill proposal and price'); return; }
+// Portfolio
+async function fetchPort() {
+  const addr=document.getElementById('portAddr').value.trim();
+  if(!addr)return;
+  document.getElementById('portResult').textContent='Loading...';
   try {
-    const r = await fetch('/marketplace/tasks/'+taskId+'/bid', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ bidder, proposal, price }) });
-    const d = await r.json();
-    if (d.success) { alert('Bid submitted!'); fetchMarket(); }
-    else alert('Error: ' + d.error);
-  } catch(e) { alert('Error: ' + e.message); }
+    const d=await fetch('/portfolio/'+addr).then(r=>r.json());
+    if(d.error){document.getElementById('portResult').textContent='Error: '+d.error;return;}
+    document.getElementById('portResult').textContent='';
+    document.getElementById('portList').innerHTML=d.tokens.map(t=>'<div class="token-card"><div style="color:#4fc3f7;font-weight:bold;">'+t.symbol+'</div><div style="color:#69f0ae;font-size:14px;">'+parseFloat(t.balance).toFixed(4)+'</div><div style="color:#546e7a;font-size:10px;">'+t.name+'</div></div>').join('');
+  } catch(e){document.getElementById('portResult').textContent='Error: '+e.message;}
+}
+async function fetchAgentPort() {
+  const d=await fetch('/portfolio').then(r=>r.json());
+  if(d.address){document.getElementById('portAddr').value=d.address;document.getElementById('portList').innerHTML=d.tokens.map(t=>'<div class="token-card"><div style="color:#4fc3f7;font-weight:bold;">'+t.symbol+'</div><div style="color:#69f0ae;font-size:14px;">'+parseFloat(t.balance).toFixed(4)+'</div></div>').join('');}
+}
+async function addPortToken() {
+  const addr=document.getElementById('portAddr').value.trim(),tok=document.getElementById('portToken').value.trim();
+  if(!addr||!tok){document.getElementById('portResult').textContent='Enter wallet and token';return;}
+  const d=await fetch('/portfolio/token',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({address:addr,tokenAddress:tok})}).then(r=>r.json());
+  document.getElementById('portResult').textContent=d.error?'Error: '+d.error:'Added: '+d.symbol;
+  document.getElementById('portToken').value='';
+  fetchPort();
 }
 
-fetchMarket();
-setInterval(fetchMarket, 30000);
-
-</script>
-
-<script>
-// Direct status check - no dependencies
-(async function() {
+// Staking
+async function fetchStaking() {
   try {
-    const res = await fetch('/agent/status');
-    const data = await res.json();
-    const badge = document.getElementById('statusBadge');
-    const status = document.getElementById('status');
-    if (badge) badge.textContent = data.running ? 'ONLINE' : 'OFFLINE';
-    if (badge) badge.style.color = data.running ? '#69f0ae' : '#ff5252';
-    if (status) status.textContent = data.running ? 'Running' : 'Stopped';
-  } catch(e) {
-    document.getElementById('statusBadge').textContent = 'ERR:'+e.message;
-  }
-})();
-setInterval(async function() {
+    const s=await fetch('/staking/stats').then(r=>r.json());
+    document.getElementById('stakeTotal').textContent=(s.totalStaked||0).toFixed(2);
+    document.getElementById('stakeCount').textContent=s.stakerCount||0;
+    if(mmAddress){
+      const u=await fetch('/staking/'+mmAddress).then(r=>r.json());
+      document.getElementById('stakeYours').textContent=(u.amount||0).toFixed(2);
+      document.getElementById('stakePend').textContent=(u.pending||0).toFixed(6);
+    }
+  } catch(e){}
+}
+async function doStake(){const amt=document.getElementById('stakeAmt').value;if(!mmAddress){document.getElementById('stakeResult').textContent='Connect MetaMask';return;}const d=await fetch('/staking/stake',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({address:mmAddress,amount:amt})}).then(r=>r.json());document.getElementById('stakeResult').textContent=d.success?'Staked '+amt+' USDC!':d.error;fetchStaking();}
+async function doUnstake(){const amt=document.getElementById('stakeAmt').value;if(!mmAddress){document.getElementById('stakeResult').textContent='Connect MetaMask';return;}const d=await fetch('/staking/unstake',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({address:mmAddress,amount:amt})}).then(r=>r.json());document.getElementById('stakeResult').textContent=d.success?'Unstaked! Reward: '+(d.reward||0).toFixed(6):d.error;fetchStaking();}
+async function doClaim(){if(!mmAddress){document.getElementById('stakeResult').textContent='Connect MetaMask';return;}const d=await fetch('/staking/claim',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({address:mmAddress})}).then(r=>r.json());document.getElementById('stakeResult').textContent=d.success?'Claimed '+(d.reward||0).toFixed(6)+' USDC!':d.error;fetchStaking();}
+
+// Bridge
+async function doBridge(){const f=document.getElementById('fromChain').value,t=document.getElementById('toChain').value,a=document.getElementById('bridgeAmt').value,r=document.getElementById('bridgeTo').value;if(!a||!r){document.getElementById('bridgeResult').textContent='Fill all fields';return;}if(f===t){document.getElementById('bridgeResult').textContent='Same chain!';return;}document.getElementById('bridgeResult').textContent='Initiating...';const d=await fetch('/bridge/transfer',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({fromChain:f,toChain:t,amount:a,recipient:r})}).then(r=>r.json());document.getElementById('bridgeResult').textContent=d.success?'Bridge initiated! CCTP processing...':'Error: '+d.error;}
+
+// Invoices
+async function fetchInvoices() {
   try {
-    const res = await fetch('/agent/status');
-    const data = await res.json();
-    const badge = document.getElementById('statusBadge');
-    const status = document.getElementById('status');
-    if (badge) badge.textContent = data.running ? 'ONLINE' : 'OFFLINE';
-    if (badge) badge.style.color = data.running ? '#69f0ae' : '#ff5252';
-    if (status) status.textContent = data.running ? 'Running' : 'Stopped';
-  } catch(e) {}
-}, 5000);
+    const s=await fetch('/invoices/stats').then(r=>r.json());
+    document.getElementById('invTotal').textContent=s.total||0;
+    document.getElementById('invPaid').textContent=s.paid||0;
+    document.getElementById('invPend').textContent=s.pending||0;
+    document.getElementById('invVol').textContent=(s.totalValue||0).toFixed(2);
+    const url=mmAddress?'/invoices?address='+mmAddress:'/invoices';
+    const invs=await fetch(url).then(r=>r.json());
+    document.getElementById('invList').innerHTML=invs.length?invs.map(i=>'<div class="inv-item"><div style="display:flex;justify-content:space-between;"><span style="color:#4fc3f7;font-size:11px;">'+i.id+'</span><span style="color:'+(i.status==='paid'?'#69f0ae':i.status==='cancelled'?'#ff8a80':'#ffd54f')+';font-size:11px;">'+i.status.toUpperCase()+'</span></div><div style="color:#e0e6f0;font-size:12px;">'+i.description+' — '+i.amount+' USDC</div>'+(i.status==='pending'?'<button class="btn btn-start" style="padding:4px 8px;font-size:10px;margin-top:4px;" onclick="payInv(\''+i.id+'\')">Mark Paid</button><button class="btn btn-stop" style="padding:4px 8px;font-size:10px;margin-top:4px;" onclick="cancelInv(\''+i.id+'\')">Cancel</button>':'')+'</div>').join(''):'<div style="color:#546e7a;font-size:12px;">No invoices</div>';
+  } catch(e){}
+}
+async function createInv(){const to=document.getElementById('invTo').value,amt=document.getElementById('invAmt').value,desc=document.getElementById('invDesc').value,due=document.getElementById('invDue').value,from=mmAddress||'kebs-agent-1';if(!to||!amt||!desc){document.getElementById('invResult').textContent='Fill all fields';return;}const d=await fetch('/invoices/create',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({from,to,amount:amt,description:desc,dueDate:due})}).then(r=>r.json());document.getElementById('invResult').textContent=d.id?'Created: '+d.id:'Error';fetchInvoices();}
+async function payInv(id){const d=await fetch('/invoices/pay/'+id,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({})}).then(r=>r.json());if(d.success)fetchInvoices();}
+async function cancelInv(id){const d=await fetch('/invoices/cancel/'+id,{method:'POST'}).then(r=>r.json());if(d.success)fetchInvoices();}
+
+// Prices
+async function fetchPrices() {
+  try {
+    const d=await fetch('/prices').then(r=>r.json());
+    const {latest,history}=d;
+    if(latest.usdc)document.getElementById('pUsdc').textContent='$'+(latest.usdc.price||0).toFixed(4);
+    if(latest.eth)document.getElementById('pEth').textContent='$'+(latest.eth.price||0).toLocaleString();
+    if(latest.btc)document.getElementById('pBtc').textContent='$'+(latest.btc.price||0).toLocaleString();
+    updateChart(history);
+  } catch(e){}
+}
+function updateChart(history) {
+  const data=history[currentCoin]||[];
+  if(!data.length)return;
+  const colors={eth:'#4fc3f7',btc:'#ffd54f',usdc:'#69f0ae'};
+  const ctx=document.getElementById('priceChart').getContext('2d');
+  if(priceChartInstance)priceChartInstance.destroy();
+  priceChartInstance=new Chart(ctx,{type:'line',data:{labels:data.map(d=>d.time.slice(11,16)),datasets:[{label:currentCoin.toUpperCase()+' USD',data:data.map(d=>d.price),borderColor:colors[currentCoin],backgroundColor:colors[currentCoin]+'22',borderWidth:2,pointRadius:2,fill:true,tension:0.4}]},options:{responsive:true,plugins:{legend:{labels:{color:'#e0e6f0',font:{size:10}}}},scales:{x:{ticks:{color:'#546e7a',font:{size:9}},grid:{color:'#0f2040'}},y:{ticks:{color:'#546e7a',font:{size:9}},grid:{color:'#0f2040'}}}}});
+}
+function showChart(coin){currentCoin=coin;fetchPrices();}
+
+// Chat
+function appendChat(role,text){const b=document.getElementById('chatBox');b.innerHTML+='<div style="margin-bottom:8px;"><span style="color:'+(role==='user'?'#81d4fa':'#69f0ae')+';font-weight:bold;">'+(role==='user'?'You':'Kebs AI')+':</span> <span style="color:#e0e6f0;">'+text+'</span></div>';b.scrollTop=b.scrollHeight;}
+async function sendChat(){const input=document.getElementById('chatInput'),msg=input.value.trim();if(!msg)return;input.value='';appendChat('user',msg);appendChat('assistant','Thinking...');try{const d=await fetch('/chat/message',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:msg})}).then(r=>r.json());const divs=document.getElementById('chatBox').querySelectorAll('div');divs[divs.length-1].innerHTML='<span style="color:#69f0ae;font-weight:bold;">Kebs AI:</span> <span style="color:#e0e6f0;">'+(d.reply||d.error)+'</span>';}catch(e){appendChat('assistant','Error: '+e.message);}}
+function qChat(msg){document.getElementById('chatInput').value=msg;sendChat();}
+async function clearChat(){await fetch('/chat/history',{method:'DELETE'});document.getElementById('chatBox').innerHTML='';}
+
+// TX History
+async function fetchTx(){try{const txs=await fetch('/transactions').then(r=>r.json());document.getElementById('txList').innerHTML=txs.length?txs.map(t=>'<div style="border-bottom:1px solid #0f2040;padding:6px 0;"><span style="color:#4fc3f7;">'+t.type+'</span> <span style="color:#69f0ae;">'+t.amount+'</span> <span style="color:'+(t.status==='success'?'#69f0ae':'#ff8a80')+'">'+t.status+'</span></div>').join(''):'<div style="color:#546e7a;">No transactions yet</div>';}catch(e){}}
+
+// Init
+appendChat('assistant','Hello! I am the Kebs Protocol AI. Ask me anything about DeFi, Arc Testnet, or your wallet!');
+refresh();
+setInterval(refresh,30000);
+fetchAgentPort();
 </script>
 </body>
 </html>
-<script>
-async function fetchTxHistory() {
-  try {
-    const r = await fetch('/transactions');
-    const txs = await r.json();
-    const box = document.getElementById('txHistory');
-    if (!txs.length) {
-      box.innerHTML = '<div style="color:#546e7a;font-size:12px;">No transactions yet</div>';
-      return;
-    }
-    box.innerHTML = txs.map(tx => `
-      <div style="border-bottom:1px solid #0f2040;padding:8px 0;font-size:11px;">
-        <div style="display:flex;justify-content:space-between;">
-          <span style="color:#4fc3f7">${tx.type}</span>
-          <span style="color:${tx.status==='success'?'#69f0ae':'#ff8a80'}">${tx.status}</span>
-        </div>
-        <div style="color:#546e7a">${tx.time?.slice(0,19).replace('T',' ')}</div>
-        <div style="color:#81d4fa">Amount: ${tx.amount}</div>
-        ${tx.hash ? `<div style="color:#37474f;word-break:break-all">TX: ${tx.hash}</div>` : ''}
-      </div>
-    `).join('');
-  } catch(e) {}
-}
-fetchTxHistory();
-setInterval(fetchTxHistory, 15000);
-</script>
