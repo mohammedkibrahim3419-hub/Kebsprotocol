@@ -6,7 +6,12 @@ require("dotenv").config({ path: path.resolve(__dirname, "../.env") });
 const provider = new ethers.JsonRpcProvider(process.env.RPC_URL, 5042002, { staticNetwork: true });
 const wallet = new ethers.Wallet(process.env.OWNER_PRIVATE_KEY, provider);
 
-const abi = JSON.parse(fs.readFileSync(path.join(__dirname, "../contracts/KebsMarketplace.abi.json"), "utf8"));
+let abi = [];
+try {
+  abi = JSON.parse(fs.readFileSync(path.join(__dirname, "../contracts/KebsMarketplace.abi.json"), "utf8"));
+} catch(e) {
+  console.log("[MARKETPLACE] ABI not found, using empty:", e.message);
+}
 const address = process.env.KEBS_MARKETPLACE_ADDRESS;
 
 function getContract(signer) {
