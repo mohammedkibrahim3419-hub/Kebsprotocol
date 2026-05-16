@@ -60,10 +60,13 @@ async function postTask(poster, title, description, reward, deadline) {
     const c = getContract(getWallet());
     const rewardWei = ethers.parseEther(reward.toString());
     const deadlineTs = Math.floor(new Date(deadline).getTime() / 1000);
-    const tx = await c.postTask(title, description, deadlineTs, { value: rewardWei });
+    const tx = await c.postTask(title, description, deadlineTs, { value: rewardWei, gasLimit: 500000 });
     const receipt = await tx.wait();
     return { success: true, hash: receipt.hash };
-  } catch(e) { return { success: false, error: e.message }; }
+  } catch(e) {
+    console.log("postTask error:", e.message);
+    return { success: false, error: e.message };
+  }
 }
 
 async function bidTask(taskId, bidder, proposal, price) {
