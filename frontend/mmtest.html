@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head><title>MM Test</title></head>
+<body style="background:#000;color:#fff;font-family:monospace;padding:20px;">
+<h2>MetaMask Test</h2>
+<div id="status">Checking...</div>
+<button onclick="connect()" style="padding:10px 20px;margin:10px 0;font-size:16px;">Connect</button>
+<div id="result" style="margin-top:20px;color:#69f0ae;"></div>
+
+<script>
+document.getElementById('status').textContent = typeof window.ethereum !== 'undefined' ? 'MetaMask detected!' : 'MetaMask NOT found';
+
+async function connect() {
+  try {
+    const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+    document.getElementById('result').innerHTML =
+      'Connected!<br>Address: ' + accounts[0] +
+      '<br>Chain: ' + window.ethereum.chainId;
+    document.getElementById('result').style.color = '#69f0ae';
+  } catch(e) {
+    document.getElementById('result').textContent = 'Error: ' + e.message;
+    document.getElementById('result').style.color = '#ff8a80';
+  }
+}
+
+window.ethereum?.on('accountsChanged', a => {
+  document.getElementById('result').textContent = 'Account: ' + a[0];
+});
+</script>
+</body>
+</html>
