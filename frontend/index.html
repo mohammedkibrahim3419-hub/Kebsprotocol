@@ -593,10 +593,25 @@ async function connectMM_backup() {
 }
 
 
+
 async function connectMM() {
-  if (typeof window.ethereum === 'undefined') { alert('MetaMask not found!'); return; }
   try {
     const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+    mmAddress = accounts[0];
+    document.getElementById('mmOff').style.display = 'none';
+    document.getElementById('mmOn').style.display = 'block';
+    document.getElementById('mmAddr').textContent = mmAddress.slice(0,8)+'...'+mmAddress.slice(-6);
+    document.getElementById('mmNet').textContent = 'Chain ' + window.ethereum.chainId;
+    document.getElementById('mmBal').textContent = 'Connected';
+    try {
+      mmProvider = new ethers.providers.Web3Provider(window.ethereum);
+      mmSigner = mmProvider.getSigner();
+      const bal = await mmProvider.getBalance(mmAddress);
+      document.getElementById('mmBal').textContent = parseFloat(ethers.utils.formatEther(bal)).toFixed(4) + ' ETH';
+    } catch(e) { console.log('balance error', e); }
+  } catch(e) { alert('Error: ' + e.message); }
+}
+);
     if (accounts.length > 0) {
       mmAddress = accounts[0];
       mmProvider = new ethers.providers.Web3Provider(window.ethereum);
