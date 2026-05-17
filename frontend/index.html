@@ -3,45 +3,43 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Kebs Protocol — Dashboard</title>
-<link rel="manifest" href="/manifest.json">
-<meta name="theme-color" content="#4fc3f7">
+<title>Kebs Protocol</title>
+<script src="https://cdn.ethers.io/lib/ethers-5.7.2.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
-* { margin:0; padding:0; box-sizing:border-box; }
-body { background:#0a0f1e; color:#e0e6f0; font-family:'Courier New',monospace; }
-header { background:#0d1530; border-bottom:1px solid #1e3a5f; padding:14px 20px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px; }
-header h1 { font-size:18px; color:#4fc3f7; letter-spacing:2px; }
-.badges { display:flex; gap:6px; flex-wrap:wrap; align-items:center; }
-.badge { background:#1a3a5c; color:#4fc3f7; padding:3px 10px; border-radius:20px; font-size:11px; }
-.grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; padding:16px; }
-.card { background:#0d1530; border:1px solid #1e3a5f; border-radius:12px; padding:18px; }
-.card h2 { font-size:12px; color:#4fc3f7; letter-spacing:1px; margin-bottom:14px; text-transform:uppercase; }
-.full { grid-column:1/-1; }
-.stat { display:flex; justify-content:space-between; padding:7px 0; border-bottom:1px solid #0f2040; font-size:12px; }
-.stat:last-child { border-bottom:none; }
-.val { color:#81d4fa; font-weight:bold; }
-.btn { padding:9px 16px; border:none; border-radius:8px; cursor:pointer; font-family:inherit; font-size:12px; font-weight:bold; margin:3px; }
-.btn-start { background:#1b5e20; color:#69f0ae; }
-.btn-stop { background:#b71c1c; color:#ff8a80; }
-.btn-refresh { background:#1a3a5c; color:#4fc3f7; }
-.btn-mm { background:#f6851b; color:#fff; display:inline-flex; align-items:center; gap:6px; }
-.btn-disc { background:#37474f; color:#cfd8dc; }
-.log-box { background:#060d1a; border:1px solid #1e3a5f; border-radius:8px; padding:10px; height:180px; overflow-y:auto; font-size:11px; line-height:1.8; }
-input, select { background:#0a0f1e; border:1px solid #1e3a5f; color:#e0e6f0; padding:8px 12px; border-radius:8px; font-family:inherit; font-size:12px; width:100%; margin-bottom:6px; }
-.row { display:flex; gap:8px; flex-wrap:wrap; }
-.row input { flex:1; margin-bottom:0; }
-.result { margin-top:8px; font-size:11px; color:#69f0ae; word-break:break-all; }
-.chips { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:10px; }
-.chip { background:#0d1530; border:1px solid #1e3a5f; color:#4fc3f7; padding:3px 10px; border-radius:20px; font-size:11px; cursor:pointer; font-family:inherit; }
-.token-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(120px,1fr)); gap:8px; }
-.token-card { background:#060d1a; border:1px solid #1e3a5f; border-radius:8px; padding:10px; text-align:center; }
-.task-item { border:1px solid #1e3a5f; border-radius:8px; padding:10px; margin-bottom:8px; }
-.inv-item { border:1px solid #1e3a5f; border-radius:8px; padding:10px; margin-bottom:8px; }
-.mini-stats { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px; }
-.mini-stat { flex:1; min-width:80px; background:#060d1a; border-radius:8px; padding:10px; text-align:center; }
-.mini-stat .n { font-size:18px; color:#69f0ae; font-weight:bold; }
-.mini-stat .l { font-size:10px; color:#546e7a; }
-@media(max-width:500px){ .grid { grid-template-columns:1fr; } }
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:#0a0f1e;color:#e0e6f0;font-family:'Courier New',monospace;}
+header{background:#0d1530;border-bottom:1px solid #1e3a5f;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;}
+header h1{font-size:18px;color:#4fc3f7;letter-spacing:2px;}
+.badges{display:flex;gap:6px;flex-wrap:wrap;align-items:center;}
+.badge{background:#1a3a5c;color:#4fc3f7;padding:3px 10px;border-radius:20px;font-size:11px;}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;padding:16px;}
+.card{background:#0d1530;border:1px solid #1e3a5f;border-radius:12px;padding:18px;}
+.full{grid-column:1/-1;}
+.stat{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #0f2040;font-size:12px;}
+.stat:last-child{border-bottom:none;}
+.val{color:#81d4fa;font-weight:bold;}
+.btn{padding:9px 16px;border:none;border-radius:8px;cursor:pointer;font-family:inherit;font-size:12px;font-weight:bold;margin:3px;}
+.btn-start{background:#1b5e20;color:#69f0ae;}
+.btn-stop{background:#b71c1c;color:#ff8a80;}
+.btn-refresh{background:#1a3a5c;color:#4fc3f7;}
+.btn-mm{background:#f6851b;color:#fff;}
+.btn-disc{background:#37474f;color:#cfd8dc;}
+.log-box{background:#060d1a;border:1px solid #1e3a5f;border-radius:8px;padding:10px;height:180px;overflow-y:auto;font-size:11px;line-height:1.8;}
+input,select{background:#0a0f1e;border:1px solid #1e3a5f;color:#e0e6f0;padding:8px 12px;border-radius:8px;font-family:inherit;font-size:12px;width:100%;margin-bottom:6px;}
+.row{display:flex;gap:8px;flex-wrap:wrap;}
+.row input{flex:1;margin-bottom:0;}
+.result{margin-top:8px;font-size:11px;color:#69f0ae;word-break:break-all;}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;}
+.chip{background:#0d1530;border:1px solid #1e3a5f;color:#4fc3f7;padding:3px 10px;border-radius:20px;font-size:11px;cursor:pointer;font-family:inherit;}
+.token-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px;}
+.token-card{background:#060d1a;border:1px solid #1e3a5f;border-radius:8px;padding:10px;text-align:center;}
+.mini-stats{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;}
+.mini-stat{flex:1;min-width:80px;background:#060d1a;border-radius:8px;padding:10px;text-align:center;}
+.mini-stat .n{font-size:18px;color:#69f0ae;font-weight:bold;}
+.mini-stat .l{font-size:10px;color:#546e7a;}
+.task-item,.inv-item{border:1px solid #1e3a5f;border-radius:8px;padding:10px;margin-bottom:8px;}
+@media(max-width:500px){.grid{grid-template-columns:1fr;}}
 </style>
 </head>
 <body>
@@ -50,19 +48,18 @@ input, select { background:#0a0f1e; border:1px solid #1e3a5f; color:#e0e6f0; pad
   <div class="badges">
     <span class="badge">Arc Testnet</span>
     <span class="badge" id="statusBadge">OFFLINE</span>
-    <a href="/landing" style="color:#4fc3f7;font-size:11px;text-decoration:none;border:1px solid #1e3a5f;padding:3px 10px;border-radius:20px;">Home</a>
-    <a href="/docs" style="color:#4fc3f7;font-size:11px;text-decoration:none;border:1px solid #1e3a5f;padding:3px 10px;border-radius:20px;">API Docs</a>
+    <a href="/" style="color:#4fc3f7;font-size:11px;text-decoration:none;border:1px solid #1e3a5f;padding:3px 10px;border-radius:20px;">Home</a>
+    <a href="/docs" style="color:#4fc3f7;font-size:11px;text-decoration:none;border:1px solid #1e3a5f;padding:3px 10px;border-radius:20px;">Docs</a>
   </div>
 </header>
 
 <div class="grid">
 
-  <!-- MetaMask -->
   <div class="card full">
-    <h2>🦊 MetaMask Wallet</h2>
+    <h2 style="font-size:12px;color:#4fc3f7;letter-spacing:1px;margin-bottom:14px;text-transform:uppercase;">🦊 MetaMask Wallet</h2>
     <div id="mmOff">
       <p style="font-size:12px;color:#546e7a;margin-bottom:10px;">Connect wallet to send USDC and interact with Kebs Protocol</p>
-      <button class="btn btn-mm" onclick="connectMM()">Connect MetaMask</button>
+      <button class="btn btn-mm" id="connectBtn" onclick="connectMM()">Connect MetaMask</button>
     </div>
     <div id="mmOn" style="display:none;">
       <div class="stat"><span>Address</span><span class="val" id="mmAddr">-</span></div>
@@ -82,18 +79,15 @@ input, select { background:#0a0f1e; border:1px solid #1e3a5f; color:#e0e6f0; pad
     </div>
   </div>
 
-  <!-- Agent Wallet -->
   <div class="card">
-    <h2>Agent Wallet</h2>
+    <h2 style="font-size:12px;color:#4fc3f7;letter-spacing:1px;margin-bottom:14px;text-transform:uppercase;">Agent Wallet</h2>
     <div class="stat"><span>Address</span><span class="val" id="agentAddr">-</span></div>
     <div class="stat"><span>ARC</span><span class="val" id="agentArc">-</span></div>
     <div class="stat"><span>USDC</span><span class="val" id="agentUsdc">-</span></div>
-    <div class="stat"><span>Updated</span><span class="val" id="agentTime">-</span></div>
   </div>
 
-  <!-- Control -->
   <div class="card">
-    <h2>Agent Control</h2>
+    <h2 style="font-size:12px;color:#4fc3f7;letter-spacing:1px;margin-bottom:14px;text-transform:uppercase;">Agent Control</h2>
     <div class="stat"><span>Status</span><span class="val" id="agentStatus">-</span></div>
     <div class="stat"><span>Network</span><span class="val">Arc Testnet</span></div>
     <div style="margin-top:10px;">
@@ -103,15 +97,13 @@ input, select { background:#0a0f1e; border:1px solid #1e3a5f; color:#e0e6f0; pad
     </div>
   </div>
 
-  <!-- Logs -->
   <div class="card full">
-    <h2>Agent Logs</h2>
+    <h2 style="font-size:12px;color:#4fc3f7;letter-spacing:1px;margin-bottom:14px;text-transform:uppercase;">Agent Logs</h2>
     <div class="log-box" id="logBox"></div>
   </div>
 
-  <!-- NL Transactions -->
   <div class="card full">
-    <h2>Natural Language Transactions</h2>
+    <h2 style="font-size:12px;color:#4fc3f7;letter-spacing:1px;margin-bottom:14px;text-transform:uppercase;">Natural Language Transactions</h2>
     <div class="chips">
       <button class="chip" onclick="nlQ('send 5 USDC to 0x000')">Send USDC</button>
       <button class="chip" onclick="nlQ('stake 10 USDC')">Stake</button>
@@ -120,7 +112,7 @@ input, select { background:#0a0f1e; border:1px solid #1e3a5f; color:#e0e6f0; pad
       <button class="chip" onclick="nlQ('invoice 20 USDC for design work')">Invoice</button>
     </div>
     <div class="row" style="margin-bottom:8px;">
-      <input id="nlInput" placeholder='e.g. "send 5 USDC to 0x..." or "stake 10 USDC"' onkeydown="if(event.key==='Enter')parseNL()"/>
+      <input id="nlInput" placeholder='e.g. "send 5 USDC to 0x..."'/>
       <button class="btn btn-refresh" onclick="parseNL()" style="margin:0;">Parse</button>
       <button class="btn btn-start" onclick="executeNL()" style="margin:0;">Execute</button>
     </div>
@@ -128,20 +120,18 @@ input, select { background:#0a0f1e; border:1px solid #1e3a5f; color:#e0e6f0; pad
     <div class="result" id="nlResult"></div>
   </div>
 
-  <!-- Marketplace -->
   <div class="card full">
-    <h2>Agent Marketplace</h2>
+    <h2 style="font-size:12px;color:#4fc3f7;letter-spacing:1px;margin-bottom:14px;text-transform:uppercase;">Agent Marketplace</h2>
     <div class="mini-stats">
       <div class="mini-stat"><div class="n" id="mktOpen">0</div><div class="l">Open</div></div>
       <div class="mini-stat"><div class="n" id="mktDone">0</div><div class="l">Done</div></div>
-      <div class="mini-stat"><div class="n" id="mktRew">0</div><div class="l">USDC Rewards</div></div>
+      <div class="mini-stat"><div class="n" id="mktRew">0</div><div class="l">USDC</div></div>
     </div>
     <div style="background:#060d1a;border:1px solid #1e3a5f;border-radius:8px;padding:12px;margin-bottom:12px;">
-      <div style="font-size:11px;color:#4fc3f7;margin-bottom:8px;">Post Task</div>
       <input id="mktTitle" placeholder="Task title"/>
       <input id="mktDesc" placeholder="Description"/>
       <div class="row">
-        <input id="mktRew" placeholder="Reward USDC" type="number"/>
+        <input id="mktReward" placeholder="Reward USDC" type="number"/>
         <button class="btn btn-start" onclick="postTask()" style="margin:0;">Post</button>
       </div>
       <div class="result" id="mktResult"></div>
@@ -149,24 +139,22 @@ input, select { background:#0a0f1e; border:1px solid #1e3a5f; color:#e0e6f0; pad
     <div id="mktList" style="max-height:300px;overflow-y:auto;"></div>
   </div>
 
-  <!-- Portfolio -->
   <div class="card full">
-    <h2>Portfolio Tracker</h2>
+    <h2 style="font-size:12px;color:#4fc3f7;letter-spacing:1px;margin-bottom:14px;text-transform:uppercase;">Portfolio Tracker</h2>
     <div class="row" style="margin-bottom:8px;">
       <input id="portAddr" placeholder="Wallet address (0x...)"/>
       <button class="btn btn-start" onclick="fetchPort()" style="margin:0;">Track</button>
-      <button class="btn btn-refresh" onclick="if(mmAddress){document.getElementById('portAddr').value=mmAddress;fetchPort();}else{alert('Connect MetaMask');}" style="margin:0;">My Wallet</button>
+      <button class="btn btn-refresh" onclick="useMyWallet()" style="margin:0;">My Wallet</button>
       <button class="btn btn-refresh" onclick="fetchAgentPort()" style="margin:0;">Agent</button>
     </div>
-    <input id="portToken" placeholder="Add custom token address (0x...)"/>
+    <input id="portToken" placeholder="Add custom token (0x...)"/>
     <button class="btn btn-refresh" onclick="addPortToken()">Add Token</button>
     <div class="result" id="portResult"></div>
     <div class="token-grid" id="portList" style="margin-top:10px;"></div>
   </div>
 
-  <!-- Staking -->
   <div class="card full">
-    <h2>Token Staking</h2>
+    <h2 style="font-size:12px;color:#4fc3f7;letter-spacing:1px;margin-bottom:14px;text-transform:uppercase;">Token Staking</h2>
     <div class="mini-stats">
       <div class="mini-stat"><div class="n" id="stakeTotal">0</div><div class="l">Total Staked</div></div>
       <div class="mini-stat"><div class="n" id="stakeCount">0</div><div class="l">Stakers</div></div>
@@ -182,25 +170,22 @@ input, select { background:#0a0f1e; border:1px solid #1e3a5f; color:#e0e6f0; pad
     <div class="result" id="stakeResult"></div>
   </div>
 
-  <!-- Bridge -->
   <div class="card full">
-    <h2>Cross-Chain Bridge</h2>
-    <p style="font-size:12px;color:#546e7a;margin-bottom:10px;">Bridge USDC between chains via Circle CCTP</p>
+    <h2 style="font-size:12px;color:#4fc3f7;letter-spacing:1px;margin-bottom:14px;text-transform:uppercase;">Cross-Chain Bridge</h2>
     <div class="row" style="margin-bottom:8px;">
-      <select id="fromChain"><option value="arc">Arc Testnet</option><option value="sepolia">Ethereum Sepolia</option><option value="base_sepolia">Base Sepolia</option></select>
+      <select id="fromChain"><option value="arc">Arc Testnet</option><option value="sepolia">Sepolia</option><option value="base_sepolia">Base Sepolia</option></select>
       <span style="color:#4fc3f7;padding:8px;">→</span>
-      <select id="toChain"><option value="sepolia">Ethereum Sepolia</option><option value="arc">Arc Testnet</option><option value="base_sepolia">Base Sepolia</option></select>
+      <select id="toChain"><option value="sepolia">Sepolia</option><option value="arc">Arc Testnet</option><option value="base_sepolia">Base Sepolia</option></select>
     </div>
     <input id="bridgeAmt" placeholder="Amount USDC" type="number"/>
     <input id="bridgeTo" placeholder="Recipient address"/>
     <button class="btn btn-start" onclick="doBridge()">Bridge USDC</button>
-    <button class="btn btn-refresh" onclick="if(mmAddress)document.getElementById('bridgeTo').value=mmAddress;">My Address</button>
+    <button class="btn btn-refresh" onclick="useBridgeAddr()">My Address</button>
     <div class="result" id="bridgeResult"></div>
   </div>
 
-  <!-- Invoices -->
   <div class="card full">
-    <h2>Invoices</h2>
+    <h2 style="font-size:12px;color:#4fc3f7;letter-spacing:1px;margin-bottom:14px;text-transform:uppercase;">Invoices</h2>
     <div class="mini-stats">
       <div class="mini-stat"><div class="n" id="invTotal">0</div><div class="l">Total</div></div>
       <div class="mini-stat"><div class="n" id="invPaid">0</div><div class="l">Paid</div></div>
@@ -208,43 +193,40 @@ input, select { background:#0a0f1e; border:1px solid #1e3a5f; color:#e0e6f0; pad
       <div class="mini-stat"><div class="n" id="invVol">0</div><div class="l">USDC Vol</div></div>
     </div>
     <div style="background:#060d1a;border:1px solid #1e3a5f;border-radius:8px;padding:12px;margin-bottom:10px;">
-      <div style="font-size:11px;color:#4fc3f7;margin-bottom:8px;">Create Invoice</div>
       <input id="invTo" placeholder="Bill to (address)"/>
       <input id="invAmt" placeholder="Amount USDC" type="number"/>
       <input id="invDesc" placeholder="Description"/>
       <input id="invDue" type="date"/>
-      <button class="btn btn-start" onclick="createInv()">Create</button>
-      <button class="btn btn-refresh" onclick="if(mmAddress)document.getElementById('invTo').value=mmAddress;">My Address</button>
+      <button class="btn btn-start" onclick="createInv()">Create Invoice</button>
+      <button class="btn btn-refresh" onclick="useInvAddr()">My Address</button>
       <div class="result" id="invResult"></div>
     </div>
     <div id="invList" style="max-height:300px;overflow-y:auto;"></div>
   </div>
 
-  <!-- Prices -->
   <div class="card full">
-    <h2>Live Prices</h2>
+    <h2 style="font-size:12px;color:#4fc3f7;letter-spacing:1px;margin-bottom:14px;text-transform:uppercase;">Live Prices</h2>
     <div class="mini-stats">
       <div class="mini-stat"><div class="n" id="pUsdc">-</div><div class="l">USDC</div></div>
       <div class="mini-stat"><div class="n" id="pEth">-</div><div class="l">ETH</div></div>
       <div class="mini-stat"><div class="n" id="pBtc">-</div><div class="l">BTC</div></div>
     </div>
     <div class="chips">
-      <button class="chip" onclick="showChart('eth')">ETH Chart</button>
-      <button class="chip" onclick="showChart('btc')">BTC Chart</button>
-      <button class="chip" onclick="showChart('usdc')">USDC Chart</button>
+      <button class="chip" onclick="showChart('eth')">ETH</button>
+      <button class="chip" onclick="showChart('btc')">BTC</button>
+      <button class="chip" onclick="showChart('usdc')">USDC</button>
     </div>
     <canvas id="priceChart" style="width:100%;max-height:180px;margin-top:10px;"></canvas>
   </div>
 
-  <!-- AI Chat -->
   <div class="card full">
-    <h2>AI Agent Chat</h2>
+    <h2 style="font-size:12px;color:#4fc3f7;letter-spacing:1px;margin-bottom:14px;text-transform:uppercase;">AI Agent Chat</h2>
     <div id="chatBox" style="background:#060d1a;border:1px solid #1e3a5f;border-radius:8px;padding:10px;height:220px;overflow-y:auto;font-size:12px;line-height:1.8;margin-bottom:10px;"></div>
     <div class="chips">
       <button class="chip" onclick="qChat('What is my agent balance?')">Balance?</button>
-      <button class="chip" onclick="qChat('How do I bridge USDC?')">Bridge help</button>
-      <button class="chip" onclick="qChat('Explain staking rewards')">Staking?</button>
-      <button class="chip" onclick="qChat('What is Kebs Protocol?')">About Kebs</button>
+      <button class="chip" onclick="qChat('How do I bridge USDC?')">Bridge?</button>
+      <button class="chip" onclick="qChat('Explain staking')">Staking?</button>
+      <button class="chip" onclick="qChat('What is Kebs Protocol?')">About?</button>
     </div>
     <div class="row" style="margin-top:8px;">
       <input id="chatInput" placeholder="Ask anything..." onkeydown="if(event.key==='Enter')sendChat()"/>
@@ -253,382 +235,288 @@ input, select { background:#0a0f1e; border:1px solid #1e3a5f; color:#e0e6f0; pad
     </div>
   </div>
 
-  <!-- Transaction History -->
   <div class="card full">
-    <h2>Transaction History</h2>
+    <h2 style="font-size:12px;color:#4fc3f7;letter-spacing:1px;margin-bottom:14px;text-transform:uppercase;">Transaction History</h2>
     <div id="txList" style="max-height:200px;overflow-y:auto;font-size:11px;"><div style="color:#546e7a;">No transactions yet</div></div>
   </div>
 
 </div>
 
-<script src="https://cdn.ethers.io/lib/ethers-5.7.2.umd.min.js" type="text/javascript"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-let mmAddress = null, mmProvider = null, mmSigner = null;
-let priceChartInstance = null, currentCoin = 'eth';
+var mmAddress = null;
+var mmProvider = null;
+var mmSigner = null;
+var priceChartInstance = null;
+var currentCoin = 'eth';
 
-
-// replaced
-async function connectMM_backup() {
-  if (typeof window.ethereum === 'undefined') {
-    alert('MetaMask not found! Open this page inside MetaMask browser.');
-    return;
-  }
-  try {
-    await window.ethereum.request({ method: 'eth_requestAccounts' });
-    await loadMMAccount();
-  } catch(e) {
-    alert('Failed: ' + e.message);
-  }
+function connectMM() {
+  if (!window.ethereum) { alert('MetaMask not found!'); return; }
+  window.ethereum.request({ method: 'eth_requestAccounts' }).then(function(accounts) {
+    if (!accounts || accounts.length === 0) return;
+    mmAddress = accounts[0];
+    mmProvider = new ethers.providers.Web3Provider(window.ethereum);
+    mmSigner = mmProvider.getSigner();
+    showConnected();
+  }).catch(function(e) { alert('Error: ' + e.message); });
 }
 
-async function loadMMAccount() {
-  if (typeof window.ethereum === 'undefined') return;
-  const accounts = await window.ethereum.request({ method: 'eth_accounts' });
-  if (!accounts || accounts.length === 0) return;
-  mmAddress = accounts[0];
-  mmProvider = new ethers.providers.Web3Provider(window.ethereum);
-  mmSigner = mmProvider.getSigner();
-  showMMConnected();
-}
-
-async function showMMConnected() {
+function showConnected() {
   document.getElementById('mmOff').style.display = 'none';
   document.getElementById('mmOn').style.display = 'block';
   document.getElementById('mmAddr').textContent = mmAddress.slice(0,8)+'...'+mmAddress.slice(-6);
-  try {
-    const net = await mmProvider.getNetwork();
-    document.getElementById('mmNet').textContent = 'Chain ' + net.chainId;
-  } catch(e) {}
-  try {
-    const bal = await mmProvider.getBalance(mmAddress);
+  document.getElementById('mmNet').textContent = 'Chain ' + (window.ethereum.chainId || '?');
+  document.getElementById('mmBal').textContent = 'Loading...';
+  mmProvider.getBalance(mmAddress).then(function(bal) {
     document.getElementById('mmBal').textContent = parseFloat(ethers.utils.formatEther(bal)).toFixed(4) + ' ETH';
-  } catch(e) {}
+  }).catch(function() {
+    document.getElementById('mmBal').textContent = 'Connected';
+  });
   fetchStaking();
   fetchInvoices();
 }
 
 function disconnectMM() {
-  mmAddress = null;
-  mmProvider = null;
-  mmSigner = null;
+  mmAddress = null; mmProvider = null; mmSigner = null;
   document.getElementById('mmOff').style.display = 'block';
   document.getElementById('mmOn').style.display = 'none';
 }
 
-async function addArc() {
-  try {
-    await window.ethereum.request({
-      method: 'wallet_addEthereumChain',
-      params: [{
-        chainId: '0x13A4292',
-        chainName: 'Arc Testnet',
-        nativeCurrency: { name: 'USDC', symbol: 'USDC', decimals: 18 },
-        rpcUrls: ['https://rpc.testnet.arc.network'],
-        blockExplorerUrls: ['https://testnet.arcscan.app']
-      }]
-    });
-  } catch(e) { alert('Error: ' + e.message); }
+function addArc() {
+  window.ethereum.request({ method: 'wallet_addEthereumChain', params: [{ chainId: '0x13A4292', chainName: 'Arc Testnet', nativeCurrency: { name: 'USDC', symbol: 'USDC', decimals: 18 }, rpcUrls: ['https://rpc.testnet.arc.network'], blockExplorerUrls: ['https://testnet.arcscan.app'] }] });
 }
 
-function toggleSend() {
-  const f = document.getElementById('sendForm');
-  f.style.display = f.style.display === 'none' ? 'block' : 'none';
+function toggleSend() { var f=document.getElementById('sendForm'); f.style.display=f.style.display==='none'?'block':'none'; }
+
+function sendUSDC() {
+  var to=document.getElementById('sendTo').value, amt=document.getElementById('sendAmt').value;
+  if(!to||!amt){document.getElementById('sendResult').textContent='Fill all fields';return;}
+  var usdc=new ethers.Contract('0x3600000000000000000000000000000000000000',['function transfer(address,uint256) returns(bool)','function decimals() view returns(uint8)'],mmSigner);
+  usdc.decimals().then(function(dec){return usdc.transfer(to,ethers.utils.parseUnits(amt,dec));}).then(function(tx){
+    document.getElementById('sendResult').textContent='Waiting...';
+    return tx.wait();
+  }).then(function(r){document.getElementById('sendResult').textContent='Sent! TX: '+r.transactionHash;
+  }).catch(function(e){document.getElementById('sendResult').textContent='Error: '+e.message;});
 }
 
-async function sendUSDC() {
-  const to = document.getElementById('sendTo').value;
-  const amt = document.getElementById('sendAmt').value;
-  if (!to || !amt) { document.getElementById('sendResult').textContent = 'Fill all fields'; return; }
-  try {
-    const usdc = new ethers.Contract(
-      '0x3600000000000000000000000000000000000000',
-      ['function transfer(address,uint256) returns(bool)', 'function decimals() view returns(uint8)'],
-      mmSigner
-    );
-    const dec = await usdc.decimals();
-    const tx = await usdc.transfer(to, ethers.utils.parseUnits(amt, dec));
-    document.getElementById('sendResult').textContent = 'Waiting...';
-    await tx.wait();
-    document.getElementById('sendResult').textContent = 'Sent! TX: ' + tx.hash;
-  } catch(e) { document.getElementById('sendResult').textContent = 'Error: ' + e.message; }
-}
+function useMyWallet() { if(mmAddress){document.getElementById('portAddr').value=mmAddress;fetchPort();}else{alert('Connect MetaMask first!');} }
+function useBridgeAddr() { if(mmAddress){document.getElementById('bridgeTo').value=mmAddress;}else{alert('Connect MetaMask first!');} }
+function useInvAddr() { if(mmAddress){document.getElementById('invTo').value=mmAddress;}else{alert('Connect MetaMask first!');} }
 
-// Auto connect on load
-window.addEventListener('load', async () => {
-  if (typeof window.ethereum !== 'undefined') {
-    await loadMMAccount();
-    window.ethereum.on('accountsChanged', async (accounts) => {
-      if (accounts.length > 0) { mmAddress = accounts[0]; await showMMConnected(); }
-      else disconnectMM();
-    });
-    window.ethereum.on('chainChanged', () => window.location.reload());
-  }
-});
-
-// Agent
-async function fetchWallet() {
-  try {
-    const d=await fetch('/agent/wallet').then(r=>r.json());
+function fetchWallet() {
+  fetch('/agent/wallet').then(function(r){return r.json();}).then(function(d){
     document.getElementById('agentAddr').textContent=d.address?d.address.slice(0,8)+'...'+d.address.slice(-6):'-';
     document.getElementById('agentArc').textContent=(parseFloat(d.native)||0).toFixed(4)+' ARC';
     document.getElementById('agentUsdc').textContent=(parseFloat(d.usdc)||0).toFixed(2)+' USDC';
-    document.getElementById('agentTime').textContent=new Date().toLocaleTimeString();
-  } catch(e){}
+  }).catch(function(){});
 }
-async function fetchStatus() {
-  try {
-    const d=await fetch('/agent/status').then(r=>r.json());
+
+function fetchStatus() {
+  fetch('/agent/status').then(function(r){return r.json();}).then(function(d){
     document.getElementById('agentStatus').textContent=d.running?'Running':'Stopped';
     document.getElementById('statusBadge').textContent=d.running?'ONLINE':'OFFLINE';
-    const b=document.getElementById('logBox');
-    b.innerHTML=(d.logs||[]).map(l=>'<div style="color:#64b5f6">'+l.time.slice(11,19)+' '+l.msg+'</div>').join('');
+    var b=document.getElementById('logBox');
+    b.innerHTML=(d.logs||[]).map(function(l){return '<div style="color:#64b5f6">'+l.time.slice(11,19)+' '+l.msg+'</div>';}).join('');
     b.scrollTop=b.scrollHeight;
-  } catch(e){}
+  }).catch(function(){});
 }
-async function startAgent(){await fetch('/agent/start',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({interval:60000})});refresh();}
-async function stopAgent(){await fetch('/agent/stop',{method:'POST'});refresh();}
-function refresh(){fetchWallet();fetchStatus();fetchPrices();fetchMarket();fetchStaking();fetchInvoices();fetchTx();fetchPort();}
 
-// NL
-async function parseNL() {
-  const cmd=document.getElementById('nlInput').value.trim();
+function startAgent(){fetch('/agent/start',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({interval:60000})}).then(function(){refresh();});}
+function stopAgent(){fetch('/agent/stop',{method:'POST'}).then(function(){refresh();});}
+function refresh(){fetchWallet();fetchStatus();fetchPrices();fetchMarket();fetchStaking();fetchInvoices();fetchTx();}
+
+function parseNL() {
+  var cmd=document.getElementById('nlInput').value.trim();
   if(!cmd)return;
   document.getElementById('nlResult').textContent='Parsing...';
-  try {
-    const d=await fetch('/nl/parse',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({command:cmd,address:mmAddress||''})}).then(r=>r.json());
-    const box=document.getElementById('nlParsed');
+  fetch('/nl/parse',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({command:cmd,address:mmAddress||''})}).then(function(r){return r.json();}).then(function(d){
+    var box=document.getElementById('nlParsed');
     box.style.display='block';
-    box.innerHTML=d.error?'<span style="color:#ff8a80">'+d.error+'</span>':
-      '<b style="color:#4fc3f7">'+d.action+'</b>'+(d.amount?' | '+d.amount+' '+(d.token||''):'')+
-      (d.recipient?' | To: '+d.recipient.slice(0,10)+'...':'')+
-      ' | Confidence: <span style="color:'+(d.confidence>70?'#69f0ae':'#ffd54f')+'">'+d.confidence+'%</span>'+
-      '<br><span style="color:#90a4ae">'+d.humanReadable+'</span>';
+    box.innerHTML=d.error?'<span style="color:#ff8a80">'+d.error+'</span>':'<b style="color:#4fc3f7">'+d.action+'</b>'+(d.amount?' | '+d.amount+' '+(d.token||''):'')+' | Confidence: <span style="color:'+(d.confidence>70?'#69f0ae':'#ffd54f')+'">'+d.confidence+'%</span><br><span style="color:#90a4ae">'+(d.humanReadable||'')+'</span>';
     document.getElementById('nlResult').textContent='';
-  } catch(e){document.getElementById('nlResult').textContent='Error: '+e.message;}
+  }).catch(function(e){document.getElementById('nlResult').textContent='Error: '+e.message;});
 }
-async function executeNL() {
-  const cmd=document.getElementById('nlInput').value.trim();
+
+function executeNL() {
+  var cmd=document.getElementById('nlInput').value.trim();
   if(!cmd)return;
   document.getElementById('nlResult').textContent='Executing...';
-  try {
-    const d=await fetch('/nl/execute',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({command:cmd,address:mmAddress||''})}).then(r=>r.json());
-    document.getElementById('nlResult').textContent=d.success?'Success! '+(d.result?.txHash?'TX: '+d.result.txHash:JSON.stringify(d.result)):'Failed: '+(d.error||d.result?.error);
-  } catch(e){document.getElementById('nlResult').textContent='Error: '+e.message;}
+  fetch('/nl/execute',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({command:cmd,address:mmAddress||''})}).then(function(r){return r.json();}).then(function(d){
+    document.getElementById('nlResult').textContent=d.success?'Success! '+(d.result&&d.result.txHash?'TX: '+d.result.txHash:JSON.stringify(d.result)):'Failed: '+(d.error||(d.result&&d.result.error));
+  }).catch(function(e){document.getElementById('nlResult').textContent='Error: '+e.message;});
 }
+
 function nlQ(cmd){document.getElementById('nlInput').value=cmd;parseNL();}
 
-// Marketplace
-async function fetchMarket() {
-  try {
-    const s=await fetch('/marketplace/stats').then(r=>r.json());
+function fetchMarket() {
+  fetch('/marketplace/stats').then(function(r){return r.json();}).then(function(s){
     document.getElementById('mktOpen').textContent=s.open||0;
     document.getElementById('mktDone').textContent=s.completed||0;
     document.getElementById('mktRew').textContent=(s.totalRewards||0).toFixed(2);
-    const tasks=await fetch('/marketplace/tasks').then(r=>r.json());
-    document.getElementById('mktList').innerHTML=tasks.length?tasks.map(t=>
-      '<div class="task-item"><div style="display:flex;justify-content:space-between;"><span style="color:#4fc3f7;font-weight:bold;">'+t.title+'</span><span style="color:'+(t.status==='open'?'#69f0ae':'#546e7a')+'">'+t.status+'</span></div>'+
-      '<div style="color:#90a4ae;font-size:11px;">'+t.description+'</div>'+
-      '<div style="color:#ffd54f;font-size:12px;">'+t.reward+' USDC | Bids: '+(t.bids?.length||0)+'</div>'+
-      (t.status==='open'&&mmAddress?'<div class="row" style="margin-top:6px;"><input id="bp-'+t.id+'" placeholder="Proposal" style="margin:0;"/><input id="bpr-'+t.id+'" type="number" placeholder="USDC" style="width:70px;margin:0;"/><button class="btn btn-start" onclick="submitBid(\''+t.id+'\')" style="margin:0;padding:6px 10px;">Bid</button></div>':'')+'</div>'
-    ).join(''):'<div style="color:#546e7a;font-size:12px;">No tasks yet</div>';
-  } catch(e){}
-}
-async function postTask() {
-  const title=document.getElementById('mktTitle').value.trim(),desc=document.getElementById('mktDesc').value.trim(),reward=document.getElementById('mktRew').value,poster=mmAddress||'kebs-agent-1';
-  if(!title||!reward){document.getElementById('mktResult').textContent='Fill title and reward';return;}
-  const d=await fetch('/marketplace/tasks',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({poster,title,description:desc,reward})}).then(r=>r.json());
-  document.getElementById('mktResult').textContent=d.id?'Posted: '+d.id:'Error';
-  fetchMarket();
-}
-async function submitBid(id) {
-  const proposal=document.getElementById('bp-'+id)?.value,price=document.getElementById('bpr-'+id)?.value;
-  if(!mmAddress){alert('Connect MetaMask');return;}
-  const d=await fetch('/marketplace/tasks/'+id+'/bid',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({bidder:mmAddress,proposal,price})}).then(r=>r.json());
-  if(d.success){alert('Bid submitted!');fetchMarket();}else alert('Error: '+d.error);
+  }).catch(function(){});
+  fetch('/marketplace/tasks').then(function(r){return r.json();}).then(function(tasks){
+    document.getElementById('mktList').innerHTML=tasks.length?tasks.map(function(t){
+      return '<div class="task-item"><div style="display:flex;justify-content:space-between;"><span style="color:#4fc3f7;font-weight:bold;">'+t.title+'</span><span style="color:'+(t.status==='open'?'#69f0ae':'#546e7a')+'">'+t.status+'</span></div><div style="color:#90a4ae;font-size:11px;">'+t.description+'</div><div style="color:#ffd54f;">'+t.reward+' USDC</div></div>';
+    }).join(''):'<div style="color:#546e7a;font-size:12px;">No tasks yet</div>';
+  }).catch(function(){});
 }
 
-// Portfolio
-async function fetchPort() {
-  const addr=document.getElementById('portAddr').value.trim();
+function postTask() {
+  var title=document.getElementById('mktTitle').value.trim(),desc=document.getElementById('mktDesc').value.trim(),reward=document.getElementById('mktReward').value,poster=mmAddress||'kebs-agent-1';
+  if(!title||!reward){document.getElementById('mktResult').textContent='Fill title and reward';return;}
+  fetch('/marketplace/tasks',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({poster:poster,title:title,description:desc,reward:reward})}).then(function(r){return r.json();}).then(function(d){
+    document.getElementById('mktResult').textContent=d.id?'Posted: '+d.id:'Error';
+    fetchMarket();
+  }).catch(function(e){document.getElementById('mktResult').textContent='Error: '+e.message;});
+}
+
+function fetchPort() {
+  var addr=document.getElementById('portAddr').value.trim();
   if(!addr)return;
   document.getElementById('portResult').textContent='Loading...';
-  try {
-    const d=await fetch('/portfolio/'+addr).then(r=>r.json());
+  fetch('/portfolio/'+addr).then(function(r){return r.json();}).then(function(d){
     if(d.error){document.getElementById('portResult').textContent='Error: '+d.error;return;}
     document.getElementById('portResult').textContent='';
-    document.getElementById('portList').innerHTML=d.tokens.map(t=>'<div class="token-card"><div style="color:#4fc3f7;font-weight:bold;">'+t.symbol+'</div><div style="color:#69f0ae;font-size:14px;">'+parseFloat(t.balance).toFixed(4)+'</div><div style="color:#546e7a;font-size:10px;">'+t.name+'</div></div>').join('');
-  } catch(e){document.getElementById('portResult').textContent='Error: '+e.message;}
-}
-async function fetchAgentPort() {
-  const d=await fetch('/portfolio').then(r=>r.json());
-  if(d.address){document.getElementById('portAddr').value=d.address;document.getElementById('portList').innerHTML=d.tokens.map(t=>'<div class="token-card"><div style="color:#4fc3f7;font-weight:bold;">'+t.symbol+'</div><div style="color:#69f0ae;font-size:14px;">'+parseFloat(t.balance).toFixed(4)+'</div></div>').join('');}
-}
-async function addPortToken() {
-  const addr=document.getElementById('portAddr').value.trim(),tok=document.getElementById('portToken').value.trim();
-  if(!addr||!tok){document.getElementById('portResult').textContent='Enter wallet and token';return;}
-  const d=await fetch('/portfolio/token',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({address:addr,tokenAddress:tok})}).then(r=>r.json());
-  document.getElementById('portResult').textContent=d.error?'Error: '+d.error:'Added: '+d.symbol;
-  document.getElementById('portToken').value='';
-  fetchPort();
+    document.getElementById('portList').innerHTML=d.tokens.map(function(t){return '<div class="token-card"><div style="color:#4fc3f7;font-weight:bold;">'+t.symbol+'</div><div style="color:#69f0ae;font-size:14px;">'+parseFloat(t.balance).toFixed(4)+'</div><div style="color:#546e7a;font-size:10px;">'+t.name+'</div></div>';}).join('');
+  }).catch(function(e){document.getElementById('portResult').textContent='Error: '+e.message;});
 }
 
-// Staking
-async function fetchStaking() {
-  try {
-    const s=await fetch('/staking/stats').then(r=>r.json());
+function fetchAgentPort() {
+  fetch('/portfolio').then(function(r){return r.json();}).then(function(d){
+    if(d.address){document.getElementById('portAddr').value=d.address;document.getElementById('portList').innerHTML=d.tokens.map(function(t){return '<div class="token-card"><div style="color:#4fc3f7;font-weight:bold;">'+t.symbol+'</div><div style="color:#69f0ae;font-size:14px;">'+parseFloat(t.balance).toFixed(4)+'</div></div>';}).join('');}
+  }).catch(function(){});
+}
+
+function addPortToken() {
+  var addr=document.getElementById('portAddr').value.trim(),tok=document.getElementById('portToken').value.trim();
+  if(!addr||!tok){document.getElementById('portResult').textContent='Enter wallet and token';return;}
+  fetch('/portfolio/token',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({address:addr,tokenAddress:tok})}).then(function(r){return r.json();}).then(function(d){
+    document.getElementById('portResult').textContent=d.error?'Error: '+d.error:'Added: '+d.symbol;
+    document.getElementById('portToken').value='';
+    fetchPort();
+  }).catch(function(e){document.getElementById('portResult').textContent='Error: '+e.message;});
+}
+
+function fetchStaking() {
+  fetch('/staking/stats').then(function(r){return r.json();}).then(function(s){
     document.getElementById('stakeTotal').textContent=(s.totalStaked||0).toFixed(2);
     document.getElementById('stakeCount').textContent=s.stakerCount||0;
     if(mmAddress){
-      const u=await fetch('/staking/'+mmAddress).then(r=>r.json());
-      document.getElementById('stakeYours').textContent=(u.amount||0).toFixed(2);
-      document.getElementById('stakePend').textContent=(u.pending||0).toFixed(6);
+      fetch('/staking/'+mmAddress).then(function(r){return r.json();}).then(function(u){
+        document.getElementById('stakeYours').textContent=(u.amount||0).toFixed(2);
+        document.getElementById('stakePend').textContent=(u.pending||0).toFixed(6);
+      }).catch(function(){});
     }
-  } catch(e){}
+  }).catch(function(){});
 }
-async function doStake(){const amt=document.getElementById('stakeAmt').value;if(!mmAddress){document.getElementById('stakeResult').textContent='Connect MetaMask';return;}const d=await fetch('/staking/stake',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({address:mmAddress,amount:amt})}).then(r=>r.json());document.getElementById('stakeResult').textContent=d.success?'Staked '+amt+' USDC!':d.error;fetchStaking();}
-async function doUnstake(){const amt=document.getElementById('stakeAmt').value;if(!mmAddress){document.getElementById('stakeResult').textContent='Connect MetaMask';return;}const d=await fetch('/staking/unstake',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({address:mmAddress,amount:amt})}).then(r=>r.json());document.getElementById('stakeResult').textContent=d.success?'Unstaked! Reward: '+(d.reward||0).toFixed(6):d.error;fetchStaking();}
-async function doClaim(){if(!mmAddress){document.getElementById('stakeResult').textContent='Connect MetaMask';return;}const d=await fetch('/staking/claim',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({address:mmAddress})}).then(r=>r.json());document.getElementById('stakeResult').textContent=d.success?'Claimed '+(d.reward||0).toFixed(6)+' USDC!':d.error;fetchStaking();}
 
-// Bridge
-async function doBridge(){const f=document.getElementById('fromChain').value,t=document.getElementById('toChain').value,a=document.getElementById('bridgeAmt').value,r=document.getElementById('bridgeTo').value;if(!a||!r){document.getElementById('bridgeResult').textContent='Fill all fields';return;}if(f===t){document.getElementById('bridgeResult').textContent='Same chain!';return;}document.getElementById('bridgeResult').textContent='Initiating...';const d=await fetch('/bridge/transfer',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({fromChain:f,toChain:t,amount:a,recipient:r})}).then(r=>r.json());document.getElementById('bridgeResult').textContent=d.success?'Bridge initiated! CCTP processing...':'Error: '+d.error;}
+function doStake(){
+  var amt=document.getElementById('stakeAmt').value;
+  if(!mmAddress){document.getElementById('stakeResult').textContent='Connect MetaMask first';return;}
+  fetch('/staking/stake',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({address:mmAddress,amount:amt})}).then(function(r){return r.json();}).then(function(d){document.getElementById('stakeResult').textContent=d.success?'Staked '+amt+' USDC!':d.error;fetchStaking();}).catch(function(e){document.getElementById('stakeResult').textContent='Error: '+e.message;});
+}
 
-// Invoices
-async function fetchInvoices() {
-  try {
-    const s=await fetch('/invoices/stats').then(r=>r.json());
+function doUnstake(){
+  var amt=document.getElementById('stakeAmt').value;
+  if(!mmAddress){document.getElementById('stakeResult').textContent='Connect MetaMask first';return;}
+  fetch('/staking/unstake',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({address:mmAddress,amount:amt})}).then(function(r){return r.json();}).then(function(d){document.getElementById('stakeResult').textContent=d.success?'Unstaked! Reward: '+(d.reward||0).toFixed(6):d.error;fetchStaking();}).catch(function(e){document.getElementById('stakeResult').textContent='Error: '+e.message;});
+}
+
+function doClaim(){
+  if(!mmAddress){document.getElementById('stakeResult').textContent='Connect MetaMask first';return;}
+  fetch('/staking/claim',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({address:mmAddress})}).then(function(r){return r.json();}).then(function(d){document.getElementById('stakeResult').textContent=d.success?'Claimed '+(d.reward||0).toFixed(6)+' USDC!':d.error;fetchStaking();}).catch(function(e){document.getElementById('stakeResult').textContent='Error: '+e.message;});
+}
+
+function doBridge(){
+  var f=document.getElementById('fromChain').value,t=document.getElementById('toChain').value,a=document.getElementById('bridgeAmt').value,r=document.getElementById('bridgeTo').value;
+  if(!a||!r){document.getElementById('bridgeResult').textContent='Fill all fields';return;}
+  if(f===t){document.getElementById('bridgeResult').textContent='Same chain!';return;}
+  document.getElementById('bridgeResult').textContent='Initiating...';
+  fetch('/bridge/transfer',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({fromChain:f,toChain:t,amount:a,recipient:r})}).then(function(r){return r.json();}).then(function(d){document.getElementById('bridgeResult').textContent=d.success?'Bridge initiated!':'Error: '+d.error;}).catch(function(e){document.getElementById('bridgeResult').textContent='Error: '+e.message;});
+}
+
+function fetchInvoices(){
+  fetch('/invoices/stats').then(function(r){return r.json();}).then(function(s){
     document.getElementById('invTotal').textContent=s.total||0;
     document.getElementById('invPaid').textContent=s.paid||0;
     document.getElementById('invPend').textContent=s.pending||0;
     document.getElementById('invVol').textContent=(s.totalValue||0).toFixed(2);
-    const url=mmAddress?'/invoices?address='+mmAddress:'/invoices';
-    const invs=await fetch(url).then(r=>r.json());
-    document.getElementById('invList').innerHTML=invs.length?invs.map(i=>'<div class="inv-item"><div style="display:flex;justify-content:space-between;"><span style="color:#4fc3f7;font-size:11px;">'+i.id+'</span><span style="color:'+(i.status==='paid'?'#69f0ae':i.status==='cancelled'?'#ff8a80':'#ffd54f')+';font-size:11px;">'+i.status.toUpperCase()+'</span></div><div style="color:#e0e6f0;font-size:12px;">'+i.description+' — '+i.amount+' USDC</div>'+(i.status==='pending'?'<button class="btn btn-start" style="padding:4px 8px;font-size:10px;margin-top:4px;" onclick="payInv(\''+i.id+'\')">Mark Paid</button><button class="btn btn-stop" style="padding:4px 8px;font-size:10px;margin-top:4px;" onclick="cancelInv(\''+i.id+'\')">Cancel</button>':'')+'</div>').join(''):'<div style="color:#546e7a;font-size:12px;">No invoices</div>';
-  } catch(e){}
+  }).catch(function(){});
+  var url=mmAddress?'/invoices?address='+mmAddress:'/invoices';
+  fetch(url).then(function(r){return r.json();}).then(function(invs){
+    document.getElementById('invList').innerHTML=invs.length?invs.map(function(i){return '<div class="inv-item"><div style="display:flex;justify-content:space-between;"><span style="color:#4fc3f7;font-size:11px;">'+i.id+'</span><span style="color:'+(i.status==='paid'?'#69f0ae':i.status==='cancelled'?'#ff8a80':'#ffd54f')+';font-size:11px;">'+i.status+'</span></div><div style="color:#e0e6f0;font-size:12px;">'+i.description+' — '+i.amount+' USDC</div></div>';}).join(''):'<div style="color:#546e7a;font-size:12px;">No invoices</div>';
+  }).catch(function(){});
 }
-async function createInv(){const to=document.getElementById('invTo').value,amt=document.getElementById('invAmt').value,desc=document.getElementById('invDesc').value,due=document.getElementById('invDue').value,from=mmAddress||'kebs-agent-1';if(!to||!amt||!desc){document.getElementById('invResult').textContent='Fill all fields';return;}const d=await fetch('/invoices/create',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({from,to,amount:amt,description:desc,dueDate:due})}).then(r=>r.json());document.getElementById('invResult').textContent=d.id?'Created: '+d.id:'Error';fetchInvoices();}
-async function payInv(id){const d=await fetch('/invoices/pay/'+id,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({})}).then(r=>r.json());if(d.success)fetchInvoices();}
-async function cancelInv(id){const d=await fetch('/invoices/cancel/'+id,{method:'POST'}).then(r=>r.json());if(d.success)fetchInvoices();}
 
-// Prices
-async function fetchPrices() {
-  try {
-    const d=await fetch('/prices').then(r=>r.json());
-    const {latest,history}=d;
-    if(latest.usdc)document.getElementById('pUsdc').textContent='$'+(latest.usdc.price||0).toFixed(4);
-    if(latest.eth)document.getElementById('pEth').textContent='$'+(latest.eth.price||0).toLocaleString();
-    if(latest.btc)document.getElementById('pBtc').textContent='$'+(latest.btc.price||0).toLocaleString();
-    updateChart(history);
-  } catch(e){}
+function createInv(){
+  var to=document.getElementById('invTo').value,amt=document.getElementById('invAmt').value,desc=document.getElementById('invDesc').value,due=document.getElementById('invDue').value,from=mmAddress||'kebs-agent-1';
+  if(!to||!amt||!desc){document.getElementById('invResult').textContent='Fill all fields';return;}
+  fetch('/invoices/create',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({from:from,to:to,amount:amt,description:desc,dueDate:due})}).then(function(r){return r.json();}).then(function(d){document.getElementById('invResult').textContent=d.id?'Created: '+d.id:'Error';fetchInvoices();}).catch(function(e){document.getElementById('invResult').textContent='Error: '+e.message;});
 }
-function updateChart(history) {
-  const data=history[currentCoin]||[];
+
+function fetchPrices(){
+  fetch('/prices').then(function(r){return r.json();}).then(function(d){
+    var l=d.latest;
+    if(l.usdc)document.getElementById('pUsdc').textContent='$'+(l.usdc.price||0).toFixed(4);
+    if(l.eth)document.getElementById('pEth').textContent='$'+(l.eth.price||0).toLocaleString();
+    if(l.btc)document.getElementById('pBtc').textContent='$'+(l.btc.price||0).toLocaleString();
+    updateChart(d.history);
+  }).catch(function(){});
+}
+
+function updateChart(history){
+  var data=history[currentCoin]||[];
   if(!data.length)return;
-  const colors={eth:'#4fc3f7',btc:'#ffd54f',usdc:'#69f0ae'};
-  const ctx=document.getElementById('priceChart').getContext('2d');
+  var colors={eth:'#4fc3f7',btc:'#ffd54f',usdc:'#69f0ae'};
+  var ctx=document.getElementById('priceChart').getContext('2d');
   if(priceChartInstance)priceChartInstance.destroy();
-  priceChartInstance=new Chart(ctx,{type:'line',data:{labels:data.map(d=>d.time.slice(11,16)),datasets:[{label:currentCoin.toUpperCase()+' USD',data:data.map(d=>d.price),borderColor:colors[currentCoin],backgroundColor:colors[currentCoin]+'22',borderWidth:2,pointRadius:2,fill:true,tension:0.4}]},options:{responsive:true,plugins:{legend:{labels:{color:'#e0e6f0',font:{size:10}}}},scales:{x:{ticks:{color:'#546e7a',font:{size:9}},grid:{color:'#0f2040'}},y:{ticks:{color:'#546e7a',font:{size:9}},grid:{color:'#0f2040'}}}}});
+  priceChartInstance=new Chart(ctx,{type:'line',data:{labels:data.map(function(d){return d.time.slice(11,16);}),datasets:[{label:currentCoin.toUpperCase()+' USD',data:data.map(function(d){return d.price;}),borderColor:colors[currentCoin],backgroundColor:colors[currentCoin]+'22',borderWidth:2,pointRadius:2,fill:true,tension:0.4}]},options:{responsive:true,plugins:{legend:{labels:{color:'#e0e6f0',font:{size:10}}}},scales:{x:{ticks:{color:'#546e7a',font:{size:9}},grid:{color:'#0f2040'}},y:{ticks:{color:'#546e7a',font:{size:9}},grid:{color:'#0f2040'}}}}});
 }
+
 function showChart(coin){currentCoin=coin;fetchPrices();}
 
-// Chat
-function appendChat(role,text){const b=document.getElementById('chatBox');b.innerHTML+='<div style="margin-bottom:8px;"><span style="color:'+(role==='user'?'#81d4fa':'#69f0ae')+';font-weight:bold;">'+(role==='user'?'You':'Kebs AI')+':</span> <span style="color:#e0e6f0;">'+text+'</span></div>';b.scrollTop=b.scrollHeight;}
-async function sendChat(){const input=document.getElementById('chatInput'),msg=input.value.trim();if(!msg)return;input.value='';appendChat('user',msg);appendChat('assistant','Thinking...');try{const d=await fetch('/chat/message',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:msg})}).then(r=>r.json());const divs=document.getElementById('chatBox').querySelectorAll('div');divs[divs.length-1].innerHTML='<span style="color:#69f0ae;font-weight:bold;">Kebs AI:</span> <span style="color:#e0e6f0;">'+(d.reply||d.error)+'</span>';}catch(e){appendChat('assistant','Error: '+e.message);}}
+function appendChat(role,text){var b=document.getElementById('chatBox');b.innerHTML+='<div style="margin-bottom:8px;"><span style="color:'+(role==='user'?'#81d4fa':'#69f0ae')+';font-weight:bold;">'+(role==='user'?'You':'Kebs AI')+':</span> <span style="color:#e0e6f0;">'+text+'</span></div>';b.scrollTop=b.scrollHeight;}
+
+function sendChat(){
+  var input=document.getElementById('chatInput'),msg=input.value.trim();
+  if(!msg)return;
+  input.value='';
+  appendChat('user',msg);
+  appendChat('assistant','Thinking...');
+  fetch('/chat/message',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:msg})}).then(function(r){return r.json();}).then(function(d){
+    var divs=document.getElementById('chatBox').querySelectorAll('div');
+    divs[divs.length-1].innerHTML='<span style="color:#69f0ae;font-weight:bold;">Kebs AI:</span> <span style="color:#e0e6f0;">'+(d.reply||d.error)+'</span>';
+  }).catch(function(e){appendChat('assistant','Error: '+e.message);});
+}
+
 function qChat(msg){document.getElementById('chatInput').value=msg;sendChat();}
-async function clearChat(){await fetch('/chat/history',{method:'DELETE'});document.getElementById('chatBox').innerHTML='';}
+function clearChat(){fetch('/chat/history',{method:'DELETE'});document.getElementById('chatBox').innerHTML='';}
 
-// TX History
-async function fetchTx(){try{const txs=await fetch('/transactions').then(r=>r.json());document.getElementById('txList').innerHTML=txs.length?txs.map(t=>'<div style="border-bottom:1px solid #0f2040;padding:6px 0;"><span style="color:#4fc3f7;">'+t.type+'</span> <span style="color:#69f0ae;">'+t.amount+'</span> <span style="color:'+(t.status==='success'?'#69f0ae':'#ff8a80')+'">'+t.status+'</span></div>').join(''):'<div style="color:#546e7a;">No transactions yet</div>';}catch(e){}}
+function fetchTx(){
+  fetch('/transactions').then(function(r){return r.json();}).then(function(txs){
+    document.getElementById('txList').innerHTML=txs.length?txs.map(function(t){return '<div style="border-bottom:1px solid #0f2040;padding:6px 0;"><span style="color:#4fc3f7;">'+t.type+'</span> <span style="color:#69f0ae;">'+t.amount+'</span> <span style="color:'+(t.status==='success'?'#69f0ae':'#ff8a80')+'">'+t.status+'</span></div>';}).join(''):'<div style="color:#546e7a;">No transactions yet</div>';
+  }).catch(function(){});
+}
 
+// Auto-connect if already connected
+if (window.ethereum) {
+  window.ethereum.request({ method: 'eth_accounts' }).then(function(accounts) {
+    if (accounts && accounts.length > 0) {
+      mmAddress = accounts[0];
+      mmProvider = new ethers.providers.Web3Provider(window.ethereum);
+      mmSigner = mmProvider.getSigner();
+      showConnected();
+    }
+  }).catch(function(){});
+  window.ethereum.on('accountsChanged', function(accounts) {
+    if (accounts.length > 0) { mmAddress = accounts[0]; showConnected(); }
+    else disconnectMM();
+  });
+}
 
-window.addEventListener('load', async () => {
-  if (window.ethereum) {
-    try {
-      const accounts = await window.ethereum.request({ method: 'eth_accounts' });
-      if (accounts.length > 0) {
-        mmAddress = accounts[0];
-        mmProvider = new ethers.providers.Web3Provider(window.ethereum);
-        mmSigner = mmProvider.getSigner();
-        document.getElementById('mmOff').style.display = 'none';
-        document.getElementById('mmOn').style.display = 'block';
-        document.getElementById('mmAddr').textContent = mmAddress.slice(0,8)+'...'+mmAddress.slice(-6);
-        const net = await mmProvider.getNetwork();
-        document.getElementById('mmNet').textContent = net.name + '(' + net.chainId + ')';
-        const bal = await mmProvider.getBalance(mmAddress);
-        document.getElementById('mmBal').textContent = parseFloat(ethers.utils.formatEther(bal)).toFixed(4) + ' ETH';
-        fetchStaking();
-        fetchInvoices();
-        console.log('Auto-connected:', mmAddress);
-      }
-    } catch(e) { console.log('Auto-connect failed:', e.message); }
-  }
-});
-
-// Init
-appendChat('assistant','Hello! I am the Kebs Protocol AI. Ask me anything about DeFi, Arc Testnet, or your wallet!');
+appendChat('assistant', 'Hello! I am the Kebs Protocol AI. Ask me anything!');
 refresh();
-setInterval(refresh,30000);
+setInterval(refresh, 30000);
 fetchAgentPort();
-
-// replaced
-async function connectMM_backup() {
-  if (typeof window.ethereum === 'undefined') { alert('MetaMask not found!'); return; }
-  try {
-    const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-    if (accounts.length > 0) {
-      mmAddress = accounts[0];
-      mmProvider = new ethers.providers.Web3Provider(window.ethereum);
-      mmSigner = mmProvider.getSigner();
-      document.getElementById('mmOff').style.display = 'none';
-      document.getElementById('mmOn').style.display = 'block';
-      document.getElementById('mmAddr').textContent = mmAddress.slice(0,8)+'...'+mmAddress.slice(-6);
-      document.getElementById('mmNet').textContent = 'Connected';
-      document.getElementById('mmBal').textContent = 'Loading...';
-      try {
-        const bal = await mmProvider.getBalance(mmAddress);
-        document.getElementById('mmBal').textContent = parseFloat(ethers.utils.formatEther(bal)).toFixed(4) + ' ETH';
-      } catch(e) {}
-    }
-  } catch(e) { alert('Error: ' + e.message); }
-}
-
-
-
-async function connectMM() {
-  try {
-    const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-    mmAddress = accounts[0];
-    document.getElementById('mmOff').style.display = 'none';
-    document.getElementById('mmOn').style.display = 'block';
-    document.getElementById('mmAddr').textContent = mmAddress.slice(0,8)+'...'+mmAddress.slice(-6);
-    document.getElementById('mmNet').textContent = 'Chain ' + window.ethereum.chainId;
-    document.getElementById('mmBal').textContent = 'Connected';
-    try {
-      mmProvider = new ethers.providers.Web3Provider(window.ethereum);
-      mmSigner = mmProvider.getSigner();
-      const bal = await mmProvider.getBalance(mmAddress);
-      document.getElementById('mmBal').textContent = parseFloat(ethers.utils.formatEther(bal)).toFixed(4) + ' ETH';
-    } catch(e) { console.log('balance error', e); }
-  } catch(e) { alert('Error: ' + e.message); }
-}
-);
-    if (accounts.length > 0) {
-      mmAddress = accounts[0];
-      mmProvider = new ethers.providers.Web3Provider(window.ethereum);
-      mmSigner = mmProvider.getSigner();
-      document.getElementById('mmOff').style.display = 'none';
-      document.getElementById('mmOn').style.display = 'block';
-      document.getElementById('mmAddr').textContent = mmAddress.slice(0,8)+'...'+mmAddress.slice(-6);
-      document.getElementById('mmNet').textContent = 'Connected';
-      document.getElementById('mmBal').textContent = 'Loading...';
-      try {
-        const bal = await mmProvider.getBalance(mmAddress);
-        document.getElementById('mmBal').textContent = parseFloat(ethers.utils.formatEther(bal)).toFixed(4) + ' ETH';
-      } catch(e) {}
-    }
-  } catch(e) { alert('Error: ' + e.message); }
-}
-
 </script>
 </body>
 </html>
