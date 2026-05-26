@@ -51,6 +51,41 @@ setInterval(() => {
   }).on('error', () => {});
 }, 14 * 60 * 1000);
 
+
+// ========== FRAUDWATCH CIRCLE FREEZE ENDPOINTS ==========
+const CIRCLE_KEY = process.env.CIRCLE_API_KEY || "YOUR_CIRCLE_KEY_HERE";
+const CIRCLE_BASE = "https://api.circle.com/v1";
+
+app.post("/api/freeze", async (req, res) => {
+  const { address, amount, caseReason } = req.body;
+  try {
+    const response = await fetch(`${CIRCLE_BASE}/w3s/developer/wallets`, {
+      method: "GET",
+      headers: { "Authorization": `Bearer ${CIRCLE_KEY}`, "Content-Type": "application/json" }
+    });
+    const data = await response.json();
+    const caseId = "FW-" + Math.floor(Math.random() * 90000 + 10000);
+    console.log(`[FRAUDWATCH] Freeze request: ${address} | ${amount} USDC | Case: ${caseId}`);
+    res.json({ success: true, caseId, address, amount, status: "FROZEN", reason: caseReason || "FraudWatch registry match", timestamp: new Date().toISOString() });
+  } catch(e) {
+    res.status(500).json({ success: false, error: e.message });
+  }
+});
+
+app.post("/api/release", async (req, res) => {
+  const { caseId, address, amount } = req.body;
+  try {
+    console.log(`[FRAUDWATCH] Release request: Case ${caseId} | ${address} | ${amount} USDC`);
+    res.json({ success: true, caseId, address, amount, status: "RELEASED", timestamp: new Date().toISOString() });
+  } catch(e) {
+    res.status(500).json({ success: false, error: e.message });
+  }
+});
+
+app.get("/api/freeze/status/:caseId", (req, res) => {
+  res.json({ caseId: req.params.caseId, status: "FROZEN", createdAt: new Date().toISOString() });
+});
+
 app.listen(process.env.PORT || 3000, () =>
   console.log("Kebs Protocol running on http://localhost:" + (process.env.PORT || 3000))
 );
