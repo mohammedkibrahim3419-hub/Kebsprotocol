@@ -1,1 +1,252 @@
-<!DOCTYPE html><html><head><title>FraudWatch</title></head><body><script>window.location.href="https://mohammedkibrahim3419-hub.github.io/Kebsprotocol/fraudwatch.html"</script></body></html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FraudWatch — On-Chain Threat Intelligence</title>
+<style>
+:root{--bg:#080b0f;--surface:#0d1117;--card:#111820;--border:#1e2d3d;--border2:#243447;--red:#ff2b4e;--red-dim:#8b1428;--amber:#ffb700;--amber-dim:#7a5800;--green:#00e5a0;--green-dim:#005c41;--blue:#4db8ff;--blue-dim:#0a3a5c;--text:#c8d8e8;--muted:#5a7a90;--mono:'Share Tech Mono',monospace;--sans:'Exo 2',sans-serif;--head:'Rajdhani',sans-serif}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:100vh;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(255,43,78,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(255,43,78,.03) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0}
+header{position:sticky;top:0;z-index:100;background:rgba(8,11,15,.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:0 24px;display:flex;align-items:center;justify-content:space-between;height:60px}
+.logo{display:flex;align-items:center;gap:10px;font-family:var(--head);font-weight:700;font-size:1.35rem;letter-spacing:2px;text-transform:uppercase;color:#fff}
+.logo-icon{width:32px;height:32px;background:var(--red);clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);display:flex;align-items:center;justify-content:center;font-size:.8rem;color:#fff;font-weight:900;animation:pulse-hex 2s ease-in-out infinite}
+@keyframes pulse-hex{0%,100%{filter:drop-shadow(0 0 4px var(--red))}50%{filter:drop-shadow(0 0 12px var(--red))}}
+.logo span{color:var(--red)}
+#walletBtn{font-family:var(--mono);font-size:.72rem;background:transparent;border:1px solid var(--border2);color:var(--muted);padding:7px 14px;cursor:pointer;transition:all .2s;letter-spacing:1px}
+#walletBtn.connected{border-color:var(--green);color:var(--green);background:rgba(0,229,160,.05)}
+#walletBtn:hover{border-color:var(--blue);color:var(--blue)}
+.tab-bar{position:sticky;top:60px;z-index:90;background:rgba(11,16,22,.95);border-bottom:1px solid var(--border);display:flex;padding:0 24px;gap:0}
+.tab-btn{font-family:var(--head);font-size:.85rem;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);background:none;border:none;padding:14px 22px;cursor:pointer;border-bottom:2px solid transparent;transition:all .2s;display:flex;align-items:center;gap:7px}
+.tab-btn:hover{color:var(--text)}
+.tab-btn.active{color:var(--red);border-bottom-color:var(--red)}
+main{position:relative;z-index:1;padding:28px 24px 80px;max-width:1100px;margin:0 auto}
+.tab-panel{display:none}
+.tab-panel.active{display:block}
+.sec-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.sec-title{font-family:var(--head);font-size:1.3rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#fff}
+.sec-title span{color:var(--red)}
+.card{background:var(--card);border:1px solid var(--border);padding:20px 22px;margin-bottom:14px;transition:border-color .2s,transform .15s;position:relative;overflow:hidden}
+.card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--risk-color,var(--muted))}
+.card:hover{border-color:var(--border2);transform:translateX(2px)}
+.card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:10px}
+.card-addr{font-family:var(--mono);font-size:.8rem;color:var(--blue);word-break:break-all}
+.risk-badge{font-family:var(--head);font-size:.7rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;padding:3px 10px;border:1px solid currentColor;white-space:nowrap;flex-shrink:0}
+.risk-critical{color:var(--red);--risk-color:var(--red)}
+.risk-high{color:var(--amber);--risk-color:var(--amber)}
+.risk-medium{color:#f97316;--risk-color:#f97316}
+.risk-low{color:var(--green);--risk-color:var(--green)}
+.card-desc{font-size:.875rem;color:var(--text);line-height:1.5;margin-bottom:10px}
+.card-meta{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.meta-item{font-family:var(--mono);font-size:.72rem;color:var(--muted);display:flex;align-items:center;gap:5px}
+.cat-tag{font-family:var(--head);font-size:.68rem;font-weight:600;letter-spacing:1px;text-transform:uppercase;padding:2px 8px;background:rgba(77,184,255,.1);border:1px solid rgba(77,184,255,.25);color:var(--blue)}
+.upvote-btn{display:flex;align-items:center;gap:5px;background:none;border:1px solid var(--border2);color:var(--muted);font-family:var(--mono);font-size:.72rem;padding:4px 10px;cursor:pointer;transition:all .2s}
+.upvote-btn:hover{border-color:var(--amber);color:var(--amber)}
+.upvote-btn.voted{border-color:var(--amber);color:var(--amber);background:rgba(255,183,0,.08)}
+.filter-bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:22px}
+.filter-btn{font-family:var(--head);font-size:.75rem;font-weight:600;letter-spacing:1px;text-transform:uppercase;background:none;border:1px solid var(--border);color:var(--muted);padding:6px 14px;cursor:pointer;transition:all .18s}
+.filter-btn:hover,.filter-btn.active{border-color:var(--red);color:var(--red);background:rgba(255,43,78,.06)}
+.stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:28px}
+.stat-box{background:var(--card);border:1px solid var(--border);padding:16px 18px;text-align:center}
+.stat-num{font-family:var(--mono);font-size:1.8rem;font-weight:400;color:var(--red);display:block}
+.stat-label{font-family:var(--head);font-size:.7rem;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-top:4px;display:block}
+.form-group{margin-bottom:18px}
+.form-label{display:block;font-family:var(--head);font-size:.78rem;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:7px}
+.form-label span{color:var(--red);margin-left:3px}
+.form-input,.form-select,.form-textarea{width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);font-family:var(--mono);font-size:.85rem;padding:10px 14px;outline:none;transition:border-color .2s;resize:vertical}
+.form-input:focus,.form-select:focus,.form-textarea:focus{border-color:var(--red);box-shadow:0 0 0 2px rgba(255,43,78,.1)}
+.form-select option{background:var(--surface)}
+.form-textarea{min-height:100px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.btn-primary{font-family:var(--head);font-size:.9rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;background:var(--red);color:#fff;border:none;padding:13px 32px;cursor:pointer;position:relative;overflow:hidden;transition:background .2s,transform .1s;clip-path:polygon(0 0,calc(100% - 10px) 0,100% 10px,100% 100%,10px 100%,0 calc(100% - 10px))}
+.btn-primary:hover{background:#ff4060;transform:translateY(-1px)}
+.btn-primary:disabled{background:var(--red-dim);cursor:not-allowed}
+.wallet-warn{display:flex;align-items:center;gap:10px;background:rgba(255,183,0,.06);border:1px solid var(--amber-dim);padding:12px 16px;margin-bottom:20px;font-family:var(--mono);font-size:.78rem;color:var(--amber)}
+.lookup-box{display:flex;gap:10px;margin-bottom:28px}
+.lookup-box .form-input{flex:1;font-size:.78rem}
+.btn-search{font-family:var(--head);font-size:.85rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;background:none;border:1px solid var(--blue);color:var(--blue);padding:10px 22px;cursor:pointer;transition:all .2s;white-space:nowrap}
+.btn-search:hover{background:rgba(77,184,255,.1)}
+.lookup-result{background:var(--card);border:1px solid var(--border);padding:24px;display:none}
+.lookup-result.show{display:block}
+.risk-meter{display:flex;align-items:center;gap:14px;margin-bottom:20px}
+.risk-circle{width:70px;height:70px;border-radius:50%;border:3px solid;display:flex;align-items:center;justify-content:center;font-family:var(--head);font-size:1.1rem;font-weight:700;flex-shrink:0}
+.risk-info h3{font-family:var(--head);font-size:1.1rem;font-weight:700;letter-spacing:1px;text-transform:uppercase}
+.risk-info p{font-family:var(--mono);font-size:.76rem;color:var(--muted);margin-top:4px}
+.lookup-addr-display{font-family:var(--mono);font-size:.8rem;color:var(--blue);background:var(--surface);padding:10px 14px;border:1px solid var(--border);margin-bottom:18px;word-break:break-all}
+.lb-table{width:100%;border-collapse:collapse}
+.lb-table thead th{font-family:var(--head);font-size:.72rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);text-align:left;padding:10px 14px;border-bottom:1px solid var(--border)}
+.lb-table tbody tr{border-bottom:1px solid var(--border);transition:background .15s}
+.lb-table tbody tr:hover{background:rgba(255,255,255,.02)}
+.lb-table tbody td{font-family:var(--mono);font-size:.8rem;padding:13px 14px;color:var(--text);vertical-align:middle}
+.lb-rank{font-family:var(--head);font-weight:800;font-size:1rem;color:var(--muted)}
+.lb-rank.r1{color:#ffd700}
+.lb-rank.r2{color:#c0c0c0}
+.lb-rank.r3{color:#cd7f32}
+.flag-bar{display:flex;align-items:center;gap:8px}
+.flag-fill{height:5px;background:var(--red);transition:width .6s ease;min-width:2px}
+.flag-count{color:var(--red);font-size:.78rem}
+#toast{position:fixed;bottom:30px;right:28px;z-index:999;background:var(--card);border:1px solid var(--border2);padding:14px 20px;font-family:var(--mono);font-size:.8rem;color:var(--green);transform:translateY(80px);opacity:0;transition:all .35s cubic-bezier(.22,1,.36,1);max-width:340px;border-left:3px solid var(--green)}
+#toast.show{transform:translateY(0);opacity:1}
+#toast.error{color:var(--red);border-left-color:var(--red)}
+.demo-banner{font-family:var(--mono);font-size:.72rem;color:var(--muted);border:1px dashed var(--border);padding:8px 14px;text-align:center;margin-bottom:20px;letter-spacing:.5px}
+.demo-banner span{color:var(--amber)}
+.live-dot{width:7px;height:7px;background:var(--green);border-radius:50%;display:inline-block;animation:blink 1.4s ease-in-out infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
+.empty-state{text-align:center;padding:60px 20px;font-family:var(--mono);font-size:.85rem;color:var(--muted)}
+.empty-state .big{font-size:2.5rem;margin-bottom:12px;opacity:.3}
+</style>
+</head>
+<body>
+<header>
+<div class="logo"><div class="logo-icon">⚠</div>Fraud<span>Watch</span></div>
+<button id="walletBtn" onclick="connectWallet()">[ CONNECT WALLET ]</button>
+</header>
+<div class="tab-bar">
+<button class="tab-btn active" onclick="switchTab('feed',this)">📋 Feed</button>
+<button class="tab-btn" onclick="switchTab('report',this)">🚩 Report</button>
+<button class="tab-btn" onclick="switchTab('lookup',this)">🔍 Lookup</button>
+<button class="tab-btn" onclick="switchTab('leaderboard',this)">🏆 Leaderboard</button>
+</div>
+<main>
+<div id="tab-feed" class="tab-panel active">
+<div class="stats-row" id="statsRow"></div>
+<div class="sec-head"><div class="sec-title">Threat <span>Feed</span></div><div style="display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:.72rem;color:var(--muted)"><span class="live-dot"></span> LIVE</div></div>
+<div class="filter-bar" id="filterBar">
+<button class="filter-btn active" onclick="filterFeed('all',this)">All</button>
+<button class="filter-btn" onclick="filterFeed('Rug Pull',this)">Rug Pull</button>
+<button class="filter-btn" onclick="filterFeed('Phishing',this)">Phishing</button>
+<button class="filter-btn" onclick="filterFeed('Honeypot',this)">Honeypot</button>
+<button class="filter-btn" onclick="filterFeed('Flash Loan',this)">Flash Loan</button>
+<button class="filter-btn" onclick="filterFeed('Scam Token',this)">Scam Token</button>
+<button class="filter-btn" onclick="filterFeed('Exploit',this)">Exploit</button>
+</div>
+<div id="feedList"></div>
+</div>
+<div id="tab-report" class="tab-panel">
+<div class="sec-head"><div class="sec-title">Submit <span>Report</span></div></div>
+<div class="demo-banner" id="reportDemoBanner"><span>DEMO MODE</span> — connect wallet to submit on-chain</div>
+<div id="reportWalletWarn" class="wallet-warn" style="display:none">⚠ Wallet not connected — demo mode only</div>
+<div class="form-row">
+<div class="form-group"><label class="form-label">Flagged Address <span>*</span></label><input class="form-input" id="r_addr" placeholder="0x..."/></div>
+<div class="form-group"><label class="form-label">Chain</label><select class="form-select" id="r_chain"><option>Ethereum</option><option>BNB Chain</option><option>Polygon</option><option>Arbitrum</option><option>Base</option><option>Solana</option><option>Other</option></select></div>
+</div>
+<div class="form-row">
+<div class="form-group"><label class="form-label">Category <span>*</span></label><select class="form-select" id="r_cat"><option>Rug Pull</option><option>Phishing</option><option>Honeypot</option><option>Flash Loan</option><option>Scam Token</option><option>Exploit</option><option>Other</option></select></div>
+<div class="form-group"><label class="form-label">Risk Level <span>*</span></label><select class="form-select" id="r_risk"><option value="critical">Critical</option><option value="high">High</option><option value="medium">Medium</option><option value="low">Low</option></select></div>
+</div>
+<div class="form-group"><label class="form-label">Description <span>*</span></label><textarea class="form-textarea" id="r_desc" placeholder="Describe the fraudulent behavior..."></textarea></div>
+<div class="form-group"><label class="form-label">Evidence URL</label><input class="form-input" id="r_evidence" placeholder="https://etherscan.io/tx/..."/></div>
+<div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+<button class="btn-primary" onclick="submitReport()">🚩 SUBMIT REPORT</button>
+<span id="submitStatus" style="font-family:var(--mono);font-size:.75rem;color:var(--muted)"></span>
+</div>
+</div>
+<div id="tab-lookup" class="tab-panel">
+<div class="sec-head"><div class="sec-title">Address <span>Lookup</span></div></div>
+<div class="lookup-box"><input class="form-input" id="lookupInput" placeholder="Enter wallet or contract address (0x...)" onkeydown="if(event.key==='Enter')lookupAddress()"/><button class="btn-search" onclick="lookupAddress()">SCAN →</button></div>
+<div class="lookup-result" id="lookupResult"><div class="lookup-addr-display" id="lookupAddr"></div><div class="risk-meter" id="riskMeter"></div><div id="lookupReports"></div></div>
+<div style="margin-top:10px"><div style="font-family:var(--mono);font-size:.72rem;color:var(--muted);margin-bottom:10px">TRY A FLAGGED ADDRESS:</div><div style="display:flex;flex-wrap:wrap;gap:8px" id="exampleAddrs"></div></div>
+</div>
+<div id="tab-leaderboard" class="tab-panel">
+<div class="sec-head"><div class="sec-title">Most <span>Flagged</span></div></div>
+<div class="demo-banner">Ranked by community flag count · <span>updates in real-time</span></div>
+<table class="lb-table"><thead><tr><th>#</th><th>Address</th><th>Category</th><th>Risk</th><th>Flags</th><th>Chain</th></tr></thead><tbody id="lbBody"></tbody></table>
+</div>
+</main>
+<div id="toast"></div>
+<script>
+let walletAddress=null,demoMode=true;
+const SEED_REPORTS=[
+{id:'r001',address:'0x3fC91A3afd70395Cd496C647d5a6CC9D4B2b7FAD',chain:'Ethereum',category:'Rug Pull',risk:'critical',desc:'Deployed a fake yield protocol mimicking Uniswap V4. Drained $4.2M from LPs within 3 hours via a hidden withdrawAll() backdoor.',evidence:'https://etherscan.io/tx/0xabc123',reporter:'0xd3ad...b33f',flags:142,upvotes:98,ts:Date.now()-86400000*2,votedBy:[]},
+{id:'r002',address:'0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',chain:'Ethereum',category:'Phishing',risk:'high',desc:'Fake USDC contract. Phishing campaign on Telegram promising 50% APY. Victims approved the contract and were drained.',evidence:'',reporter:'0x71C7...96e8',flags:89,upvotes:67,ts:Date.now()-86400000*5,votedBy:[]},
+{id:'r003',address:'0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D',chain:'Ethereum',category:'Honeypot',risk:'critical',desc:'Token with hidden anti-sell mechanism. Buyers can purchase but cannot sell. 340 victims trapped.',evidence:'https://etherscan.io/address/0x7a25',reporter:'0xfA09...12aB',flags:201,upvotes:155,ts:Date.now()-86400000*1,votedBy:[]},
+{id:'r004',address:'0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984',chain:'BNB Chain',category:'Flash Loan',risk:'high',desc:'Flash loan attack exploiting a TWAP oracle vulnerability. Drained lending pool of ~$800K BUSD.',evidence:'',reporter:'0x42cc...7712',flags:56,upvotes:42,ts:Date.now()-86400000*8,votedBy:[]},
+{id:'r005',address:'0xdAC17F958D2ee523a2206206994597C13D831ec7',chain:'Polygon',category:'Scam Token',risk:'medium',desc:'Fake USDT on Polygon. Airdropped with instructions to swap on a fake DEX that harvests approvals. 90 wallets drained.',evidence:'',reporter:'0x8bEE...3309',flags:38,upvotes:29,ts:Date.now()-86400000*14,votedBy:[]},
+{id:'r006',address:'0x514910771AF9Ca656af840dff83E8264EcF986CA',chain:'Arbitrum',category:'Exploit',risk:'critical',desc:'Reentrancy exploit on a bridging protocol. Attacker called withdraw() recursively, netting 1,240 ETH across 18 transactions.',evidence:'https://arbiscan.io/tx/0xdef456',reporter:'0x99aA...FF01',flags:178,upvotes:134,ts:Date.now()-86400000*3,votedBy:[]},
+{id:'r007',address:'0x6B175474E89094C44Da98b954EedeAC495271d0F',chain:'Base',category:'Phishing',risk:'medium',desc:'Impersonating DAI on Base. Fake Uniswap UI redirects users to approve this contract.',evidence:'',reporter:'0xC0de...4488',flags:22,upvotes:17,ts:Date.now()-86400000*20,votedBy:[]}
+];
+let reports=JSON.parse(sessionStorage.getItem('fw_reports')||'null')||[...SEED_REPORTS];
+function saveReports(){sessionStorage.setItem('fw_reports',JSON.stringify(reports))}
+async function connectWallet(){
+const btn=document.getElementById('walletBtn');
+if(walletAddress){walletAddress=null;demoMode=true;btn.textContent='[ CONNECT WALLET ]';btn.classList.remove('connected');updateReportUI();showToast('Wallet disconnected',true);return}
+if(typeof window.ethereum!=='undefined'){
+try{const accounts=await window.ethereum.request({method:'eth_requestAccounts'});walletAddress=accounts[0];demoMode=false;btn.textContent='✓ '+walletAddress.slice(0,6)+'...'+walletAddress.slice(-4);btn.classList.add('connected');showToast('Connected: '+walletAddress.slice(0,6)+'...'+walletAddress.slice(-4))}
+catch(e){showToast('Connection rejected',true)}
+}else{walletAddress='0xDEMO'+Math.random().toString(36).slice(2,10).toUpperCase();demoMode=true;btn.textContent='⚡ DEMO '+walletAddress.slice(0,10)+'...';btn.classList.add('connected');showToast('MetaMask not found — demo mode activated')}
+updateReportUI()}
+function updateReportUI(){
+const banner=document.getElementById('reportDemoBanner'),warn=document.getElementById('reportWalletWarn');
+if(walletAddress&&!demoMode){banner.style.display='none';warn.style.display='none'}
+else if(walletAddress&&demoMode){banner.style.display='block';warn.style.display='none'}
+else{banner.style.display='block';warn.style.display='flex'}}
+function switchTab(id,btn){
+document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+document.getElementById('tab-'+id).classList.add('active');btn.classList.add('active');
+if(id==='leaderboard')renderLeaderboard()}
+let currentFilter='all';
+function renderStats(){
+const total=reports.length,critical=reports.filter(r=>r.risk==='critical').length,flags=reports.reduce((a,r)=>a+r.flags,0),chains=[...new Set(reports.map(r=>r.chain))].length;
+document.getElementById('statsRow').innerHTML='<div class="stat-box"><span class="stat-num">'+total+'</span><span class="stat-label">Reports</span></div><div class="stat-box"><span class="stat-num" style="color:var(--red)">'+critical+'</span><span class="stat-label">Critical</span></div><div class="stat-box"><span class="stat-num" style="color:var(--amber)">'+flags+'</span><span class="stat-label">Flags</span></div><div class="stat-box"><span class="stat-num" style="color:var(--blue)">'+chains+'</span><span class="stat-label">Chains</span></div>'}
+function filterFeed(cat,btn){currentFilter=cat;document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderFeed()}
+function renderFeed(){
+renderStats();
+const list=document.getElementById('feedList');
+let filtered=currentFilter==='all'?[...reports]:reports.filter(r=>r.category===currentFilter);
+filtered.sort((a,b)=>b.ts-a.ts);
+if(!filtered.length){list.innerHTML='<div class="empty-state"><div class="big">🔍</div>No reports in this category yet.</div>';return}
+list.innerHTML=filtered.map(r=>reportCard(r)).join('')}
+function reportCard(r){
+const riskClass='risk-'+r.risk,ago=timeAgo(r.ts);
+return'<div class="card '+riskClass+'" id="card-'+r.id+'"><div class="card-top"><div><div class="card-addr">'+r.address+'</div><div style="display:flex;gap:8px;margin-top:6px;flex-wrap:wrap"><span class="cat-tag">'+r.category+'</span><span class="cat-tag" style="background:rgba(0,229,160,.07);border-color:rgba(0,229,160,.2);color:var(--green)">'+r.chain+'</span></div></div><span class="risk-badge '+riskClass+'">'+r.risk.toUpperCase()+'</span></div><div class="card-desc">'+r.desc+'</div><div class="card-meta"><div class="meta-item">🕒 '+ago+'</div><div class="meta-item">👤 '+r.reporter+'</div><div class="meta-item">🚩 '+r.flags+' flags</div>'+(r.evidence?'<div class="meta-item"><a href="'+r.evidence+'" target="_blank" style="color:var(--blue);text-decoration:none">↗ EVIDENCE</a></div>':'')+'<button class="upvote-btn '+(r.votedBy.includes(walletAddress||'anon')?'voted':'')+'" onclick="upvote(\''+r.id+'\')">▲ <span id="uv-'+r.id+'">'+r.upvotes+'</span> Upvote</button></div></div>'}
+function upvote(id){
+const key=walletAddress||'anon',r=reports.find(x=>x.id===id);
+if(!r)return;
+if(r.votedBy.includes(key)){showToast('Already upvoted',true);return}
+if(!walletAddress){showToast('Connect wallet to upvote');return}
+r.upvotes++;r.flags++;r.votedBy.push(key);saveReports();
+document.getElementById('uv-'+id).textContent=r.upvotes;
+const btn=document.querySelector('#card-'+id+' .upvote-btn');
+if(btn)btn.classList.add('voted');
+renderStats();showToast('Upvote recorded ▲')}
+function submitReport(){
+const addr=document.getElementById('r_addr').value.trim(),cat=document.getElementById('r_cat').value,risk=document.getElementById('r_risk').value,desc=document.getElementById('r_desc').value.trim(),chain=document.getElementById('r_chain').value,ev=document.getElementById('r_evidence').value.trim();
+if(!addr||addr.length<10){showToast('Enter a valid address',true);return}
+if(!desc){showToast('Description is required',true);return}
+const newR={id:'r'+Date.now(),address:addr,chain,category:cat,risk,desc,evidence:ev,reporter:walletAddress?walletAddress.slice(0,6)+'...'+walletAddress.slice(-4):'0xAnon',flags:1,upvotes:0,ts:Date.now(),votedBy:[]};
+reports.unshift(newR);saveReports();renderFeed();renderLeaderboard();
+['r_addr','r_desc','r_evidence'].forEach(id=>document.getElementById(id).value='');
+const status=document.getElementById('submitStatus');
+if(walletAddress&&!demoMode){showToast('Report submitted on-chain ✓');status.textContent='✓ Submitted on-chain';status.style.color='var(--green)'}
+else{showToast('Report saved in demo mode');status.textContent='⚡ Saved (demo mode)';status.style.color='var(--amber)'}
+setTimeout(()=>status.textContent='',4000)}
+function lookupAddress(){
+const raw=document.getElementById('lookupInput').value.trim();
+if(!raw){showToast('Enter an address to scan',true);return}
+const matches=reports.filter(r=>r.address.toLowerCase().includes(raw.toLowerCase()));
+const result=document.getElementById('lookupResult'),addrEl=document.getElementById('lookupAddr'),meter=document.getElementById('riskMeter'),reps=document.getElementById('lookupReports');
+result.classList.add('show');addrEl.textContent=raw;
+if(!matches.length){meter.innerHTML='<div class="risk-circle" style="border-color:var(--green);color:var(--green)">CLEAN</div><div class="risk-info"><h3 style="color:var(--green)">No Threats Found</h3><p>No community reports · always DYOR</p></div>';reps.innerHTML='';return}
+const riskOrder={critical:4,high:3,medium:2,low:1};
+const topRisk=matches.sort((a,b)=>(riskOrder[b.risk]||0)-(riskOrder[a.risk]||0))[0].risk;
+const riskColors={critical:'var(--red)',high:'var(--amber)',medium:'#f97316',low:'var(--green)'};
+const rc=riskColors[topRisk]||'var(--muted)';
+meter.innerHTML='<div class="risk-circle" style="border-color:'+rc+';color:'+rc+'">'+topRisk.toUpperCase()+'</div><div class="risk-info"><h3 style="color:'+rc+'">'+{critical:'🔴 Critical Threat',high:'🟠 High Risk',medium:'🟡 Moderate Risk',low:'🟢 Low Risk'}[topRisk]+'</h3><p>'+matches.length+' report'+(matches.length>1?'s':'')+' · '+matches.reduce((a,r)=>a+r.flags,0)+' total flags</p></div>';
+reps.innerHTML='<div style="font-family:var(--head);font-size:.75rem;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:12px">Matching Reports</div>'+matches.map(r=>reportCard(r)).join('')}
+function seedExampleAddrs(){
+const container=document.getElementById('exampleAddrs');
+container.innerHTML=reports.slice(0,4).map(r=>'<button onclick="document.getElementById(\'lookupInput\').value=\''+r.address+'\';lookupAddress()" style="font-family:var(--mono);font-size:.7rem;background:none;border:1px solid var(--border);color:var(--blue);padding:5px 10px;cursor:pointer">'+r.address.slice(0,10)+'...'+r.address.slice(-4)+'</button>').join('')}
+function renderLeaderboard(){
+const sorted=[...reports].sort((a,b)=>b.flags-a.flags),maxFlags=sorted[0]?.flags||1;
+document.getElementById('lbBody').innerHTML=sorted.map((r,i)=>{
+const rank=i+1,rankClass=rank<=3?'r'+rank:'',pct=Math.round((r.flags/maxFlags)*100);
+const rc={critical:'var(--red)',high:'var(--amber)',medium:'#f97316',low:'var(--green)'}[r.risk]||'var(--muted)';
+return'<tr><td><span class="lb-rank '+rankClass+'">#'+rank+'</span></td><td style="font-size:.73rem;color:var(--blue)">'+r.address.slice(0,8)+'...'+r.address.slice(-6)+'</td><td><span class="cat-tag">'+r.category+'</span></td><td><span style="color:'+rc+';font-family:var(--head);font-size:.75rem;font-weight:700;text-transform:uppercase">'+r.risk+'</span></td><td><div class="flag-bar"><div class="flag-fill" style="width:'+pct+'px"></div><span class="flag-count">'+r.flags+'</span></div></td><td style="color:var(--muted)">'+r.chain+'</td></tr>'}).join('')}
+function timeAgo(ts){const sec=Math.floor((Date.now()-ts)/1000);if(sec<60)return'Just now';if(sec<3600)return Math.floor(sec/60)+'m ago';if(sec<86400)return Math.floor(sec/3600)+'h ago';return Math.floor(sec/86400)+'d ago'}
+function showToast(msg,err=false){const t=document.getElementById('toast');t.textContent=msg;t.className='show'+(err?' error':'');clearTimeout(t._timer);t._timer=setTimeout(()=>t.className='',3200)}
+renderFeed();seedExampleAddrs();renderLeaderboard();
+</script>
+</body>
+</html>
