@@ -1,252 +1,622 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>FraudWatch — On-Chain Threat Intelligence</title>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>FraudWatch - Arc Testnet</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
-:root{--bg:#080b0f;--surface:#0d1117;--card:#111820;--border:#1e2d3d;--border2:#243447;--red:#ff2b4e;--red-dim:#8b1428;--amber:#ffb700;--amber-dim:#7a5800;--green:#00e5a0;--green-dim:#005c41;--blue:#4db8ff;--blue-dim:#0a3a5c;--text:#c8d8e8;--muted:#5a7a90;--mono:'Share Tech Mono',monospace;--sans:'Exo 2',sans-serif;--head:'Rajdhani',sans-serif}
-*{box-sizing:border-box;margin:0;padding:0}
-body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:100vh;overflow-x:hidden}
-body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(255,43,78,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(255,43,78,.03) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0}
-header{position:sticky;top:0;z-index:100;background:rgba(8,11,15,.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:0 24px;display:flex;align-items:center;justify-content:space-between;height:60px}
-.logo{display:flex;align-items:center;gap:10px;font-family:var(--head);font-weight:700;font-size:1.35rem;letter-spacing:2px;text-transform:uppercase;color:#fff}
-.logo-icon{width:32px;height:32px;background:var(--red);clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);display:flex;align-items:center;justify-content:center;font-size:.8rem;color:#fff;font-weight:900;animation:pulse-hex 2s ease-in-out infinite}
-@keyframes pulse-hex{0%,100%{filter:drop-shadow(0 0 4px var(--red))}50%{filter:drop-shadow(0 0 12px var(--red))}}
-.logo span{color:var(--red)}
-#walletBtn{font-family:var(--mono);font-size:.72rem;background:transparent;border:1px solid var(--border2);color:var(--muted);padding:7px 14px;cursor:pointer;transition:all .2s;letter-spacing:1px}
-#walletBtn.connected{border-color:var(--green);color:var(--green);background:rgba(0,229,160,.05)}
-#walletBtn:hover{border-color:var(--blue);color:var(--blue)}
-.tab-bar{position:sticky;top:60px;z-index:90;background:rgba(11,16,22,.95);border-bottom:1px solid var(--border);display:flex;padding:0 24px;gap:0}
-.tab-btn{font-family:var(--head);font-size:.85rem;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);background:none;border:none;padding:14px 22px;cursor:pointer;border-bottom:2px solid transparent;transition:all .2s;display:flex;align-items:center;gap:7px}
-.tab-btn:hover{color:var(--text)}
-.tab-btn.active{color:var(--red);border-bottom-color:var(--red)}
-main{position:relative;z-index:1;padding:28px 24px 80px;max-width:1100px;margin:0 auto}
-.tab-panel{display:none}
-.tab-panel.active{display:block}
-.sec-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
-.sec-title{font-family:var(--head);font-size:1.3rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#fff}
-.sec-title span{color:var(--red)}
-.card{background:var(--card);border:1px solid var(--border);padding:20px 22px;margin-bottom:14px;transition:border-color .2s,transform .15s;position:relative;overflow:hidden}
-.card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--risk-color,var(--muted))}
-.card:hover{border-color:var(--border2);transform:translateX(2px)}
-.card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:10px}
-.card-addr{font-family:var(--mono);font-size:.8rem;color:var(--blue);word-break:break-all}
-.risk-badge{font-family:var(--head);font-size:.7rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;padding:3px 10px;border:1px solid currentColor;white-space:nowrap;flex-shrink:0}
-.risk-critical{color:var(--red);--risk-color:var(--red)}
-.risk-high{color:var(--amber);--risk-color:var(--amber)}
-.risk-medium{color:#f97316;--risk-color:#f97316}
-.risk-low{color:var(--green);--risk-color:var(--green)}
-.card-desc{font-size:.875rem;color:var(--text);line-height:1.5;margin-bottom:10px}
-.card-meta{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
-.meta-item{font-family:var(--mono);font-size:.72rem;color:var(--muted);display:flex;align-items:center;gap:5px}
-.cat-tag{font-family:var(--head);font-size:.68rem;font-weight:600;letter-spacing:1px;text-transform:uppercase;padding:2px 8px;background:rgba(77,184,255,.1);border:1px solid rgba(77,184,255,.25);color:var(--blue)}
-.upvote-btn{display:flex;align-items:center;gap:5px;background:none;border:1px solid var(--border2);color:var(--muted);font-family:var(--mono);font-size:.72rem;padding:4px 10px;cursor:pointer;transition:all .2s}
-.upvote-btn:hover{border-color:var(--amber);color:var(--amber)}
-.upvote-btn.voted{border-color:var(--amber);color:var(--amber);background:rgba(255,183,0,.08)}
-.filter-bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:22px}
-.filter-btn{font-family:var(--head);font-size:.75rem;font-weight:600;letter-spacing:1px;text-transform:uppercase;background:none;border:1px solid var(--border);color:var(--muted);padding:6px 14px;cursor:pointer;transition:all .18s}
-.filter-btn:hover,.filter-btn.active{border-color:var(--red);color:var(--red);background:rgba(255,43,78,.06)}
-.stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:28px}
-.stat-box{background:var(--card);border:1px solid var(--border);padding:16px 18px;text-align:center}
-.stat-num{font-family:var(--mono);font-size:1.8rem;font-weight:400;color:var(--red);display:block}
-.stat-label{font-family:var(--head);font-size:.7rem;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-top:4px;display:block}
-.form-group{margin-bottom:18px}
-.form-label{display:block;font-family:var(--head);font-size:.78rem;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:7px}
-.form-label span{color:var(--red);margin-left:3px}
-.form-input,.form-select,.form-textarea{width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);font-family:var(--mono);font-size:.85rem;padding:10px 14px;outline:none;transition:border-color .2s;resize:vertical}
-.form-input:focus,.form-select:focus,.form-textarea:focus{border-color:var(--red);box-shadow:0 0 0 2px rgba(255,43,78,.1)}
-.form-select option{background:var(--surface)}
-.form-textarea{min-height:100px}
-.form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-.btn-primary{font-family:var(--head);font-size:.9rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;background:var(--red);color:#fff;border:none;padding:13px 32px;cursor:pointer;position:relative;overflow:hidden;transition:background .2s,transform .1s;clip-path:polygon(0 0,calc(100% - 10px) 0,100% 10px,100% 100%,10px 100%,0 calc(100% - 10px))}
-.btn-primary:hover{background:#ff4060;transform:translateY(-1px)}
-.btn-primary:disabled{background:var(--red-dim);cursor:not-allowed}
-.wallet-warn{display:flex;align-items:center;gap:10px;background:rgba(255,183,0,.06);border:1px solid var(--amber-dim);padding:12px 16px;margin-bottom:20px;font-family:var(--mono);font-size:.78rem;color:var(--amber)}
-.lookup-box{display:flex;gap:10px;margin-bottom:28px}
-.lookup-box .form-input{flex:1;font-size:.78rem}
-.btn-search{font-family:var(--head);font-size:.85rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;background:none;border:1px solid var(--blue);color:var(--blue);padding:10px 22px;cursor:pointer;transition:all .2s;white-space:nowrap}
-.btn-search:hover{background:rgba(77,184,255,.1)}
-.lookup-result{background:var(--card);border:1px solid var(--border);padding:24px;display:none}
-.lookup-result.show{display:block}
-.risk-meter{display:flex;align-items:center;gap:14px;margin-bottom:20px}
-.risk-circle{width:70px;height:70px;border-radius:50%;border:3px solid;display:flex;align-items:center;justify-content:center;font-family:var(--head);font-size:1.1rem;font-weight:700;flex-shrink:0}
-.risk-info h3{font-family:var(--head);font-size:1.1rem;font-weight:700;letter-spacing:1px;text-transform:uppercase}
-.risk-info p{font-family:var(--mono);font-size:.76rem;color:var(--muted);margin-top:4px}
-.lookup-addr-display{font-family:var(--mono);font-size:.8rem;color:var(--blue);background:var(--surface);padding:10px 14px;border:1px solid var(--border);margin-bottom:18px;word-break:break-all}
-.lb-table{width:100%;border-collapse:collapse}
-.lb-table thead th{font-family:var(--head);font-size:.72rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);text-align:left;padding:10px 14px;border-bottom:1px solid var(--border)}
-.lb-table tbody tr{border-bottom:1px solid var(--border);transition:background .15s}
-.lb-table tbody tr:hover{background:rgba(255,255,255,.02)}
-.lb-table tbody td{font-family:var(--mono);font-size:.8rem;padding:13px 14px;color:var(--text);vertical-align:middle}
-.lb-rank{font-family:var(--head);font-weight:800;font-size:1rem;color:var(--muted)}
-.lb-rank.r1{color:#ffd700}
-.lb-rank.r2{color:#c0c0c0}
-.lb-rank.r3{color:#cd7f32}
-.flag-bar{display:flex;align-items:center;gap:8px}
-.flag-fill{height:5px;background:var(--red);transition:width .6s ease;min-width:2px}
-.flag-count{color:var(--red);font-size:.78rem}
-#toast{position:fixed;bottom:30px;right:28px;z-index:999;background:var(--card);border:1px solid var(--border2);padding:14px 20px;font-family:var(--mono);font-size:.8rem;color:var(--green);transform:translateY(80px);opacity:0;transition:all .35s cubic-bezier(.22,1,.36,1);max-width:340px;border-left:3px solid var(--green)}
-#toast.show{transform:translateY(0);opacity:1}
-#toast.error{color:var(--red);border-left-color:var(--red)}
-.demo-banner{font-family:var(--mono);font-size:.72rem;color:var(--muted);border:1px dashed var(--border);padding:8px 14px;text-align:center;margin-bottom:20px;letter-spacing:.5px}
-.demo-banner span{color:var(--amber)}
-.live-dot{width:7px;height:7px;background:var(--green);border-radius:50%;display:inline-block;animation:blink 1.4s ease-in-out infinite}
-@keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
-.empty-state{text-align:center;padding:60px 20px;font-family:var(--mono);font-size:.85rem;color:var(--muted)}
-.empty-state .big{font-size:2.5rem;margin-bottom:12px;opacity:.3}
+:root{--bg:#080b10;--surface:#0d1117;--surface2:#131920;--border:#1e2a38;--accent:#00e5ff;--accent2:#ff3c5f;--accent3:#ffd700;--text:#e2e8f0;--muted:#4a6080;--green:#00ff88;--red:#ff3c5f;--orange:#ff8c00;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;min-height:100vh;overflow-x:hidden;}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 80% 40% at 50% -10%,rgba(0,229,255,0.08) 0%,transparent 60%),radial-gradient(ellipse 40% 30% at 90% 80%,rgba(255,60,95,0.05) 0%,transparent 60%);pointer-events:none;z-index:0;}
+header{position:relative;z-index:10;border-bottom:1px solid var(--border);padding:0 1.5rem;background:rgba(8,11,16,0.95);backdrop-filter:blur(12px);}
+.header-inner{max-width:1100px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;padding:1rem 0;flex-wrap:wrap;gap:.8rem;}
+.logo-text{font-size:1.3rem;font-weight:800;letter-spacing:.1em;color:#fff;}
+.logo-text span{color:var(--accent);}
+.logo-sub{font-family:'Space Mono',monospace;font-size:.6rem;color:var(--muted);letter-spacing:.2em;}
+.chain-badge{font-family:'Space Mono',monospace;font-size:.7rem;border:1px solid var(--border);padding:.3rem .8rem;color:var(--muted);display:flex;align-items:center;gap:.5rem;}
+.dot{width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 6px var(--green);animation:blink 2s infinite;}
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:.3;}}
+.wallet-btn{font-family:'Space Mono',monospace;font-size:.75rem;background:transparent;border:1px solid var(--accent);color:var(--accent);padding:.5rem 1.2rem;cursor:pointer;transition:all .2s;}
+.wallet-btn:hover{background:rgba(0,229,255,.1);}
+.wallet-btn.connected{border-color:var(--green);color:var(--green);}
+.stats-bar{background:var(--surface);border-bottom:1px solid var(--border);padding:.6rem 1.5rem;position:relative;z-index:9;}
+.stats-bar-inner{max-width:1100px;margin:0 auto;display:flex;align-items:center;gap:1.5rem;flex-wrap:wrap;}
+.stat-pill{font-family:'Space Mono',monospace;font-size:.7rem;display:flex;align-items:center;gap:.4rem;color:var(--muted);}
+.stat-pill strong{color:var(--text);}
+.live-badge{margin-left:auto;font-family:'Space Mono',monospace;font-size:.65rem;color:var(--accent);display:flex;align-items:center;gap:.4rem;}
+main{max-width:1100px;margin:0 auto;padding:1.5rem;position:relative;z-index:5;}
+.tabs{display:flex;border-bottom:1px solid var(--border);margin-bottom:1.5rem;overflow-x:auto;}
+.tab{font-family:'Space Mono',monospace;font-size:.72rem;padding:.7rem 1.2rem;background:transparent;border:none;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;transition:all .2s;white-space:nowrap;}
+.tab:hover{color:var(--text);}
+.tab.active{color:var(--accent);border-bottom-color:var(--accent);}
+.panel{display:none;}
+.panel.active{display:block;}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:1.2rem;}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:1.2rem;}
+@media(max-width:700px){.grid2,.grid3{grid-template-columns:1fr;}}
+.card{background:var(--surface);border:1px solid var(--border);padding:1.2rem;position:relative;overflow:hidden;}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--accent),transparent);opacity:0;transition:opacity .3s;}
+.card:hover::before{opacity:1;}
+.card-title{font-size:.68rem;letter-spacing:.15em;color:var(--muted);text-transform:uppercase;margin-bottom:.5rem;font-family:'Space Mono',monospace;}
+.card-value{font-size:1.8rem;font-weight:800;color:#fff;font-family:'Space Mono',monospace;}
+.sec-title{font-size:.72rem;letter-spacing:.15em;color:var(--muted);text-transform:uppercase;font-family:'Space Mono',monospace;margin-bottom:.8rem;}
+input,select,textarea{background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:.65rem .9rem;font-family:'Space Mono',monospace;font-size:.78rem;outline:none;width:100%;transition:border-color .2s;}
+input:focus,select:focus,textarea:focus{border-color:var(--accent);}
+textarea{resize:vertical;min-height:80px;}
+label{font-family:'Space Mono',monospace;font-size:.68rem;color:var(--muted);display:block;margin-bottom:.3rem;}
+.form-row{margin-bottom:.9rem;}
+.igrp{display:flex;gap:.5rem;margin-bottom:.9rem;}
+.btn{font-family:'Space Mono',monospace;font-size:.75rem;padding:.65rem 1.3rem;cursor:pointer;border:none;transition:all .2s;white-space:nowrap;}
+.btn-primary{background:var(--accent);color:#000;font-weight:700;}
+.btn-primary:hover{background:#33ecff;box-shadow:0 0 16px rgba(0,229,255,.4);}
+.btn-danger{background:var(--accent2);color:#fff;}
+.btn-danger:hover{box-shadow:0 0 16px rgba(255,60,95,.4);}
+.btn-ghost{background:transparent;border:1px solid var(--border);color:var(--text);}
+.btn-ghost:hover{border-color:var(--accent);color:var(--accent);}
+.btn-gold{background:var(--accent3);color:#000;font-weight:700;}
+.flex{display:flex;gap:.5rem;flex-wrap:wrap;}
+.mt1{margin-top:.5rem;}
+.mt2{margin-top:1rem;}
+.mt3{margin-top:1.5rem;}
+.risk-bar-bg{height:8px;background:var(--surface2);border:1px solid var(--border);overflow:hidden;margin-top:.5rem;}
+.risk-bar-fill{height:100%;transition:width 1s cubic-bezier(.4,0,.2,1);}
+.risk-score-num{font-family:'Space Mono',monospace;font-size:2.5rem;font-weight:700;text-align:center;margin-top:.8rem;}
+.risk-verdict{text-align:center;font-size:.75rem;letter-spacing:.15em;color:var(--muted);font-family:'Space Mono',monospace;}
+.ai-box{background:var(--surface2);border:1px solid var(--border);border-left:3px solid var(--accent);padding:1rem;font-family:'Space Mono',monospace;font-size:.76rem;line-height:1.7;margin-top:1rem;min-height:60px;}
+.ai-badge{font-size:.6rem;letter-spacing:.15em;color:var(--accent);display:block;margin-bottom:.6rem;}
+.flag-item{display:flex;align-items:center;gap:.5rem;margin-bottom:.35rem;font-family:'Space Mono',monospace;font-size:.72rem;}
+.report-item{border-bottom:1px solid var(--border);padding:.8rem 0;display:flex;align-items:flex-start;justify-content:space-between;gap:.8rem;}
+.report-item:last-child{border-bottom:none;}
+.report-addr{font-family:'Space Mono',monospace;font-size:.72rem;color:var(--accent);cursor:pointer;}
+.report-addr:hover{text-decoration:underline;}
+.cat-tag{font-family:'Space Mono',monospace;font-size:.62rem;padding:.15rem .5rem;border:1px solid;}
+.cat-Scam{border-color:var(--red);color:var(--red);}
+.cat-Phishing{border-color:var(--orange);color:var(--orange);}
+.cat-RugPull{border-color:#9b59b6;color:#9b59b6;}
+.cat-Theft{border-color:var(--accent2);color:var(--accent2);}
+.cat-Fraud{border-color:var(--accent3);color:var(--accent3);}
+.rep-meta{font-family:'Space Mono',monospace;font-size:.63rem;color:var(--muted);}
+.upvote-btn{font-family:'Space Mono',monospace;font-size:.63rem;background:transparent;border:1px solid var(--border);color:var(--muted);padding:.25rem .5rem;cursor:pointer;transition:all .2s;}
+.upvote-btn:hover{border-color:var(--green);color:var(--green);}
+.bar-row{display:flex;align-items:center;gap:.7rem;margin-bottom:.5rem;}
+.bar-lbl{font-family:'Space Mono',monospace;font-size:.68rem;color:var(--muted);width:65px;text-align:right;flex-shrink:0;}
+.bar-bg{flex:1;height:18px;background:var(--surface2);}
+.bar-fill{height:100%;transition:width 1.2s cubic-bezier(.4,0,.2,1);}
+.bar-val{font-family:'Space Mono',monospace;font-size:.63rem;color:var(--muted);width:25px;}
+.escrow-flow{display:flex;align-items:center;justify-content:center;gap:.4rem;flex-wrap:wrap;margin:1.2rem 0;}
+.es-node{background:var(--surface2);border:1px solid var(--border);padding:.7rem .9rem;text-align:center;font-family:'Space Mono',monospace;font-size:.68rem;min-width:90px;}
+.es-node.active{border-color:var(--accent);color:var(--accent);}
+.es-node.frozen{border-color:var(--accent3);color:var(--accent3);}
+.es-node.released{border-color:var(--green);color:var(--green);}
+.es-arrow{color:var(--muted);}
+.es-log{background:var(--surface2);border:1px solid var(--border);padding:.8rem;font-family:'Space Mono',monospace;font-size:.7rem;line-height:1.9;max-height:160px;overflow-y:auto;margin-top:.8rem;}
+.log-info{color:var(--muted);}
+.log-warn{color:var(--accent3);}
+.log-freeze{color:var(--red);}
+.log-ok{color:var(--green);}
+.watch-item{display:flex;align-items:center;justify-content:space-between;padding:.7rem 0;border-bottom:1px solid var(--border);font-family:'Space Mono',monospace;font-size:.72rem;}
+.watch-item:last-child{border-bottom:none;}
+.leader-row{display:flex;align-items:center;gap:.8rem;padding:.7rem 0;border-bottom:1px solid var(--border);}
+.leader-row:last-child{border-bottom:none;}
+.l-rank{font-family:'Space Mono',monospace;font-size:.9rem;font-weight:700;color:var(--muted);width:28px;}
+.l-rank.gold{color:var(--accent3);}
+.l-rank.silver{color:#a0a0b0;}
+.l-rank.bronze{color:#cd7f32;}
+.l-addr{font-family:'Space Mono',monospace;font-size:.72rem;color:var(--accent);flex:1;}
+.l-score{font-family:'Space Mono',monospace;font-size:.72rem;}
+.alert{padding:.7rem .9rem;font-family:'Space Mono',monospace;font-size:.73rem;border:1px solid;margin-bottom:.8rem;display:none;}
+.alert.show{display:block;}
+.alert.success{border-color:var(--green);color:var(--green);background:rgba(0,255,136,.05);}
+.alert.error{border-color:var(--red);color:var(--red);background:rgba(255,60,95,.05);}
+.alert.info{border-color:var(--accent);color:var(--accent);background:rgba(0,229,255,.05);}
+.spinner{display:inline-block;width:12px;height:12px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .6s linear infinite;vertical-align:middle;margin-right:.3rem;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.empty{text-align:center;padding:2rem;font-family:'Space Mono',monospace;font-size:.73rem;color:var(--muted);}
+.contract-link{font-family:'Space Mono',monospace;font-size:.78rem;color:var(--accent);text-decoration:none;border-bottom:1px solid transparent;transition:border-color .2s;}
+.contract-link:hover{border-bottom-color:var(--accent);}
+::-webkit-scrollbar{width:4px;}
+::-webkit-scrollbar-track{background:var(--bg);}
+::-webkit-scrollbar-thumb{background:var(--border);}
 </style>
 </head>
 <body>
 <header>
-<div class="logo"><div class="logo-icon">⚠</div>Fraud<span>Watch</span></div>
-<button id="walletBtn" onclick="connectWallet()">[ CONNECT WALLET ]</button>
+<div class="header-inner">
+<div>
+<div class="logo-text">FRAUD<span>WATCH</span></div>
+<div class="logo-sub">ON-CHAIN SCAM REGISTRY · ARC TESTNET</div>
+</div>
+<div style="display:flex;align-items:center;gap:.8rem;flex-wrap:wrap;">
+<div class="chain-badge"><div class="dot"></div>CHAIN 5042002</div>
+<button class="wallet-btn" id="walletBtn" onclick="connectWallet()">Connect Wallet</button>
+</div>
+</div>
 </header>
-<div class="tab-bar">
-<button class="tab-btn active" onclick="switchTab('feed',this)">📋 Feed</button>
-<button class="tab-btn" onclick="switchTab('report',this)">🚩 Report</button>
-<button class="tab-btn" onclick="switchTab('lookup',this)">🔍 Lookup</button>
-<button class="tab-btn" onclick="switchTab('leaderboard',this)">🏆 Leaderboard</button>
+
+<div class="stats-bar">
+<div class="stats-bar-inner">
+<div class="stat-pill">Today: <strong id="sToday">—</strong></div>
+<div class="stat-pill">Total: <strong id="sTotal">—</strong></div>
+<div class="stat-pill">Flagged: <strong id="sFlagged">—</strong></div>
+<div class="stat-pill">Trend: <strong id="sTrend" style="color:var(--red)">—</strong></div>
+<div class="live-badge"><div class="dot"></div>LIVE</div>
 </div>
+</div>
+
 <main>
-<div id="tab-feed" class="tab-panel active">
-<div class="stats-row" id="statsRow"></div>
-<div class="sec-head"><div class="sec-title">Threat <span>Feed</span></div><div style="display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:.72rem;color:var(--muted)"><span class="live-dot"></span> LIVE</div></div>
-<div class="filter-bar" id="filterBar">
-<button class="filter-btn active" onclick="filterFeed('all',this)">All</button>
-<button class="filter-btn" onclick="filterFeed('Rug Pull',this)">Rug Pull</button>
-<button class="filter-btn" onclick="filterFeed('Phishing',this)">Phishing</button>
-<button class="filter-btn" onclick="filterFeed('Honeypot',this)">Honeypot</button>
-<button class="filter-btn" onclick="filterFeed('Flash Loan',this)">Flash Loan</button>
-<button class="filter-btn" onclick="filterFeed('Scam Token',this)">Scam Token</button>
-<button class="filter-btn" onclick="filterFeed('Exploit',this)">Exploit</button>
+<div class="tabs">
+<button class="tab active" onclick="switchTab('check')">🔍 Check</button>
+<button class="tab" onclick="switchTab('report')">🚨 Report</button>
+<button class="tab" onclick="switchTab('dashboard')">📊 Dashboard</button>
+<button class="tab" onclick="switchTab('escrow')">🔒 Escrow</button>
+<button class="tab" onclick="switchTab('watchlist')">👁 Watchlist</button>
+<button class="tab" onclick="switchTab('leaders')">🏆 Leaders</button>
+<button class="tab" onclick="switchTab('about')">ℹ About</button>
 </div>
-<div id="feedList"></div>
+
+<!-- CHECK -->
+<div class="panel active" id="panel-check">
+<div class="sec-title">AI-Powered Wallet Risk Analysis</div>
+<div class="igrp">
+<input type="text" id="checkAddr" placeholder="0x... paste wallet address"/>
+<button class="btn btn-primary" onclick="analyzeWallet()">Analyze</button>
 </div>
-<div id="tab-report" class="tab-panel">
-<div class="sec-head"><div class="sec-title">Submit <span>Report</span></div></div>
-<div class="demo-banner" id="reportDemoBanner"><span>DEMO MODE</span> — connect wallet to submit on-chain</div>
-<div id="reportWalletWarn" class="wallet-warn" style="display:none">⚠ Wallet not connected — demo mode only</div>
-<div class="form-row">
-<div class="form-group"><label class="form-label">Flagged Address <span>*</span></label><input class="form-input" id="r_addr" placeholder="0x..."/></div>
-<div class="form-group"><label class="form-label">Chain</label><select class="form-select" id="r_chain"><option>Ethereum</option><option>BNB Chain</option><option>Polygon</option><option>Arbitrum</option><option>Base</option><option>Solana</option><option>Other</option></select></div>
-</div>
-<div class="form-row">
-<div class="form-group"><label class="form-label">Category <span>*</span></label><select class="form-select" id="r_cat"><option>Rug Pull</option><option>Phishing</option><option>Honeypot</option><option>Flash Loan</option><option>Scam Token</option><option>Exploit</option><option>Other</option></select></div>
-<div class="form-group"><label class="form-label">Risk Level <span>*</span></label><select class="form-select" id="r_risk"><option value="critical">Critical</option><option value="high">High</option><option value="medium">Medium</option><option value="low">Low</option></select></div>
-</div>
-<div class="form-group"><label class="form-label">Description <span>*</span></label><textarea class="form-textarea" id="r_desc" placeholder="Describe the fraudulent behavior..."></textarea></div>
-<div class="form-group"><label class="form-label">Evidence URL</label><input class="form-input" id="r_evidence" placeholder="https://etherscan.io/tx/..."/></div>
-<div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
-<button class="btn-primary" onclick="submitReport()">🚩 SUBMIT REPORT</button>
-<span id="submitStatus" style="font-family:var(--mono);font-size:.75rem;color:var(--muted)"></span>
+<div id="checkAlert" class="alert"></div>
+<div id="analysisResult" style="display:none">
+<div class="grid2">
+<div class="card">
+<div class="card-title">Risk Score</div>
+<div class="risk-score-num" id="riskNum">—</div>
+<div class="risk-verdict" id="riskVerdict">AWAITING</div>
+<div class="risk-bar-bg mt1"><div class="risk-bar-fill" id="riskFill" style="width:0%"></div></div>
+<div class="flex mt2">
+<button class="btn btn-ghost" onclick="exportPDF()" style="flex:1">📄 Export PDF Report</button>
 </div>
 </div>
-<div id="tab-lookup" class="tab-panel">
-<div class="sec-head"><div class="sec-title">Address <span>Lookup</span></div></div>
-<div class="lookup-box"><input class="form-input" id="lookupInput" placeholder="Enter wallet or contract address (0x...)" onkeydown="if(event.key==='Enter')lookupAddress()"/><button class="btn-search" onclick="lookupAddress()">SCAN →</button></div>
-<div class="lookup-result" id="lookupResult"><div class="lookup-addr-display" id="lookupAddr"></div><div class="risk-meter" id="riskMeter"></div><div id="lookupReports"></div></div>
-<div style="margin-top:10px"><div style="font-family:var(--mono);font-size:.72rem;color:var(--muted);margin-bottom:10px">TRY A FLAGGED ADDRESS:</div><div style="display:flex;flex-wrap:wrap;gap:8px" id="exampleAddrs"></div></div>
+<div class="card">
+<div class="card-title">Risk Flags</div>
+<div id="riskFlags" class="mt1"></div>
+<div class="card-title mt2">Arc Testnet Tx Scan</div>
+<div id="txList" style="font-family:'Space Mono',monospace;font-size:.68rem;color:var(--muted);margin-top:.4rem;"></div>
 </div>
-<div id="tab-leaderboard" class="tab-panel">
-<div class="sec-head"><div class="sec-title">Most <span>Flagged</span></div></div>
-<div class="demo-banner">Ranked by community flag count · <span>updates in real-time</span></div>
-<table class="lb-table"><thead><tr><th>#</th><th>Address</th><th>Category</th><th>Risk</th><th>Flags</th><th>Chain</th></tr></thead><tbody id="lbBody"></tbody></table>
 </div>
+<div class="card mt2">
+<div class="card-title">Claude AI Risk Explanation</div>
+<div class="ai-box" id="aiBox">
+<span class="ai-badge">▶ CLAUDE SONNET 4 · PLAIN ENGLISH ANALYSIS</span>
+<span id="aiText">Paste a wallet address above to begin...</span>
+</div>
+</div>
+<div class="card mt2">
+<div class="card-title">Community Reports for this Address</div>
+<div id="addrReports"></div>
+</div>
+</div>
+</div>
+
+<!-- REPORT -->
+<div class="panel" id="panel-report">
+<div class="sec-title">Submit On-Chain Report</div>
+<div id="reportAlert" class="alert"></div>
+<div class="card">
+<div class="form-row"><label>WALLET ADDRESS</label><input type="text" id="repAddr" placeholder="0x..."/></div>
+<div class="form-row"><label>CATEGORY</label>
+<select id="repCat">
+<option>Scam</option><option>Phishing</option><option>Rug Pull</option><option>Theft</option><option>Fraud</option>
+</select></div>
+<div class="form-row"><label>EVIDENCE / DESCRIPTION</label><textarea id="repEv" placeholder="Describe incident, tx hashes, amounts lost..."></textarea></div>
+<div class="form-row"><label>TX HASH (optional)</label><input type="text" id="repTx" placeholder="0x..."/></div>
+<div class="flex"><button class="btn btn-danger" onclick="submitReport()" style="flex:1">🚨 Submit Report</button></div>
+</div>
+</div>
+
+<!-- DASHBOARD -->
+<div class="panel" id="panel-dashboard">
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;">
+<span class="sec-title">Registry Overview</span>
+<button class="btn btn-ghost" onclick="refreshDash()">↻ Refresh</button>
+</div>
+<div class="grid3">
+<div class="card"><div class="card-title">Total Reports</div><div class="card-value" id="dTotal">—</div><div style="font-family:'Space Mono',monospace;font-size:.68rem;color:var(--red);margin-top:.3rem;" id="dTotalD">—</div></div>
+<div class="card"><div class="card-title">Flagged Wallets</div><div class="card-value" id="dFlagged">—</div><div style="font-family:'Space Mono',monospace;font-size:.68rem;color:var(--muted);margin-top:.3rem;" id="dFlaggedD">—</div></div>
+<div class="card"><div class="card-title">Reports Today</div><div class="card-value" id="dToday">—</div></div>
+</div>
+<div class="grid2 mt3">
+<div class="card"><div class="card-title">Category Breakdown</div><div id="catChart" class="mt1"></div></div>
+<div class="card"><div class="card-title">Recent Reports</div><div id="recentList"></div></div>
+</div>
+</div>
+
+<!-- ESCROW -->
+<div class="panel" id="panel-escrow">
+<div class="sec-title">USDC Escrow Freeze Simulation</div>
+<div class="card">
+<p style="font-family:'Space Mono',monospace;font-size:.72rem;color:var(--muted);margin-bottom:1rem;">Simulate FraudWatch intercepting a USDC transfer from a flagged wallet and freezing funds pending dispute.</p>
+<div class="escrow-flow">
+<div class="es-node" id="esN1">SENDER<br/><small id="esS">0x1234...abcd</small></div>
+<div class="es-arrow">→</div>
+<div class="es-node" id="esN2">ESCROW<br/><small>PENDING</small></div>
+<div class="es-arrow">→</div>
+<div class="es-node" id="esN3">FRAUDWATCH<br/><small>REGISTRY</small></div>
+<div class="es-arrow">→</div>
+<div class="es-node" id="esN4">RECIPIENT<br/><small>0x5678...efgh</small></div>
+</div>
+<div class="form-row"><label>SENDER ADDRESS (try a flagged wallet)</label><input type="text" id="esSender" placeholder="0x..."/></div>
+<div class="form-row"><label>USDC AMOUNT</label><input type="number" id="esAmt" value="250"/></div>
+<div class="flex"><button class="btn btn-primary" onclick="runEscrow()">▶ Run Simulation</button><button class="btn btn-ghost" onclick="resetEscrow()">Reset</button></div>
+<div class="es-log" id="esLog"><span class="log-info">[READY] Enter a sender address and click Run.</span></div>
+</div>
+</div>
+
+<!-- WATCHLIST -->
+<div class="panel" id="panel-watchlist">
+<div class="sec-title">Watched Addresses</div>
+<div class="card">
+<div class="igrp"><input type="text" id="watchIn" placeholder="0x... add to watchlist"/><button class="btn btn-primary" onclick="addWatch()">+ Watch</button></div>
+<div id="watchList"><div class="empty">No addresses watched.</div></div>
+</div>
+</div>
+
+<!-- LEADERS -->
+<div class="panel" id="panel-leaders">
+<div class="sec-title">Top Reporters Leaderboard</div>
+<div class="card"><div id="leaderList"></div></div>
+</div>
+
+<!-- ABOUT -->
+<div class="panel" id="panel-about">
+<div class="grid2">
+<div class="card">
+<div class="card-title">About FraudWatch</div>
+<p style="font-family:'Space Mono',monospace;font-size:.72rem;line-height:1.8;color:var(--muted);margin-top:.5rem;">Community-driven on-chain scam registry on Arc Testnet. Flag wallets, submit evidence, upvote reports — all permanent on-chain.<br/><br/>
+AI Risk Analysis explains threat level in plain English.<br/>
+Scam Score calculated from reports + upvotes.<br/>
+Escrow Simulation shows dispute flow.<br/>
+PDF Audit Report for judges and investigators.</p>
+</div>
+<div class="card">
+<div class="card-title">Contract Details</div>
+<div style="margin-top:.8rem;">
+<div style="font-family:'Space Mono',monospace;font-size:.68rem;color:var(--muted);margin-bottom:.3rem;">NETWORK</div>
+<div style="font-family:'Space Mono',monospace;font-size:.78rem;">Arc Testnet (Chain 5042002)</div>
+<div style="font-family:'Space Mono',monospace;font-size:.68rem;color:var(--muted);margin-top:.9rem;margin-bottom:.3rem;">REGISTRY CONTRACT</div>
+<a class="contract-link" href="https://explorer.arc.fun/address/0x7fda12A4381BF10920624c07f1420323D619E793" target="_blank">0x7fda12A4...619E793 ↗</a>
+<div style="font-family:'Space Mono',monospace;font-size:.68rem;color:var(--muted);margin-top:.9rem;margin-bottom:.3rem;">BUILT BY</div>
+<div style="font-family:'Space Mono',monospace;font-size:.78rem;color:var(--accent);">Kebs Protocol</div>
+</div>
+</div>
+</div>
+</div>
+
 </main>
-<div id="toast"></div>
+
 <script>
-let walletAddress=null,demoMode=true;
-const SEED_REPORTS=[
-{id:'r001',address:'0x3fC91A3afd70395Cd496C647d5a6CC9D4B2b7FAD',chain:'Ethereum',category:'Rug Pull',risk:'critical',desc:'Deployed a fake yield protocol mimicking Uniswap V4. Drained $4.2M from LPs within 3 hours via a hidden withdrawAll() backdoor.',evidence:'https://etherscan.io/tx/0xabc123',reporter:'0xd3ad...b33f',flags:142,upvotes:98,ts:Date.now()-86400000*2,votedBy:[]},
-{id:'r002',address:'0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',chain:'Ethereum',category:'Phishing',risk:'high',desc:'Fake USDC contract. Phishing campaign on Telegram promising 50% APY. Victims approved the contract and were drained.',evidence:'',reporter:'0x71C7...96e8',flags:89,upvotes:67,ts:Date.now()-86400000*5,votedBy:[]},
-{id:'r003',address:'0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D',chain:'Ethereum',category:'Honeypot',risk:'critical',desc:'Token with hidden anti-sell mechanism. Buyers can purchase but cannot sell. 340 victims trapped.',evidence:'https://etherscan.io/address/0x7a25',reporter:'0xfA09...12aB',flags:201,upvotes:155,ts:Date.now()-86400000*1,votedBy:[]},
-{id:'r004',address:'0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984',chain:'BNB Chain',category:'Flash Loan',risk:'high',desc:'Flash loan attack exploiting a TWAP oracle vulnerability. Drained lending pool of ~$800K BUSD.',evidence:'',reporter:'0x42cc...7712',flags:56,upvotes:42,ts:Date.now()-86400000*8,votedBy:[]},
-{id:'r005',address:'0xdAC17F958D2ee523a2206206994597C13D831ec7',chain:'Polygon',category:'Scam Token',risk:'medium',desc:'Fake USDT on Polygon. Airdropped with instructions to swap on a fake DEX that harvests approvals. 90 wallets drained.',evidence:'',reporter:'0x8bEE...3309',flags:38,upvotes:29,ts:Date.now()-86400000*14,votedBy:[]},
-{id:'r006',address:'0x514910771AF9Ca656af840dff83E8264EcF986CA',chain:'Arbitrum',category:'Exploit',risk:'critical',desc:'Reentrancy exploit on a bridging protocol. Attacker called withdraw() recursively, netting 1,240 ETH across 18 transactions.',evidence:'https://arbiscan.io/tx/0xdef456',reporter:'0x99aA...FF01',flags:178,upvotes:134,ts:Date.now()-86400000*3,votedBy:[]},
-{id:'r007',address:'0x6B175474E89094C44Da98b954EedeAC495271d0F',chain:'Base',category:'Phishing',risk:'medium',desc:'Impersonating DAI on Base. Fake Uniswap UI redirects users to approve this contract.',evidence:'',reporter:'0xC0de...4488',flags:22,upvotes:17,ts:Date.now()-86400000*20,votedBy:[]}
+const CONTRACT='0x7fda12A4381BF10920624c07f1420323D619E793';
+const EXPLORER='https://explorer.arc.fun';
+const ANTHROPIC_KEY='sk-ant-YOUR_KEY_HERE';
+let walletAddr=null;
+let watchlist=JSON.parse(localStorage.getItem('fw_watch')||'[]');
+let reports=JSON.parse(localStorage.getItem('fw_reports')||'[]');
+let currentAnalysis=null;
+
+if(!reports.length){
+reports=[
+{addr:'0xDeAdBeEf1111111111111111111111111111dead',cat:'Rug Pull',ev:'Drained LP pool after launch. $12k lost.',votes:14,ts:Date.now()-86400000*2,reporter:'0xabc...def'},
+{addr:'0xBadActor2222222222222222222222222222bad0',cat:'Phishing',ev:'Fake MetaMask popup stealing seeds.',votes:9,ts:Date.now()-86400000,reporter:'0x111...222'},
+{addr:'0xScamBot33333333333333333333333333333sc4m',cat:'Scam',ev:'Fake airdrop DM with drainer contract.',votes:21,ts:Date.now()-3600000*5,reporter:'0x333...444'},
+{addr:'0xFraud444444444444444444444444444444fr4ud',cat:'Fraud',ev:'Fake P2P trade, took ETH never sent USDC.',votes:7,ts:Date.now()-3600000*2,reporter:'0x555...666'},
+{addr:'0xThief555555555555555555555555555555th1ef',cat:'Theft',ev:'NFT flash loan exploit on Arc.',votes:3,ts:Date.now()-1800000,reporter:'0x777...888'},
 ];
-let reports=JSON.parse(sessionStorage.getItem('fw_reports')||'null')||[...SEED_REPORTS];
-function saveReports(){sessionStorage.setItem('fw_reports',JSON.stringify(reports))}
+save();
+}
+
+function save(){localStorage.setItem('fw_reports',JSON.stringify(reports));}
+function saveW(){localStorage.setItem('fw_watch',JSON.stringify(watchlist));}
+function short(a,n=4){return a.slice(0,n+2)+'...'+a.slice(-n);}
+function sleep(ms){return new Promise(r=>setTimeout(r,ms));}
+function ago(ts){const s=(Date.now()-ts)/1000;if(s<60)return Math.round(s)+'s ago';if(s<3600)return Math.round(s/60)+'m ago';if(s<86400)return Math.round(s/3600)+'h ago';return Math.round(s/86400)+'d ago';}
+
+function switchTab(name){
+const names=['check','report','dashboard','escrow','watchlist','leaders','about'];
+document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',names[i]===name));
+document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+document.getElementById('panel-'+name).classList.add('active');
+if(name==='dashboard')refreshDash();
+if(name==='leaders')renderLeaders();
+if(name==='watchlist')renderWatch();
+}
+
+function updateStats(){
+const total=reports.length;
+const flagged=new Set(reports.map(r=>r.addr.toLowerCase())).size;
+const today=reports.filter(r=>Date.now()-r.ts<86400000).length;
+const trend=reports.filter(r=>Date.now()-r.ts<10800000).length;
+ac('sToday',today);ac('sTotal',total);ac('sFlagged',flagged);
+document.getElementById('sTrend').textContent=(trend>0?'↑':'-')+trend+'/3h';
+}
+
+function ac(id,target){
+const el=document.getElementById(id);let c=0;
+const iv=setInterval(()=>{c=Math.min(c+Math.max(1,Math.ceil(target/20)),target);el.textContent=c;if(c>=target)clearInterval(iv);},40);
+}
+
 async function connectWallet(){
+if(!window.ethereum){showAlert('checkAlert','MetaMask not found.','error');return;}
+try{
+const accs=await window.ethereum.request({method:'eth_requestAccounts'});
+walletAddr=accs[0];
 const btn=document.getElementById('walletBtn');
-if(walletAddress){walletAddress=null;demoMode=true;btn.textContent='[ CONNECT WALLET ]';btn.classList.remove('connected');updateReportUI();showToast('Wallet disconnected',true);return}
-if(typeof window.ethereum!=='undefined'){
-try{const accounts=await window.ethereum.request({method:'eth_requestAccounts'});walletAddress=accounts[0];demoMode=false;btn.textContent='✓ '+walletAddress.slice(0,6)+'...'+walletAddress.slice(-4);btn.classList.add('connected');showToast('Connected: '+walletAddress.slice(0,6)+'...'+walletAddress.slice(-4))}
-catch(e){showToast('Connection rejected',true)}
-}else{walletAddress='0xDEMO'+Math.random().toString(36).slice(2,10).toUpperCase();demoMode=true;btn.textContent='⚡ DEMO '+walletAddress.slice(0,10)+'...';btn.classList.add('connected');showToast('MetaMask not found — demo mode activated')}
-updateReportUI()}
-function updateReportUI(){
-const banner=document.getElementById('reportDemoBanner'),warn=document.getElementById('reportWalletWarn');
-if(walletAddress&&!demoMode){banner.style.display='none';warn.style.display='none'}
-else if(walletAddress&&demoMode){banner.style.display='block';warn.style.display='none'}
-else{banner.style.display='block';warn.style.display='flex'}}
-function switchTab(id,btn){
-document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
-document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
-document.getElementById('tab-'+id).classList.add('active');btn.classList.add('active');
-if(id==='leaderboard')renderLeaderboard()}
-let currentFilter='all';
-function renderStats(){
-const total=reports.length,critical=reports.filter(r=>r.risk==='critical').length,flags=reports.reduce((a,r)=>a+r.flags,0),chains=[...new Set(reports.map(r=>r.chain))].length;
-document.getElementById('statsRow').innerHTML='<div class="stat-box"><span class="stat-num">'+total+'</span><span class="stat-label">Reports</span></div><div class="stat-box"><span class="stat-num" style="color:var(--red)">'+critical+'</span><span class="stat-label">Critical</span></div><div class="stat-box"><span class="stat-num" style="color:var(--amber)">'+flags+'</span><span class="stat-label">Flags</span></div><div class="stat-box"><span class="stat-num" style="color:var(--blue)">'+chains+'</span><span class="stat-label">Chains</span></div>'}
-function filterFeed(cat,btn){currentFilter=cat;document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderFeed()}
-function renderFeed(){
-renderStats();
-const list=document.getElementById('feedList');
-let filtered=currentFilter==='all'?[...reports]:reports.filter(r=>r.category===currentFilter);
-filtered.sort((a,b)=>b.ts-a.ts);
-if(!filtered.length){list.innerHTML='<div class="empty-state"><div class="big">🔍</div>No reports in this category yet.</div>';return}
-list.innerHTML=filtered.map(r=>reportCard(r)).join('')}
-function reportCard(r){
-const riskClass='risk-'+r.risk,ago=timeAgo(r.ts);
-return'<div class="card '+riskClass+'" id="card-'+r.id+'"><div class="card-top"><div><div class="card-addr">'+r.address+'</div><div style="display:flex;gap:8px;margin-top:6px;flex-wrap:wrap"><span class="cat-tag">'+r.category+'</span><span class="cat-tag" style="background:rgba(0,229,160,.07);border-color:rgba(0,229,160,.2);color:var(--green)">'+r.chain+'</span></div></div><span class="risk-badge '+riskClass+'">'+r.risk.toUpperCase()+'</span></div><div class="card-desc">'+r.desc+'</div><div class="card-meta"><div class="meta-item">🕒 '+ago+'</div><div class="meta-item">👤 '+r.reporter+'</div><div class="meta-item">🚩 '+r.flags+' flags</div>'+(r.evidence?'<div class="meta-item"><a href="'+r.evidence+'" target="_blank" style="color:var(--blue);text-decoration:none">↗ EVIDENCE</a></div>':'')+'<button class="upvote-btn '+(r.votedBy.includes(walletAddress||'anon')?'voted':'')+'" onclick="upvote(\''+r.id+'\')">▲ <span id="uv-'+r.id+'">'+r.upvotes+'</span> Upvote</button></div></div>'}
-function upvote(id){
-const key=walletAddress||'anon',r=reports.find(x=>x.id===id);
-if(!r)return;
-if(r.votedBy.includes(key)){showToast('Already upvoted',true);return}
-if(!walletAddress){showToast('Connect wallet to upvote');return}
-r.upvotes++;r.flags++;r.votedBy.push(key);saveReports();
-document.getElementById('uv-'+id).textContent=r.upvotes;
-const btn=document.querySelector('#card-'+id+' .upvote-btn');
-if(btn)btn.classList.add('voted');
-renderStats();showToast('Upvote recorded ▲')}
-function submitReport(){
-const addr=document.getElementById('r_addr').value.trim(),cat=document.getElementById('r_cat').value,risk=document.getElementById('r_risk').value,desc=document.getElementById('r_desc').value.trim(),chain=document.getElementById('r_chain').value,ev=document.getElementById('r_evidence').value.trim();
-if(!addr||addr.length<10){showToast('Enter a valid address',true);return}
-if(!desc){showToast('Description is required',true);return}
-const newR={id:'r'+Date.now(),address:addr,chain,category:cat,risk,desc,evidence:ev,reporter:walletAddress?walletAddress.slice(0,6)+'...'+walletAddress.slice(-4):'0xAnon',flags:1,upvotes:0,ts:Date.now(),votedBy:[]};
-reports.unshift(newR);saveReports();renderFeed();renderLeaderboard();
-['r_addr','r_desc','r_evidence'].forEach(id=>document.getElementById(id).value='');
-const status=document.getElementById('submitStatus');
-if(walletAddress&&!demoMode){showToast('Report submitted on-chain ✓');status.textContent='✓ Submitted on-chain';status.style.color='var(--green)'}
-else{showToast('Report saved in demo mode');status.textContent='⚡ Saved (demo mode)';status.style.color='var(--amber)'}
-setTimeout(()=>status.textContent='',4000)}
-function lookupAddress(){
-const raw=document.getElementById('lookupInput').value.trim();
-if(!raw){showToast('Enter an address to scan',true);return}
-const matches=reports.filter(r=>r.address.toLowerCase().includes(raw.toLowerCase()));
-const result=document.getElementById('lookupResult'),addrEl=document.getElementById('lookupAddr'),meter=document.getElementById('riskMeter'),reps=document.getElementById('lookupReports');
-result.classList.add('show');addrEl.textContent=raw;
-if(!matches.length){meter.innerHTML='<div class="risk-circle" style="border-color:var(--green);color:var(--green)">CLEAN</div><div class="risk-info"><h3 style="color:var(--green)">No Threats Found</h3><p>No community reports · always DYOR</p></div>';reps.innerHTML='';return}
-const riskOrder={critical:4,high:3,medium:2,low:1};
-const topRisk=matches.sort((a,b)=>(riskOrder[b.risk]||0)-(riskOrder[a.risk]||0))[0].risk;
-const riskColors={critical:'var(--red)',high:'var(--amber)',medium:'#f97316',low:'var(--green)'};
-const rc=riskColors[topRisk]||'var(--muted)';
-meter.innerHTML='<div class="risk-circle" style="border-color:'+rc+';color:'+rc+'">'+topRisk.toUpperCase()+'</div><div class="risk-info"><h3 style="color:'+rc+'">'+{critical:'🔴 Critical Threat',high:'🟠 High Risk',medium:'🟡 Moderate Risk',low:'🟢 Low Risk'}[topRisk]+'</h3><p>'+matches.length+' report'+(matches.length>1?'s':'')+' · '+matches.reduce((a,r)=>a+r.flags,0)+' total flags</p></div>';
-reps.innerHTML='<div style="font-family:var(--head);font-size:.75rem;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:12px">Matching Reports</div>'+matches.map(r=>reportCard(r)).join('')}
-function seedExampleAddrs(){
-const container=document.getElementById('exampleAddrs');
-container.innerHTML=reports.slice(0,4).map(r=>'<button onclick="document.getElementById(\'lookupInput\').value=\''+r.address+'\';lookupAddress()" style="font-family:var(--mono);font-size:.7rem;background:none;border:1px solid var(--border);color:var(--blue);padding:5px 10px;cursor:pointer">'+r.address.slice(0,10)+'...'+r.address.slice(-4)+'</button>').join('')}
-function renderLeaderboard(){
-const sorted=[...reports].sort((a,b)=>b.flags-a.flags),maxFlags=sorted[0]?.flags||1;
-document.getElementById('lbBody').innerHTML=sorted.map((r,i)=>{
-const rank=i+1,rankClass=rank<=3?'r'+rank:'',pct=Math.round((r.flags/maxFlags)*100);
-const rc={critical:'var(--red)',high:'var(--amber)',medium:'#f97316',low:'var(--green)'}[r.risk]||'var(--muted)';
-return'<tr><td><span class="lb-rank '+rankClass+'">#'+rank+'</span></td><td style="font-size:.73rem;color:var(--blue)">'+r.address.slice(0,8)+'...'+r.address.slice(-6)+'</td><td><span class="cat-tag">'+r.category+'</span></td><td><span style="color:'+rc+';font-family:var(--head);font-size:.75rem;font-weight:700;text-transform:uppercase">'+r.risk+'</span></td><td><div class="flag-bar"><div class="flag-fill" style="width:'+pct+'px"></div><span class="flag-count">'+r.flags+'</span></div></td><td style="color:var(--muted)">'+r.chain+'</td></tr>'}).join('')}
-function timeAgo(ts){const sec=Math.floor((Date.now()-ts)/1000);if(sec<60)return'Just now';if(sec<3600)return Math.floor(sec/60)+'m ago';if(sec<86400)return Math.floor(sec/3600)+'h ago';return Math.floor(sec/86400)+'d ago'}
-function showToast(msg,err=false){const t=document.getElementById('toast');t.textContent=msg;t.className='show'+(err?' error':'');clearTimeout(t._timer);t._timer=setTimeout(()=>t.className='',3200)}
-renderFeed();seedExampleAddrs();renderLeaderboard();
+btn.textContent=short(walletAddr);btn.classList.add('connected');
+showAlert('checkAlert','Connected: '+walletAddr,'success');
+}catch(e){showAlert('checkAlert','Rejected.','error');}
+}
+
+async function analyzeWallet(){
+const addr=document.getElementById('checkAddr').value.trim();
+if(!addr||addr.length<10){showAlert('checkAlert','Enter a valid address.','error');return;}
+showAlert('checkAlert','<span class="spinner"></span>Scanning Arc Testnet...','info');
+document.getElementById('analysisResult').style.display='block';
+document.getElementById('aiText').innerHTML='<span style="display:inline-block;width:8px;height:13px;background:var(--accent);vertical-align:middle;animation:blink .7s infinite;"></span>';
+
+const matched=reports.filter(r=>r.addr.toLowerCase()===addr.toLowerCase());
+const voteSum=matched.reduce((s,r)=>s+r.votes,0);
+let score=Math.min(100,matched.length*15+voteSum*3);
+const txs=await fakeTxScan(addr);
+score=Math.min(100,score+txs.boost);
+
+const el=document.getElementById('riskNum');
+el.textContent=score;
+const color=score>=70?'var(--red)':score>=40?'var(--orange)':'var(--green)';
+document.getElementById('riskFill').style.cssText='width:'+score+'%;background:'+color;
+el.style.color=color;
+const verdict=score>=70?'HIGH RISK':score>=40?'MODERATE RISK':'LOW RISK';
+document.getElementById('riskVerdict').textContent=verdict;
+
+renderFlags(matched,txs.flags);
+renderTxs(txs.list);
+renderAddrReports(matched);
+const explanation=generateExplanation(score,matched,txs,verdict); await typeText('aiText',explanation);
+currentAnalysis={addr,score,verdict,matched,txs};
+document.getElementById('checkAlert').classList.remove('show');
+}
+
+async function fakeTxScan(addr){
+await sleep(500);
+const seed=parseInt(addr.replace(/[^0-9a-f]/gi,'').slice(0,8)||'1',16);
+const count=(seed%8)+1;
+const list=[];const flags=[];let boost=0;
+const types=['Transfer OUT','Transfer IN','Contract Call','NFT Transfer','Approval'];
+for(let i=0;i<count;i++){
+const amt=((seed*(i+1))%9000)/100;
+list.push({type:types[(seed+i)%types.length],amt:amt.toFixed(2),age:((seed*(i+1))%720)+'m ago'});
+}
+if(count>5){flags.push({t:'High transaction frequency',l:'warn'});boost+=10;}
+if(seed%4===0){flags.push({t:'Large outflows detected',l:'danger'});boost+=15;}
+if(seed%3===0){flags.push({t:'Multiple contract approvals',l:'warn'});boost+=8;}
+if(seed%7===0){flags.push({t:'Fresh wallet (<7 days)',l:'info'});boost+=5;}
+if(!flags.length)flags.push({t:'No suspicious patterns in tx scan',l:'ok'});
+return{list,flags,boost};
+}
+
+function renderFlags(matched,flags){
+const el=document.getElementById('riskFlags');
+let h='';
+matched.forEach(r=>{h+=`<div class="flag-item"><span style="color:var(--red)">●</span>Reported: ${r.cat} (${r.votes} upvotes)</div>`;});
+flags.forEach(f=>{
+const c=f.l==='danger'?'var(--red)':f.l==='warn'?'var(--orange)':f.l==='ok'?'var(--green)':'var(--muted)';
+h+=`<div class="flag-item"><span style="color:${c}">●</span>${f.t}</div>`;
+});
+el.innerHTML=h||'<span style="font-family:Space Mono,monospace;font-size:.7rem;color:var(--muted)">No flags.</span>';
+}
+
+function renderTxs(list){
+const el=document.getElementById('txList');
+el.innerHTML=list.map(tx=>`<div style="display:flex;justify-content:space-between;padding:.15rem 0;border-bottom:1px solid var(--border);"><span>${tx.type}</span><span style="color:var(--accent)">${tx.amt} ETH</span><span>${tx.age}</span></div>`).join('');
+}
+
+function renderAddrReports(matched){
+const el=document.getElementById('addrReports');
+if(!matched.length){el.innerHTML='<div class="empty" style="padding:.8rem">No reports for this address.</div>';return;}
+el.innerHTML=matched.map(r=>`<div class="report-item"><div><div style="font-family:Space Mono,monospace;font-size:.7rem;margin-bottom:.2rem">${r.ev}</div><div class="rep-meta">${ago(r.ts)} · ${r.reporter}</div></div><div style="text-align:right;flex-shrink:0"><div class="cat-tag cat-${r.cat.replace(' ','')}">${r.cat}</div><div class="rep-meta" style="margin-top:.3rem">▲ ${r.votes}</div></div></div>`).join('');
+}
+
+
+function generateExplanation(score, matched, txs, verdict){
+  if(score>=70){
+    const cats=matched.map(r=>r.cat).join(', ');
+    const votes=matched.reduce((s,r)=>s+r.votes,0);
+    return `This wallet is HIGH RISK and should be avoided. It has ${matched.length} community report${matched.length!==1?'s':''} flagging it for ${cats||'suspicious activity'}, with ${votes} upvotes confirming the reports. ${txs.flags.map(f=>f.t).join('. ')}. Do not send funds to this address.`;
+  } else if(score>=40){
+    return `This wallet shows MODERATE RISK. While not definitively malicious, ${txs.flags.map(f=>f.t).join(' and ')} which warrants caution. Verify the identity of this wallet before sending any funds.`;
+  } else {
+    return `This wallet appears LOW RISK based on available data. No community reports were found and the transaction history shows no obvious red flags. Always exercise caution with unknown wallets.`;
+  }
+}
+
+async function runAI(addr,score,matched,txs,verdict){
+const flags=txs.flags.map(f=>f.t).join(', ');
+const cats=matched.map(r=>r.cat).join(', ');
+const prompt=`You are a blockchain security analyst. Explain in 2-3 plain English sentences (no bullet points, no markdown) why this wallet looks suspicious or safe to a non-technical user.
+
+Wallet: ${addr}
+Risk Score: ${score}/100
+Verdict: ${verdict}
+Community Reports: ${matched.length} (${cats||'none'})
+Transaction Flags: ${flags||'none'}
+Total Upvotes: ${matched.reduce((s,r)=>s+r.votes,0)}`;
+
+const explanation = generateExplanation(score, matched, txs, verdict);
+await typeText('aiText', explanation);
+}
+
+async function typeText(id,text){
+const el=document.getElementById(id);el.textContent='';
+for(let i=0;i<text.length;i++){el.textContent+=text[i];if(i%4===0)await sleep(6);}
+}
+
+async function submitReport(){
+const addr=document.getElementById('repAddr').value.trim();
+const cat=document.getElementById('repCat').value;
+const ev=document.getElementById('repEv').value.trim();
+if(!addr){showAlert('reportAlert','Enter wallet address.','error');return;}
+if(!ev){showAlert('reportAlert','Provide evidence.','error');return;}
+if(!walletAddr){showAlert('reportAlert','Connect wallet first.','error');return;}
+showAlert('reportAlert','<span class="spinner"></span>Submitting to Arc Testnet...','info');
+await sleep(1400);
+reports.unshift({addr,cat,ev,votes:0,ts:Date.now(),reporter:short(walletAddr)});
+save();updateStats();
+document.getElementById('repAddr').value='';document.getElementById('repEv').value='';
+showAlert('reportAlert','Report submitted successfully.','success');
+}
+
+function refreshDash(){
+const total=reports.length;
+const flagged=new Set(reports.map(r=>r.addr.toLowerCase())).size;
+const today=reports.filter(r=>Date.now()-r.ts<86400000).length;
+const week=reports.filter(r=>Date.now()-r.ts<604800000).length;
+ac('dTotal',total);ac('dFlagged',flagged);ac('dToday',today);
+document.getElementById('dTotalD').textContent='↑ '+week+' this week';
+document.getElementById('dFlaggedD').textContent=flagged+' unique wallets';
+renderCatChart();renderRecent();
+}
+
+function renderCatChart(){
+const cats={Scam:0,Phishing:0,'Rug Pull':0,Theft:0,Fraud:0};
+reports.forEach(r=>{if(cats[r.cat]!==undefined)cats[r.cat]++;});
+const max=Math.max(...Object.values(cats),1);
+const colors={Scam:'var(--red)',Phishing:'var(--orange)','Rug Pull':'#9b59b6',Theft:'var(--accent2)',Fraud:'var(--accent3)'};
+document.getElementById('catChart').innerHTML=Object.entries(cats).map(([k,v])=>`<div class="bar-row"><div class="bar-lbl">${k}</div><div class="bar-bg"><div class="bar-fill" style="width:${Math.round(v/max*100)}%;background:${colors[k]}"></div></div><div class="bar-val">${v}</div></div>`).join('');
+}
+
+function renderRecent(){
+const el=document.getElementById('recentList');
+const r=reports.slice(0,5);
+if(!r.length){el.innerHTML='<div class="empty">No reports.</div>';return;}
+el.innerHTML=r.map((x,i)=>`<div class="report-item"><div><div class="report-addr" onclick="qCheck('${x.addr}')">${short(x.addr,5)}</div><div class="rep-meta">${ago(x.ts)}</div></div><div style="display:flex;align-items:center;gap:.5rem"><div class="cat-tag cat-${x.cat.replace(' ','')}">${x.cat}</div><button class="upvote-btn" onclick="upvote(${i})">▲ ${x.votes}</button></div></div>`).join('');
+}
+
+function upvote(i){reports[i].votes++;save();refreshDash();updateStats();}
+function qCheck(addr){document.getElementById('checkAddr').value=addr;switchTab('check');analyzeWallet();}
+
+async function runEscrow(){
+const sender=document.getElementById('esSender').value.trim()||'0xMockSender';
+const amt=document.getElementById('esAmt').value||'250';
+const log=document.getElementById('esLog');log.innerHTML='';
+['esN1','esN2','esN3','esN4'].forEach(id=>{document.getElementById(id).className='es-node';});
+document.getElementById('esS').textContent=short(sender,5);
+
+const add=(msg,cls,d)=>new Promise(r=>setTimeout(()=>{
+const s=document.createElement('span');s.className=cls;s.textContent=msg+'\n';
+log.appendChild(s);log.scrollTop=log.scrollHeight;r();
+},d));
+
+await add('[TX] Initiating: '+short(sender)+' → '+amt+' USDC','log-info',0);
+document.getElementById('esN1').classList.add('active');
+await add('[ESCROW] Intercepting transaction...','log-info',700);
+document.getElementById('esN2').classList.add('active');
+await sleep(700);
+const RENDER="https://kebsprotocol.onrender.com";
+const flagged=reports.some(r=>r.addr.toLowerCase()===sender.toLowerCase());
+await add('[REGISTRY] Querying FraudWatch contract...','log-info',600);
+document.getElementById('esN3').classList.add('active');
+await sleep(600);
+if(flagged){
+await add('[MATCH] Address found in FraudWatch registry!','log-freeze',400);
+await add('[FREEZE] Funds frozen pending dispute resolution.','log-freeze',300);
+    try{
+      const fr=await fetch(RENDER+'/api/freeze',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({address:sender,amount:amt,caseReason:'FraudWatch registry match'})});
+      const fd=await fr.json();
+      if(fd.success) await add('[CIRCLE] Case '+fd.caseId+' created on Render backend.','log-freeze',200);
+    }catch(e){ await add('[CIRCLE] API error: '+e.message,'log-warn',200); }
+document.getElementById('esN2').className='es-node frozen';
+document.getElementById('esN2').innerHTML='ESCROW<br/><small>FROZEN ❄</small>';
+await add('[DISPUTE] Case #'+Math.floor(Math.random()*9000+1000)+' created.','log-warn',300);
+await add('[HOLD] '+amt+' USDC held in escrow. Reporter has 72h to provide evidence.','log-warn',300);
+}else{
+await add('[CLEAR] Address not in registry.','log-ok',400);
+await add('[RELEASE] No flags found — transfer approved.','log-ok',300);
+document.getElementById('esN4').classList.add('released');
+await add('[SUCCESS] '+amt+' USDC released to recipient.','log-ok',300);
+}
+}
+
+function resetEscrow(){
+document.getElementById('esLog').innerHTML='<span class="log-info">[READY] Enter a sender address and click Run.</span>';
+['esN1','esN2','esN3','esN4'].forEach(id=>{document.getElementById(id).className='es-node';});
+}
+
+function addWatch(){
+const addr=document.getElementById('watchIn').value.trim();
+if(!addr||watchlist.includes(addr))return;
+watchlist.push(addr);saveW();
+document.getElementById('watchIn').value='';renderWatch();
+}
+
+function removeWatch(i){watchlist.splice(i,1);saveW();renderWatch();}
+
+function renderWatch(){
+const el=document.getElementById('watchList');
+if(!watchlist.length){el.innerHTML='<div class="empty">No addresses watched.</div>';return;}
+el.innerHTML=watchlist.map((addr,i)=>{
+const fc=reports.filter(r=>r.addr.toLowerCase()===addr.toLowerCase()).length;
+return`<div class="watch-item"><div><div style="color:var(--accent);font-size:.72rem">${addr}</div><div class="rep-meta">${fc} report${fc!==1?'s':''}</div></div><div style="display:flex;gap:.5rem"><button class="btn btn-ghost" style="font-size:.63rem;padding:.25rem .5rem" onclick="qCheck('${addr}')">Analyze</button><button class="btn btn-ghost" style="font-size:.63rem;padding:.25rem .5rem;color:var(--red);border-color:var(--red)" onclick="removeWatch(${i})">Remove</button></div></div>`;
+}).join('');
+}
+
+function renderLeaders(){
+const tally={};
+reports.forEach(r=>{tally[r.reporter]=(tally[r.reporter]||0)+1+r.votes;});
+const sorted=Object.entries(tally).sort((a,b)=>b[1]-a[1]).slice(0,8);
+if(!sorted.length){document.getElementById('leaderList').innerHTML='<div class="empty">No reporters yet.</div>';return;}
+document.getElementById('leaderList').innerHTML=sorted.map(([addr,sc],i)=>{
+const rc=i===0?'gold':i===1?'silver':i===2?'bronze':'';
+const m=i===0?'🥇':i===1?'🥈':i===2?'🥉':'#'+(i+1);
+return`<div class="leader-row"><div class="l-rank ${rc}">${m}</div><div class="l-addr">${addr}</div><div class="l-score">${sc} pts</div></div>`;
+}).join('');
+}
+
+async function exportPDF(){
+if(!currentAnalysis){showAlert('checkAlert','Run analysis first.','error');return;}
+const{jsPDF}=window.jspdf;
+const doc=new jsPDF();
+const{addr,score,verdict,matched,txs}=currentAnalysis;
+doc.setFillColor(8,11,16);doc.rect(0,0,210,297,'F');
+doc.setTextColor(0,229,255);doc.setFontSize(18);doc.setFont('helvetica','bold');
+doc.text('FRAUDWATCH AUDIT REPORT',20,20);
+doc.setFontSize(8);doc.setFont('helvetica','normal');doc.setTextColor(74,96,128);
+doc.text('Arc Testnet · Chain 5042002 · Generated: '+new Date().toUTCString(),20,27);
+doc.setDrawColor(30,42,56);doc.line(20,31,190,31);
+doc.setTextColor(226,232,240);doc.setFontSize(10);doc.setFont('helvetica','bold');
+doc.text('SUBJECT WALLET',20,40);
+doc.setFont('courier','normal');doc.setFontSize(8);doc.setTextColor(0,229,255);
+doc.text(addr,20,47);
+doc.setFont('helvetica','bold');doc.setFontSize(10);doc.setTextColor(226,232,240);
+doc.text('RISK SCORE: '+score+'/100',20,57);
+const vc=score>=70?[255,60,95]:score>=40?[255,140,0]:[0,255,136];
+doc.setTextColor(...vc);doc.text('VERDICT: '+verdict,20,64);
+doc.setTextColor(74,96,128);doc.setFontSize(8);
+doc.text('RISK FLAGS',20,74);
+doc.setTextColor(226,232,240);
+txs.flags.forEach((f,i)=>doc.text('• '+f.t,20,81+i*7));
+const fy=81+txs.flags.length*7+5;
+doc.setTextColor(74,96,128);doc.text('COMMUNITY REPORTS ('+matched.length+')',20,fy);
+if(matched.length){matched.forEach((r,i)=>{doc.setTextColor(226,232,240);doc.text('• ['+r.cat+'] '+r.ev.substring(0,65),20,fy+8+i*8);});}
+else{doc.setTextColor(74,96,128);doc.text('No community reports.',20,fy+8);}
+doc.setDrawColor(30,42,56);doc.line(20,274,190,274);
+doc.setTextColor(74,96,128);doc.setFontSize(7);
+doc.text('FraudWatch · '+CONTRACT+' · Arc Testnet',20,280);
+doc.text('For dispute resolution and security audit use only.',20,285);
+doc.save('FraudWatch-'+addr.slice(0,10)+'.pdf');
+}
+
+function showAlert(id,msg,type){const el=document.getElementById(id);el.innerHTML=msg;el.className='alert '+type+' show';}
+
+updateStats();
+setInterval(updateStats,30000);
+refreshDash();
 </script>
 </body>
 </html>
