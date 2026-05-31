@@ -3,6 +3,7 @@ require("dotenv").config();
 const express = require("express");
 const path = require("path");
 const app = express();
+app.get("/agent", (req, res) => res.redirect("https://kebs-dashboard.vercel.app"));
 
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "frontend")));
