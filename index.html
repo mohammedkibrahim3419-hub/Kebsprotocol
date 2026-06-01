@@ -893,5 +893,39 @@ setInterval(fetchPrices,60000);
 loadHistory();
 loadNFTs();
 </script>
+
+<script>
+let ETH_PRICE = 3200;
+async function fetchLivePrices() {
+  try {
+    const r = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=ethereum,bitcoin,uniswap,arbitrum&vs_currencies=usd&include_24hr_change=true');
+    const d = await r.json();
+    ETH_PRICE = d.ethereum?.usd || ETH_PRICE;
+    const BTC = d.bitcoin?.usd || 67000;
+    const UNI = d.uniswap?.usd || 8.4;
+    const ARB = d.arbitrum?.usd || 0.92;
+    const ethC = (d.ethereum?.usd_24h_change||0).toFixed(2);
+    const btcC = (d.bitcoin?.usd_24h_change||0).toFixed(2);
+    const fmt = v => '$'+parseFloat(v).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+    const chg = c => '<span style="color:'+(c>=0?'#00c87a':'#ff4545')+'">'+(c>=0?'+':'')+c+'%</span>';
+    const t = document.getElementById('priceTicker');
+    if(t) t.innerHTML =
+      '<span style="color:#e8e6e0">ETH ' + fmt(ETH_PRICE) + ' </span>' + chg(ethC) +
+      '<span style="color:#4a4845"> &middot; </span>' +
+      '<span style="color:#e8e6e0">BTC ' + fmt(BTC) + ' </span>' + chg(btcC) +
+      '<span style="color:#4a4845"> &middot; </span>' +
+      '<span style="color:#e8e6e0">UNI ' + fmt(UNI) + '</span>' +
+      '<span style="color:#4a4845"> &middot; </span>' +
+      '<span style="color:#e8e6e0">ARB ' + fmt(ARB) + '</span>' +
+      '<span style="color:#4a4845"> &middot; </span>' +
+      '<span style="color:#ff6b35">USDC $1.00 Arc native</span>' +
+      '<span style="color:#4a4845"> &middot; via CoinGecko</span>';
+    const sr = document.getElementById('swapRate');
+    if(sr) sr.textContent = '1 USDC = '+(1/ETH_PRICE).toFixed(6)+' WETH';
+  } catch(e) { console.warn('Price fetch failed', e.message); }
+}
+fetchLivePrices();
+setInterval(fetchLivePrices, 60000);
+</script>
 </body>
 </html>
