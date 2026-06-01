@@ -199,6 +199,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
 .hist-detail{font-size:10px;color:var(--muted);margin-top:1px;}
 .hist-amt{text-align:right;font-family:'Space Mono',monospace;font-size:12px;font-weight:700;}
 </style>
+<script src="https://cdn.jsdelivr.net/npm/@circle-fin/circle-app-kit@latest/dist/umd/circle-app-kit.min.js"></script>
 </head>
 <body>
 <!-- PIN LOCK -->
@@ -234,6 +235,8 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
     <div class="header-right">
       <div class="chain-badge">&#9711; ARC</div>
       <button class="wallet-btn" id="connectBtn" onclick="connectWallet()">Connect</button>
+<button class="wallet-btn" id="kitSendBtn" onclick="kitSend()" style="display:none;border-color:#ff6b35;color:#ff6b35;">Send</button>
+<button class="wallet-btn" id="kitBridgeBtn" onclick="kitBridge()" style="display:none;border-color:#3d6ef5;color:#3d6ef5;">Bridge</button>
     </div>
   </div>
 
@@ -317,6 +320,16 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
       </div>
     </div>
 
+    <div class="card">
+      <div class="card-title">CIRCLE APP KIT <span class="badge badge-arc">&#9711; Native</span></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:4px;">
+        <button class="btn btn-accent" style="padding:10px;font-size:10px;" onclick="kitSend()">&#8593; SEND USDC</button>
+        <button class="btn" style="padding:10px;font-size:10px;background:var(--blue);color:white;" onclick="kitSwap()">&#8644; SWAP</button>
+        <button class="btn" style="padding:10px;font-size:10px;background:var(--arc);color:black;" onclick="kitBridge()">&#9650; BRIDGE</button>
+        <button class="btn btn-outline" style="padding:10px;font-size:10px;" onclick="connectWallet()">&#128274; WALLET</button>
+      </div>
+      <div style="font-family:'Space Mono',monospace;font-size:9px;color:var(--muted);margin-top:8px;text-align:center;">Powered by Circle App Kit · CCTP · Arc Testnet</div>
+    </div>
     <div class="card">
       <div class="card-title">NETWORK STATUS</div>
       <div style="font-family:'Space Mono',monospace;font-size:11px;">
@@ -552,6 +565,8 @@ async function connectWallet(){
     walletConnected=true;
     btn.textContent=userAddress.slice(0,6)+'...'+userAddress.slice(-4);
     btn.classList.add('connected');btn.disabled=false;
+    document.getElementById('kitSendBtn').style.display='block';
+    document.getElementById('kitBridgeBtn').style.display='block';
     updateWalletUI();startBlockPoller();
     showToast('Connected to Arc Testnet!');
     addFarmPoints(10,'Wallet connected');
@@ -721,7 +736,77 @@ function addFarmPoints(pts,action){farmPoints+=pts;localStorage.setItem('farm_po
 
 function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2800);}
 
+
+// ── CIRCLE APP KIT ──
+const KIT_KEY = '9179f50eafe1826785c9a005b12e0319:4d04125c0b3a2fa90134f453a97be437';
+let appKit = null;
+
+async function initAppKit() {
+  try {
+    if (typeof CircleAppKit === 'undefined') {
+      console.warn('Circle App Kit SDK not loaded');
+      return;
+    }
+    appKit = new CircleAppKit.createAppKit({
+      clientKey: KIT_KEY,
+      network: 'ARB-SEPOLIA',
+    });
+    console.log('Circle App Kit initialized');
+  } catch(e) {
+    console.warn('App Kit init failed:', e.message);
+  }
+}
+
+async function kitSend() {
+  if (!appKit) { showToast('App Kit not ready'); return; }
+  try {
+    const result = await appKit.send({
+      destinationAddress: '',
+      amount: '1',
+      tokenAddress: '0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238',
+    });
+    showToast('Send initiated!');
+    addFarmPoints(5, 'USDC Send via App Kit');
+    appendHookLog('success', 'App Kit send: ' + JSON.stringify(result).slice(0,60));
+  } catch(e) {
+    showToast(e.message || 'Send failed');
+  }
+}
+
+async function kitSwap() {
+  if (!appKit) { showToast('App Kit not ready'); return; }
+  try {
+    const result = await appKit.swap({
+      fromToken: 'USDC',
+      toToken: 'EURC',
+      amount: '10',
+    });
+    showToast('Swap via App Kit!');
+    addFarmPoints(5, 'Swap via App Kit');
+    appendHookLog('success', 'App Kit swap initiated');
+  } catch(e) {
+    showToast(e.message || 'Swap failed');
+  }
+}
+
+async function kitBridge() {
+  if (!appKit) { showToast('App Kit not ready'); return; }
+  try {
+    const result = await appKit.bridge({
+      amount: '10',
+      fromChain: 'ETH-SEPOLIA',
+      toChain: 'ARB-SEPOLIA',
+    });
+    showToast('Bridge via CCTP!');
+    addFarmPoints(10, 'CCTP Bridge via App Kit');
+    appendHookLog('success', 'App Kit bridge: CCTP initiated');
+  } catch(e) {
+    showToast(e.message || 'Bridge failed');
+  }
+}
+
 function initApp(){
+  initAppKit();
   renderRecentSwaps();renderFarming();
   fetchLivePrices();setInterval(fetchLivePrices,60000);
   startBlockPoller();
