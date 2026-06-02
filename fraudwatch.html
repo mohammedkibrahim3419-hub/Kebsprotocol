@@ -720,7 +720,7 @@ async function runEscrow(){
   }
 }
 function generatePDF(){
-  const addr=lastLookupAddr;if(!addr)return;
+  const addr=lastLookupAddr;if(!addr){showToast("Run an address lookup first",true);return;}
   const{jsPDF}=window.jspdf;const doc=new jsPDF();
   const matched=reports.filter(r=>r.addr.toLowerCase()===addr.toLowerCase());
   doc.setFillColor(8,11,15);doc.rect(0,0,210,297,'F');
