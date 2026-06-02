@@ -19,7 +19,7 @@ header{position:sticky;top:0;z-index:100;background:rgba(8,11,15,.92);backdrop-f
 #walletBtn{font-family:var(--mono);font-size:.72rem;background:transparent;border:1px solid var(--border2);color:var(--muted);padding:7px 14px;cursor:pointer;transition:all .2s;letter-spacing:1px}
 #walletBtn.connected{border-color:var(--green);color:var(--green);background:rgba(0,229,160,.05)}
 #walletBtn:hover{border-color:var(--blue);color:var(--blue)}
-.tab-bar{position:sticky;top:60px;z-index:90;background:rgba(11,16,22,.95);border-bottom:1px solid var(--border);display:flex;padding:0 12px;gap:0;overflow-x:auto}
+.tab-bar{overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;position:sticky;top:60px;z-index:90;background:rgba(11,16,22,.95);border-bottom:1px solid var(--border);display:flex;padding:0 12px;gap:0;overflow-x:auto}
 .tab-btn{font-family:var(--head);font-size:.8rem;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted);background:none;border:none;padding:13px 14px;cursor:pointer;border-bottom:2px solid transparent;transition:all .2s;display:flex;align-items:center;gap:6px;white-space:nowrap}
 .tab-btn:hover{color:var(--text)}
 .tab-btn.active{color:var(--red);border-bottom-color:var(--red)}
@@ -154,6 +154,7 @@ main{position:relative;z-index:1;padding:28px 24px 80px;max-width:1100px;margin:
 #reportModal.open{display:flex}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.umd.min.js"></script>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Cpolygon points='100,8 168,46 168,122 100,160 32,122 32,46' fill='%230d1117' stroke='%23ff2b4e' stroke-width='1.5'/%3E%3Ccircle cx='88' cy='82' r='11' fill='%23080c10' stroke='%23ff2b4e' stroke-width='1.2'/%3E%3Ccircle cx='112' cy='82' r='11' fill='%23080c10' stroke='%23ff2b4e' stroke-width='1.2'/%3E%3Ccircle cx='88' cy='82' r='6' fill='%23ff2b4e'/%3E%3Ccircle cx='112' cy='82' r='6' fill='%23ff2b4e'/%3E%3Cpolygon points='100,90 95,96 105,96' fill='%23ff2b4e'/%3E%3C/svg%3E">
 </head>
 <body>
 <header>
@@ -180,6 +181,7 @@ main{position:relative;z-index:1;padding:28px 24px 80px;max-width:1100px;margin:
     <div class="stat-box"><span class="stat-num" id="statVotes">0</span><span class="stat-label">Upvotes</span></div>
   </div>
   <div class="sec-head"><div class="sec-title">THREAT <span class="r">FEED</span> <span class="live-dot" style="margin-left:8px"></span></div></div>
+  <div style="padding:0 0 12px 0"><input id="addrSearch" type="text" placeholder="Search by address..." oninput="searchReports(this.value)" style="width:100%;background:#080c10;border:1px solid var(--border2);color:var(--green);font-family:var(--mono);font-size:.75rem;padding:8px 12px;outline:none;box-sizing:border-box"/></div>
   <div class="filter-bar">
     <button class="filter-btn active" onclick="filterReports('all',this)">ALL</button>
     <button class="filter-btn" onclick="filterReports('Scam',this)">SCAM</button>
@@ -410,6 +412,17 @@ function switchTab(name,btn){
   if(name==='bridge')refreshBridgeTab();
 }
 
+async function fetchUSDCBalance(addr){
+  try{
+    const provider=new ethers.JsonRpcProvider('https://rpc.testnet.arc.network');
+    const abi=['function balanceOf(address) view returns (uint256)','function decimals() view returns (uint8)'];
+    const usdc=new ethers.Contract('0xaFC72219b0CF53683c6CD0a1a00e7DcDf2784185',abi,provider);
+    const [bal,dec]=await Promise.all([usdc.balanceOf(addr),usdc.decimals()]);
+    const formatted=(Number(bal)/Math.pow(10,Number(dec))).toFixed(2);
+    document.getElementById('walletBtn').title=formatted+' USDC';
+    showToast('Balance: '+formatted+' USDC');
+  }catch(e){console.warn('Balance fetch failed:',e.message);}
+}
 function toggleWallet(){
   if(walletAddr){
     walletAddr=null;
@@ -430,7 +443,7 @@ async function connectWallet(){
     document.getElementById('walletBtn').textContent=short(walletAddr,6);
     document.getElementById('walletBtn').classList.add('connected');
     document.getElementById('reportWalletWarn').style.display='none';
-    showToast('Wallet connected: '+short(walletAddr));
+    showToast('Wallet connected: '+short(walletAddr));fetchUSDCBalance(walletAddr);
     refreshSendTab();refreshSwapTab();refreshBridgeTab();
   }catch(e){showToast('Connection rejected',true);}
 }
@@ -840,6 +853,19 @@ async function loadOnChainReports(){
     console.warn('Failed to load on-chain reports:',e.message);
   }
 }
+function searchReports(q){
+  const query=q.trim().toLowerCase();
+  if(!query){renderReports(currentFilter);return;}
+  const list=document.getElementById('reportsList');
+  const filtered=reports.filter(r=>r.addr.toLowerCase().includes(query)||r.ev.toLowerCase().includes(query)||r.cat.toLowerCase().includes(query));
+  if(!filtered.length){list.innerHTML='<div class="empty-state"><div style="font-size:2.5rem;opacity:.3;margin-bottom:12px">⬡</div>No results for "'+q+'"</div>';return;}
+  list.innerHTML=filtered.map(r=>`
+    <div class="card ${r.risk}" style="--risk-color:${riskColor(r.risk)}" onclick="showReportModal(${r.id})">
+      <div class="card-top"><div class="card-addr">${r.addr}</div><span class="risk-badge ${r.risk}">${r.risk.replace('risk-','').toUpperCase()}</span></div>
+      <div class="card-desc">${r.ev}</div>
+      <div class="card-meta"><span class="cat-tag">${r.cat}</span><span class="meta-item">🕐 ${timeAgo(r.ts)}</span><span class="meta-item">by ${r.reporter}</span><button class="upvote-btn ${r._voted?'voted':''}" onclick="event.stopPropagation();upvote(${r.id})">▲ ${r.votes}</button></div>
+    </div>`).join('');
+}
 function showReportModal(id){
   const r=reports.find(x=>x.id===id);
   if(!r)return;
@@ -855,6 +881,7 @@ function showReportModal(id){
     <div style="font-size:.85rem;color:var(--text);margin-bottom:16px;line-height:1.5">${r.ev}</div>
     <div style="font-size:.75rem;color:var(--muted);margin-bottom:16px">Reported by: ${r.reporter} &nbsp;|&nbsp; ▲ ${r.votes} upvotes</div>
     <div style="display:flex;gap:10px">
+      <button onclick="navigator.clipboard.writeText(window.location.href.split('#')[0]+'#'+r.addr);showToast('Link copied!');closeReportModal()" style="flex:1;padding:9px;background:transparent;border:1px solid var(--border2);color:var(--muted);font-family:var(--mono);font-size:.72rem;cursor:pointer">⎘ SHARE</button>
       <a href="${scanUrl}" target="_blank" style="flex:1;text-align:center;padding:9px;border:1px solid var(--border2);color:var(--green);font-family:var(--mono);font-size:.72rem;text-decoration:none">VIEW ON ARCSCAN ↗</a>
       <button onclick="upvote(${r.id});closeReportModal()" style="flex:1;padding:9px;background:transparent;border:1px solid var(--border2);color:var(--muted);font-family:var(--mono);font-size:.72rem;cursor:pointer">▲ UPVOTE</button>
     </div>`;
