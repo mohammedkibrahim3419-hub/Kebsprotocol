@@ -199,7 +199,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
 .hist-detail{font-size:10px;color:var(--muted);margin-top:1px;}
 .hist-amt{text-align:right;font-family:'Space Mono',monospace;font-size:12px;font-weight:700;}
 </style>
-<!-- Circle Stablecoin Kit - REST API mode -->
+<script src="https://cdn.jsdelivr.net/npm/@web3modal/cdn@5.1.11/dist/index.umd.js"></script>
 </head>
 <body>
 <!-- PIN LOCK -->
@@ -834,8 +834,115 @@ function showKitModal(title, details, onConfirm) {
   };
 }
 
+
+// ── WEB3MODAL (WalletConnect) ──
+const WC_PROJECT_ID = 'b56e18d47c72ab683b10814fe9495694'; // free public project id
+let web3modal = null;
+let w3mProvider = null;
+
+async function initWeb3Modal() {
+  try {
+    if (typeof window.Web3Modal === 'undefined') {
+      console.warn('Web3Modal not loaded, falling back to MetaMask');
+      return;
+    }
+    const { createWeb3Modal, defaultConfig } = window.Web3Modal;
+    const metadata = {
+      name: 'KebsProtocol',
+      description: 'Arc DeFi Hub — Uniswap V4 + Circle',
+      url: 'https://mohammedkibrahim3419-hub.github.io/Kebsprotocol/',
+      icons: ['https://avatars.githubusercontent.com/u/37784886']
+    };
+    const chains = [{
+      chainId: 5042002,
+      name: 'Arc Testnet',
+      currency: 'USDC',
+      explorerUrl: 'https://explorer.testnet.arc.network',
+      rpcUrl: 'https://rpc.testnet.arc.network'
+    }];
+    web3modal = createWeb3Modal({
+      ethWalletConnectConfig: { projectId: WC_PROJECT_ID },
+      wagmiConfig: defaultConfig({ metadata }),
+      chains,
+      themeMode: 'dark',
+      themeVariables: {
+        '--w3m-accent': '#00c87a',
+        '--w3m-border-radius-master': '12px',
+      }
+    });
+    console.log('Web3Modal initialized');
+    appendHookLog('success', 'WalletConnect ready · 300+ wallets');
+  } catch(e) {
+    console.warn('Web3Modal init failed:', e.message);
+  }
+}
+
+async function connectWallet() {
+  const btn = document.getElementById('connectBtn');
+
+  if (walletConnected) {
+    walletConnected = false; userAddress = null; usdcBalance = '--';
+    clearInterval(blockPoller);
+    btn.textContent = 'Connect'; btn.classList.remove('connected');
+    updateWalletUI(); return;
+  }
+
+  // Try Web3Modal first, fall back to MetaMask
+  if (web3modal) {
+    try {
+      await web3modal.open();
+      // Listen for connection
+      web3modal.subscribeState(async state => {
+        if (state.selectedNetworkId && state.address) {
+          userAddress = state.address;
+          usdcBalance = await fetchUsdcBalance(userAddress);
+          walletConnected = true;
+          btn.textContent = userAddress.slice(0,6)+'...'+userAddress.slice(-4);
+          btn.classList.add('connected');
+          updateWalletUI(); startBlockPoller();
+          showToast('Connected via WalletConnect!');
+          addFarmPoints(10, 'Wallet connected');
+        }
+      });
+      return;
+    } catch(e) {
+      console.warn('Web3Modal failed, trying MetaMask:', e.message);
+    }
+  }
+
+  // MetaMask fallback
+  if (!window.ethereum) { showToast('No wallet found — install MetaMask'); return; }
+  try {
+    btn.textContent = '...'; btn.disabled = true;
+    const accounts = await window.ethereum.request({method:'eth_requestAccounts'});
+    userAddress = accounts[0];
+    try {
+      await window.ethereum.request({method:'wallet_switchEthereumChain',params:[{chainId:ARC.chainId}]});
+    } catch(e) {
+      if (e.code===4902) await window.ethereum.request({method:'wallet_addEthereumChain',params:[{chainId:ARC.chainId,chainName:ARC.chainName,rpcUrls:[ARC.rpcUrl],blockExplorerUrls:[ARC.blockExplorer],nativeCurrency:ARC.nativeCurrency}]});
+      else throw e;
+    }
+    usdcBalance = await fetchUsdcBalance(userAddress);
+    walletConnected = true;
+    btn.textContent = userAddress.slice(0,6)+'...'+userAddress.slice(-4);
+    btn.classList.add('connected'); btn.disabled = false;
+    updateWalletUI(); startBlockPoller();
+    showToast('Connected via MetaMask!');
+    addFarmPoints(10, 'Wallet connected');
+    window.ethereum.on('accountsChanged', async a => {
+      if (!a.length) { walletConnected=false; btn.textContent='Connect'; btn.classList.remove('connected'); updateWalletUI(); return; }
+      userAddress=a[0]; usdcBalance=await fetchUsdcBalance(userAddress);
+      btn.textContent=userAddress.slice(0,6)+'...'+userAddress.slice(-4); updateWalletUI();
+    });
+    window.ethereum.on('chainChanged', c => {
+      if (parseInt(c,16)!==ARC.chainIdDec) { showToast('Wrong network!'); walletConnected=false; btn.textContent='Connect'; btn.classList.remove('connected'); clearInterval(blockPoller); updateWalletUI(); }
+    });
+  } catch(e) { showToast(e.message||'Failed'); btn.textContent='Connect'; btn.disabled=false; }
+}
+
 function initApp(){
   initAppKit();
+  initWeb3Modal();
   renderRecentSwaps();renderFarming();
   fetchLivePrices();setInterval(fetchLivePrices,60000);
   startBlockPoller();
