@@ -170,7 +170,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
 @keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.3;}}
 
 /* PIN */
-#lockScreen{position:fixed;inset:0;background:#060708;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;}
+#lockScreen{position:fixed;inset:0;background:#060708;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;}
 .pin-logo{font-family:'Orbitron',monospace;font-size:24px;font-weight:900;color:var(--arc);margin-bottom:4px;}
 .pin-sub{font-family:'Space Mono',monospace;font-size:10px;color:var(--muted);margin-bottom:36px;letter-spacing:0.1em;}
 .pin-dots{display:flex;gap:14px;margin-bottom:32px;}
@@ -203,6 +203,16 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
 </head>
 <body>
 <!-- PIN LOCK -->
+<script>
+// Auto-show app if previously unlocked this session
+if(sessionStorage.getItem('kebs_unlocked')==='1'){
+  document.addEventListener('DOMContentLoaded',()=>{
+    document.getElementById('lockScreen').style.display='none';
+    document.getElementById('app').style.display='block';
+    if(typeof initApp==='function') initApp();
+  });
+}
+</script>
 <div id="lockScreen">
   <div class="pin-logo">KEBS</div>
   <div class="pin-sub">PROTOCOL · ARC · V4</div>
@@ -520,7 +530,7 @@ let farmStreak=parseInt(localStorage.getItem('farm_streak')||'0');
 const PIN=localStorage.getItem('kebs_pin')||'1234';
 let pinEntry='';
 
-function pinPress(n){if(pinEntry.length>=4)return;pinEntry+=n;updatePinDots();if(pinEntry.length===4){setTimeout(()=>{if(pinEntry===PIN){document.getElementById('lockScreen').style.display='none';document.getElementById('app').style.display='block';initApp();}else{document.querySelectorAll('.pin-dot').forEach(d=>d.classList.add('e'));setTimeout(()=>{document.querySelectorAll('.pin-dot').forEach(d=>d.classList.remove('e','f'));pinEntry='';},700);}},100);}}
+function pinPress(n){if(pinEntry.length>=4)return;pinEntry+=n;updatePinDots();if(pinEntry.length===4){setTimeout(()=>{if(pinEntry===PIN){sessionStorage.setItem('kebs_unlocked','1');document.getElementById('lockScreen').style.display='none';document.getElementById('app').style.display='block';initApp();}else{document.querySelectorAll('.pin-dot').forEach(d=>d.classList.add('e'));setTimeout(()=>{document.querySelectorAll('.pin-dot').forEach(d=>d.classList.remove('e','f'));pinEntry='';},700);}},100);}}
 function pinBack(){pinEntry=pinEntry.slice(0,-1);updatePinDots();}
 function updatePinDots(){document.querySelectorAll('.pin-dot').forEach((d,i)=>d.classList.toggle('f',i<pinEntry.length));}
 function lockApp(){pinEntry='';updatePinDots();document.getElementById('app').style.display='none';document.getElementById('lockScreen').style.display='flex';}
