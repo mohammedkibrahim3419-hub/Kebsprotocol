@@ -621,14 +621,30 @@ function filterReports(cat,btn){
   document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');renderReports(cat);
 }
-function upvote(id){
+async function upvote(id){
   const r=reports.find(x=>x.id===id);
   if(!r)return;
   if(r._voted){showToast('Already voted',true);return;}
-  r.votes++;r._voted=true;renderReports(currentFilter);updateStats();showToast('Upvote recorded');
+  if(typeof window.ethereum !== 'undefined' && walletAddr && r.onChainId !== undefined){
+    try{
+      showToast('Upvoting on-chain...');
+      const provider=new ethers.BrowserProvider(window.ethereum);
+      const signer=await provider.getSigner();
+      const contract=new ethers.Contract(FW_CONTRACT,FW_ABI,signer);
+      const tx=await contract.upvote(r.onChainId);
+      await tx.wait();
+      showToast('Upvote confirmed on-chain!');
+      fetchOnChainStats();
+    }catch(e){
+      showToast('Upvote failed: '+e.message.slice(0,50),true);return;
+    }
+  } else {
+    showToast('Connect wallet to upvote on-chain',true);
+  }
+  r.votes++;r._voted=true;renderReports(currentFilter);updateStats();
 }
 const FW_CONTRACT='0x623593FA516EAF368369A073E5de9B6504f85607';
-const FW_ABI=['function submitReport(address,string,string,string) external'];
+const FW_ABI=['function submitReport(address,string,string,string) external','function upvote(uint256) external'];
 async function submitReport(){
   const addr=document.getElementById('repAddr').value.trim();
   const cat=document.getElementById('repCat').value;
