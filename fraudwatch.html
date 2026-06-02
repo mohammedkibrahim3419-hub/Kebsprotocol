@@ -391,7 +391,7 @@ const result = await kit.bridge({
 const CONTRACT='0x9667962F0A9591e9b0bE2AB341F421c068B00e07';
 const USDC_ADDR='0xaFC722Eb3b1748657ce6e702a3aDc2fCC45e4784';
 const ARC_CHAIN_ID='0x4cef52';
-const ARC_RPC='https://rpc.testnet.arc.network';
+const ARC_RPC='https://arc-testnet.drpc.org';
 const ARCSCAN='https://testnet.arcscan.app/tx/';
 const ARC_CHAIN_PARAMS={chainId:ARC_CHAIN_ID,chainName:'Arc Testnet',nativeCurrency:{name:'ETH',symbol:'ETH',decimals:18},rpcUrls:[ARC_RPC],blockExplorerUrls:['https://testnet.arcscan.app']};
 let walletAddr=null,currentFilter='all';
@@ -415,7 +415,7 @@ function switchTab(name,btn){
 
 async function fetchUSDCBalance(addr){
   try{
-    const provider=new ethers.JsonRpcProvider('https://rpc.testnet.arc.network');
+    const provider=new ethers.JsonRpcProvider('https://arc-testnet.drpc.org');
     const abi=['function balanceOf(address) view returns (uint256)','function decimals() view returns (uint8)'];
     const usdc=new ethers.Contract('0xaFC72219b0CF53683c6CD0a1a00e7DcDf2784185',abi,provider);
     const [bal,dec]=await Promise.all([usdc.balanceOf(addr),usdc.decimals()]);
@@ -840,7 +840,7 @@ updateStats();
 
 async function loadOnChainReports(){
   try{
-    const provider=new ethers.JsonRpcProvider('https://rpc.testnet.arc.network');
+    const provider=new ethers.JsonRpcProvider('https://arc-testnet.drpc.org');
     const contract=new ethers.Contract(FW_CONTRACT,FW_ABI,provider);
     const [total]=await contract.getStats();
     const count=Number(total);
