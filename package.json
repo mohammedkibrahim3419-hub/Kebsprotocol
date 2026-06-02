@@ -13,9 +13,12 @@
   "type": "commonjs",
   "dependencies": {
     "@anthropic-ai/sdk": "^0.96.0",
+    "@circle-fin/adapter-ethers-v6": "^1.8.2",
+    "@circle-fin/app-kit": "^1.7.0",
     "axios": "^1.16.1",
     "dotenv": "^17.4.2",
     "ethers": "^6.16.0",
-    "express": "^5.2.1"
+    "express": "^5.2.1",
+    "node-forge": "^1.4.0"
   }
 }

@@ -16,6 +16,7 @@ app.use("/prices", require("./routes/prices"));
 app.use("/chat", require("./routes/chat"));
 app.use("/portfolio", require("./routes/portfolio"));
 app.use("/nl", require("./routes/nl"));
+app.use("/api/kits", require("./routes/appkits"));
 app.get("/market", (req, res) => { res.setHeader("Content-Type","text/html"); res.sendFile(require("path").join(__dirname,"frontend","marketplace.html")); });
 app.use("/marketplace", require("./routes/marketplace"));
 
@@ -59,14 +60,93 @@ const CIRCLE_BASE = "https://api.circle.com/v1";
 app.post("/api/freeze", async (req, res) => {
   const { address, amount, caseReason } = req.body;
   try {
-    const response = await fetch(`${CIRCLE_BASE}/w3s/developer/wallets`, {
-      method: "GET",
+    const caseId = "FW-" + Math.floor(Math.random() * 90000 + 10000);
+    // Get wallet balance first
+    const walletRes = await fetch(`${CIRCLE_BASE}/w3s/wallets/${process.env.CIRCLE_WALLET_ID}/balances`, {
       headers: { "Authorization": `Bearer ${CIRCLE_KEY}`, "Content-Type": "application/json" }
     });
-    const data = await response.json();
-    const caseId = "FW-" + Math.floor(Math.random() * 90000 + 10000);
-    console.log(`[FRAUDWATCH] Freeze request: ${address} | ${amount} USDC | Case: ${caseId}`);
-    res.json({ success: true, caseId, address, amount, status: "FROZEN", reason: caseReason || "FraudWatch registry match", timestamp: new Date().toISOString() });
+    const walletData = await walletRes.json();
+    const balances = walletData.data?.tokenBalances || [];
+    const usdc = balances.find(b => b.token?.symbol === "USDC");
+    const available = usdc ? parseFloat(usdc.amount) : 0;
+
+    console.log(`[FRAUDWATCH] Freeze: ${address} | ${amount} USDC | Case: ${caseId} | Available: ${available}`);
+
+    if(available < parseFloat(amount)) {
+      return res.json({
+        success: true,
+        caseId,
+        address,
+        amount,
+        available: available.toString(),
+        status: "FROZEN_SIMULATED",
+        reason: caseReason || "FraudWatch registry match",
+        note: "Insufficient USDC for real freeze — case logged",
+        timestamp: new Date().toISOString()
+      });
+    }
+
+    // Generate proper UUID for idempotency key
+    const uuid = require('crypto').randomUUID();
+
+    // Get USDC token ID for this network
+    const tokensRes = await fetch(`${CIRCLE_BASE}/w3s/tokens?blockchain=ETH-SEPOLIA`, {
+      headers: { "Authorization": `Bearer ${CIRCLE_KEY}`, "Content-Type": "application/json" }
+    });
+    const tokensData = await tokensRes.json();
+    const usdcToken = tokensData.data?.tokens?.find(t => t.symbol === "USDC");
+    const tokenId = usdcToken?.id || process.env.CIRCLE_USDC_TOKEN_ID;
+
+    // Encrypt entity secret
+    const crypto = require('crypto');
+    const forge = require('node-forge');
+    const entitySecret = process.env.CIRCLE_ENTITY_SECRET;
+
+    // Get public key for encryption
+    const pubKeyRes = await fetch(`${CIRCLE_BASE}/w3s/config/entity/publicKey`, {
+      headers: { "Authorization": `Bearer ${CIRCLE_KEY}` }
+    });
+    const pubKeyData = await pubKeyRes.json();
+    const publicKey = pubKeyData.data?.publicKey;
+
+    let entitySecretCiphertext = null;
+    if(publicKey && entitySecret) {
+      const secretBuffer = Buffer.from(entitySecret, 'hex');
+      const publicKeyObj = forge.pki.publicKeyFromPem(publicKey);
+      const encrypted = publicKeyObj.encrypt(secretBuffer.toString('binary'), 'RSA-OAEP', {
+        md: forge.md.sha256.create(),
+        mgf1: { md: forge.md.sha256.create() }
+      });
+      entitySecretCiphertext = Buffer.from(encrypted, 'binary').toString('base64');
+    }
+
+    // Create real transfer
+    const transferRes = await fetch(`${CIRCLE_BASE}/w3s/developer/transactions/transfer`, {
+      method: "POST",
+      headers: { "Authorization": `Bearer ${CIRCLE_KEY}`, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        idempotencyKey: uuid,
+        walletId: process.env.CIRCLE_WALLET_ID,
+        destinationAddress: address,
+        amounts: [amount.toString()],
+        tokenId: tokenId,
+        entitySecretCiphertext,
+        fee: { type: "level", config: { feeLevel: "MEDIUM" } }
+      })
+    });
+    const transferData = await transferRes.json();
+    console.log("[FRAUDWATCH] Circle transfer response:", JSON.stringify(transferData));
+
+    res.json({
+      success: true,
+      caseId,
+      address,
+      amount,
+      status: "FROZEN",
+      circleResponse: transferData,
+      reason: caseReason || "FraudWatch registry match",
+      timestamp: new Date().toISOString()
+    });
   } catch(e) {
     res.status(500).json({ success: false, error: e.message });
   }
