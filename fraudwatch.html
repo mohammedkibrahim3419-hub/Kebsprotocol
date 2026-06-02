@@ -749,6 +749,22 @@ function riskColor(risk){return{'risk-critical':'var(--red)','risk-high':'var(--
 function riskLabel(score){if(score>=80)return{label:'CRITICAL RISK',color:'var(--red)'};if(score>=50)return{label:'HIGH RISK',color:'var(--amber)'};if(score>=20)return{label:'MEDIUM RISK',color:'#f97316'};if(score>0)return{label:'LOW RISK',color:'var(--blue)'};return{label:'CLEAN',color:'var(--green)'};}
 function showToast(msg,err=false){const t=document.getElementById('toast');t.textContent=msg;t.className='show'+(err?' error':'');setTimeout(()=>t.className='',3000);}
 updateStats();
+
+async function fetchOnChainStats() {
+  try {
+    const res = await fetch('https://fraudwatch-eta.vercel.app/api/stats');
+    const data = await res.json();
+    if (data.total !== undefined) {
+      document.getElementById('statToday').textContent = data.today;
+      document.getElementById('statTotal').textContent = data.total;
+      document.getElementById('statFlagged').textContent = data.flagged;
+      document.getElementById('statVotes').textContent = data.upvotes;
+    }
+  } catch(e) { console.warn('On-chain stats unavailable:', e.message); }
+}
+fetchOnChainStats();
+setInterval(fetchOnChainStats, 30000);
+
 </script>
 </body>
 </html>
