@@ -157,7 +157,7 @@ main{position:relative;z-index:1;padding:28px 24px 80px;max-width:1100px;margin:
 <body>
 <header>
   <div class="logo"><div class="logo-icon">⬡</div>FRAUD<span>WATCH</span></div>
-  <button id="walletBtn" onclick="connectWallet()">CONNECT WALLET</button>
+  <button id="walletBtn" onclick="toggleWallet()">CONNECT WALLET</button>
 </header>
 <div class="tab-bar">
   <button class="tab-btn active" onclick="switchTab('watchlist',this)">👁 Watch</button>
@@ -409,6 +409,18 @@ function switchTab(name,btn){
   if(name==='bridge')refreshBridgeTab();
 }
 
+function toggleWallet(){
+  if(walletAddr){
+    walletAddr=null;
+    document.getElementById('walletBtn').textContent='CONNECT WALLET';
+    document.getElementById('walletBtn').classList.remove('connected');
+    document.getElementById('reportWalletWarn').style.display='';
+    refreshSendTab();refreshSwapTab();refreshBridgeTab();
+    showToast('Wallet disconnected');
+  } else {
+    connectWallet();
+  }
+}
 async function connectWallet(){
   if(!window.ethereum){showToast('MetaMask not detected',true);return;}
   try{
