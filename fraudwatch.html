@@ -386,10 +386,10 @@ const result = await kit.bridge({
 <script>
 const CONTRACT='0x9667962F0A9591e9b0bE2AB341F421c068B00e07';
 const USDC_ADDR='0xaFC722Eb3b1748657ce6e702a3aDc2fCC45e4784';
-const ARC_CHAIN_ID='0x4CEB12';
-const ARC_RPC='https://rpc.arc.testnet.circlelabs.io';
-const ARCSCAN='https://arcscan.io/tx/';
-const ARC_CHAIN_PARAMS={chainId:ARC_CHAIN_ID,chainName:'Arc Testnet',nativeCurrency:{name:'ETH',symbol:'ETH',decimals:18},rpcUrls:[ARC_RPC],blockExplorerUrls:['https://arcscan.io']};
+const ARC_CHAIN_ID='0x4cef52';
+const ARC_RPC='https://rpc.testnet.arc.network';
+const ARCSCAN='https://testnet.arcscan.app/tx/';
+const ARC_CHAIN_PARAMS={chainId:ARC_CHAIN_ID,chainName:'Arc Testnet',nativeCurrency:{name:'ETH',symbol:'ETH',decimals:18},rpcUrls:[ARC_RPC],blockExplorerUrls:['https://testnet.arcscan.app']};
 let walletAddr=null,currentFilter='all';
 let reports=[
   {id:1,addr:'0xDead111122223333444455556666777788889999',cat:'Rug Pull',risk:'risk-critical',ev:'Deployed fake DEX, drained 45 ETH from LPs within 6 hours of launch.',votes:14,ts:Date.now()-3600000,reporter:'0x111...222'},
