@@ -679,7 +679,7 @@ async function runAIScan(){
   const cats=[...new Set(matched.map(r=>r.cat))].join(', ');
   const prompt=`You are a blockchain threat intelligence AI for FraudWatch on Arc Testnet.\nAnalyze wallet: ${addr}\nReports: ${matched.length}, Categories: ${cats||'none'}, Upvotes: ${votes}, Score: ${score}/100\nEvidence: ${matched.map(r=>r.ev).join(' | ')||'none'}\nRespond ONLY with JSON no markdown:\n{"verdict":"CRITICAL|HIGH|MEDIUM|LOW|CLEAN","score":number,"summary":"2 sentence summary","signals":["s1","s2","s3"],"recommendation":"one sentence","tags":["t1","t2"]}`;
   try{
-    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,messages:[{role:'user',content:prompt}]})});
+    const res=await fetch('https://fraudwatch-eta.vercel.app/api/ai-risk',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt})});
     const data=await res.json();
     const raw=data.content.map(i=>i.text||'').join('');
     const parsed=JSON.parse(raw.replace(/```json|```/g,'').trim());
