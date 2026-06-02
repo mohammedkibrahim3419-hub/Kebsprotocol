@@ -152,6 +152,7 @@ main{position:relative;z-index:1;padding:28px 24px 80px;max-width:1100px;margin:
 .demo-note span{color:var(--amber)}
 .chain-switch-btn{font-family:var(--head);font-size:.72rem;font-weight:600;letter-spacing:1px;text-transform:uppercase;background:none;padding:5px 12px;cursor:pointer;transition:all .2s;border:1px solid}
 </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.umd.min.js"></script>
 </head>
 <body>
 <header>
@@ -626,16 +627,36 @@ function upvote(id){
   if(r._voted){showToast('Already voted',true);return;}
   r.votes++;r._voted=true;renderReports(currentFilter);updateStats();showToast('Upvote recorded');
 }
-function submitReport(){
+const FW_CONTRACT='0x623593FA516EAF368369A073E5de9B6504f85607';
+const FW_ABI=['function submitReport(address,string,string,string) external'];
+async function submitReport(){
   const addr=document.getElementById('repAddr').value.trim();
   const cat=document.getElementById('repCat').value;
   const risk=document.getElementById('repRisk').value;
   const ev=document.getElementById('repDesc').value.trim();
   if(!addr||!ev){showToast('Address and description required',true);return;}
+  if(typeof window.ethereum !== 'undefined' && walletAddr){
+    try{
+      showToast('Submitting on-chain...');
+      const provider=new ethers.BrowserProvider(window.ethereum);
+      const signer=await provider.getSigner();
+      const contract=new ethers.Contract(FW_CONTRACT,FW_ABI,signer);
+      const tx=await contract.submitReport(addr,cat,risk,ev);
+      showToast('Waiting for confirmation...');
+      await tx.wait();
+      showToast('Report confirmed on-chain!');
+      fetchOnChainStats();
+    }catch(e){
+      showToast('On-chain failed: '+e.message.slice(0,60),true);
+      return;
+    }
+  } else {
+    showToast('Connect wallet to submit on-chain',true);
+  }
   reports.unshift({id:Date.now(),addr,cat,risk,ev,votes:0,ts:Date.now(),reporter:walletAddr?short(walletAddr):'0xAnon'});
   document.getElementById('repAddr').value='';
   document.getElementById('repDesc').value='';
-  updateStats();showToast('Report submitted!');
+  updateStats();
 }
 function updateStats(){
   const now=Date.now();
