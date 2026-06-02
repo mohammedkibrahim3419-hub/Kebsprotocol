@@ -5,7 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>FraudWatch — On-Chain Threat Intelligence</title>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@600;700&family=Exo+2:wght@400;500;600&family=Share+Tech+Mono&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script><script src="https://unpkg.com/@walletconnect/web3-provider@1.8.0/dist/umd/index.min.js"></script>
+<script src="https://unpkg.com/@web3modal/standalone@2.4.1/dist/index.umd.js"></script>
 <style>
 :root{--bg:#080b0f;--surface:#0d1117;--card:#111820;--border:#1e2d3d;--border2:#243447;--red:#ff2b4e;--red-dim:#8b1428;--amber:#ffb700;--amber-dim:#7a5800;--green:#00e5a0;--green-dim:#005c41;--blue:#4db8ff;--blue-dim:#0a3a5c;--purple:#a78bfa;--text:#c8d8e8;--muted:#5a7a90;--mono:'Share Tech Mono',monospace;--sans:'Exo 2',sans-serif;--head:'Rajdhani',sans-serif}
 *{box-sizing:border-box;margin:0;padding:0}
@@ -436,10 +437,23 @@ function toggleWallet(){
   }
 }
 async function connectWallet(){
-  if(!window.ethereum){showToast('MetaMask not detected',true);return;}
+  if(window.ethereum){
+    try{
+      const accounts=await window.ethereum.request({method:'eth_requestAccounts'});
+      walletAddr=accounts[0];
+    }catch(e){showToast('Connection rejected',true);return;}
+  } else {
+    try{
+      const WCProvider=new WalletConnectProvider.default({rpc:{5042002:'https://arc-testnet.drpc.org'}});
+      await WCProvider.enable();
+      const ethProvider=new ethers.BrowserProvider(WCProvider);
+      const signer=await ethProvider.getSigner();
+      walletAddr=await signer.getAddress();
+      window._wcProvider=WCProvider;
+    }catch(e){showToast('WalletConnect cancelled',true);return;}
+  }
   try{
-    const accounts=await window.ethereum.request({method:'eth_requestAccounts'});
-    walletAddr=accounts[0];
+    const dummy=true;
     document.getElementById('walletBtn').textContent=short(walletAddr,6);
     document.getElementById('walletBtn').classList.add('connected');
     document.getElementById('reportWalletWarn').style.display='none';
