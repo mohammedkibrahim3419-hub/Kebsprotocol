@@ -832,8 +832,40 @@ async function fetchOnChainStats() {
     }
   } catch(e) { console.warn('On-chain stats unavailable:', e.message); }
 }
+
+async function autoReconnect(){
+  if(typeof window.ethereum === 'undefined') return;
+  try{
+    const accounts = await window.ethereum.request({method:'eth_accounts'});
+    if(accounts.length > 0){
+      walletAddr = accounts[0];
+      document.getElementById('walletBtn').textContent = short(walletAddr,6);
+      document.getElementById('walletBtn').classList.add('connected');
+      document.getElementById('reportWalletWarn').style.display = 'none';
+      refreshSendTab();refreshSwapTab();refreshBridgeTab();
+    }
+  }catch(e){ console.warn('Auto-reconnect failed:',e.message); }
+
+  window.ethereum.on('accountsChanged', accounts => {
+    if(accounts.length === 0){
+      walletAddr = null;
+      document.getElementById('walletBtn').textContent = 'CONNECT WALLET';
+      document.getElementById('walletBtn').classList.remove('connected');
+      document.getElementById('reportWalletWarn').style.display = '';
+    } else {
+      walletAddr = accounts[0];
+      document.getElementById('walletBtn').textContent = short(walletAddr,6);
+      document.getElementById('walletBtn').classList.add('connected');
+      document.getElementById('reportWalletWarn').style.display = 'none';
+    }
+    refreshSendTab();refreshSwapTab();refreshBridgeTab();
+  });
+
+  window.ethereum.on('chainChanged', () => window.location.reload());
+}
 fetchOnChainStats();
 loadOnChainReports();
+autoReconnect();
 setInterval(fetchOnChainStats, 30000);
 setInterval(loadOnChainReports, 60000);
 
