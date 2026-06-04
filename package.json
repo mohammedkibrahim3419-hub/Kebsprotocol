@@ -20,5 +20,8 @@
     "ethers": "^6.16.0",
     "express": "^5.2.1",
     "node-forge": "^1.4.0"
+  },
+  "engines": {
+    "node": ">=20.0.0"
   }
 }
