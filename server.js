@@ -19,6 +19,8 @@ app.use("/nl", require("./routes/nl"));
 app.use("/api/kits", require("./routes/appkits"));
 app.get("/market", (req, res) => { res.setHeader("Content-Type","text/html"); res.sendFile(require("path").join(__dirname,"frontend","marketplace.html")); });
 app.use("/marketplace", require("./routes/marketplace"));
+app.use("/paymaster", require("./routes/paymaster"));
+app.use("/gateway", require("./routes/gateway"));
 
 app.get("/landing", (req, res) => { res.setHeader("Content-Type","text/html"); res.sendFile(require("path").join(__dirname,"frontend","landing.html")); });
 app.get("/dashboard", (req, res) => { res.setHeader("Content-Type","text/html"); res.sendFile(require("path").join(__dirname,"frontend","index.html")); });

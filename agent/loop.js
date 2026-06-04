@@ -1,21 +1,21 @@
+const { bridgeUSDC, shouldBridge, THRESHOLD } = require("./cctp");
 const { getBalances, provider } = require("./wallet");
 
 const logs = [];
 let running = false;
-let intervalId = null;
+let intervalId;
 let tickCount = 0;
 
 function log(msg) {
-  const entry = { time: new Date().toISOString(), msg };
+  const entry = "[" + new Date().toISOString() + "] " + msg;
   logs.push(entry);
-  if (logs.length > 100) logs.shift();
-  console.log("[KEBS] " + entry.time + " - " + msg);
+  console.log(entry);
 }
 
 async function checkNetwork() {
   try {
     const block = await provider.getBlockNumber();
-    log("Arc Testnet block: " + block + " - network healthy");
+    log("Network OK - block " + block);
   } catch (err) {
     log("Network error: " + err.message);
   }
@@ -25,6 +25,11 @@ async function checkBalances() {
   try {
     const b = await getBalances();
     log("Wallet: " + b.address + " | Native: " + b.native + " | USDC: " + b.usdc);
+    if (await shouldBridge(b.usdc)) {
+      log("USDC below threshold (" + THRESHOLD + ") - triggering CCTP bridge from Base Sepolia");
+      const result = await bridgeUSDC(5);
+      log("CCTP bridge result: " + JSON.stringify(result));
+    }
   } catch (err) {
     log("Balance error: " + err.message);
   }

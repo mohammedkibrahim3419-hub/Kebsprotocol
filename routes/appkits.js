@@ -1,14 +1,16 @@
 const express = require('express');
 const { AppKit } = require('@circle-fin/app-kit');
-const { EthersV6Adapter } = require('@circle-fin/adapter-ethers-v6');
+const { EthersAdapter } = require('@circle-fin/adapter-ethers-v6');
 const { ethers } = require('ethers');
 
 const router = express.Router();
 
-const provider = new ethers.JsonRpcProvider('https://rpc.arc.testnet.circlelabs.io');
-const signer = new ethers.Wallet(process.env.PRIVATE_KEY, provider);
-const adapter = new EthersV6Adapter(signer);
-const kit = new AppKit({ kitKey: process.env.KIT_KEY });
+const provider = new ethers.JsonRpcProvider('https://rpc.testnet.arc.network');
+function getKit() {
+  const signer = new ethers.Wallet(process.env.PRIVATE_KEY, provider);
+  const adapter = new EthersAdapter(signer);
+  return new AppKit({ kitKey: process.env.KIT_KEY });
+}
 
 router.post('/swap', async (req, res) => {
   try {
