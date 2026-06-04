@@ -36,7 +36,8 @@ app.get("/", (req, res) => {
 });
 
 
-// Auto-start agent on boot
+// Auto-start agent on boot (disabled on Vercel)
+if (!process.env.VERCEL) {
 try {
   const loop = require('./agent/loop');
 global._agentLoop = loop;
@@ -46,13 +47,16 @@ global._agentLoop = loop;
   console.log('[KEBS] Agent start error:', e.message);
 }
 
-// Keep-alive ping every 14 minutes
+// Keep-alive ping every 14 minutes (disabled on Vercel)
+if (!process.env.VERCEL) {
 setInterval(() => {
   const http = require('http');
   http.get('http://localhost:' + (process.env.PORT || 3000) + '/agent/status', (r) => {
     console.log('[KEBS] Keep-alive ping OK');
   }).on('error', () => {});
 }, 14 * 60 * 1000);
+}
+}
 
 
 // ========== FRAUDWATCH CIRCLE FREEZE ENDPOINTS ==========
