@@ -16,7 +16,7 @@ app.use("/prices", require("./routes/prices"));
 app.use("/chat", require("./routes/chat"));
 app.use("/portfolio", require("./routes/portfolio"));
 app.use("/nl", require("./routes/nl"));
-app.use("/api/kits", require("./routes/appkits"));
+// app.use("/api/kits", require("./routes/appkits")); // disabled - app-kit removed
 app.get("/market", (req, res) => { res.setHeader("Content-Type","text/html"); res.sendFile(require("path").join(__dirname,"frontend","marketplace.html")); });
 app.use("/marketplace", require("./routes/marketplace"));
 app.use("/paymaster", require("./routes/paymaster"));
