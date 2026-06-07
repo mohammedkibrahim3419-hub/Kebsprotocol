@@ -1,4 +1,6 @@
-.env
 node_modules/
-contracts/KebsAgent.abi.json
+.env
+*.dat
+nohup.out
 .vercel
+.env*

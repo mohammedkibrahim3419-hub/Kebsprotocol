@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FraudWatch — On-Chain Threat Intelligence</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Cpolygon points='100,8 168,46 168,122 100,160 32,122 32,46' fill='%230d1117' stroke='%23ff2b4e' stroke-width='1.5'/%3E%3Ccircle cx='88' cy='82' r='6' fill='%23ff2b4e'/%3E%3Ccircle cx='112' cy='82' r='6' fill='%23ff2b4e'/%3E%3C/svg%3E">
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@600;700&family=Share+Tech+Mono&family=Exo+2:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+:root{--red:#ff2b4e;--green:#00e5a0;--bg:#06090d;--bg2:#0a0f16;--border:#1a2332;--muted:#4a6480;--text:#c8d8e8;--mono:'Share Tech Mono',monospace;--display:'Rajdhani',sans-serif;--body:'Exo 2',sans-serif}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:var(--body);overflow-x:hidden;cursor:crosshair}
+body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,229,160,.012) 2px,rgba(0,229,160,.012) 4px);pointer-events:none;z-index:9999}
+.grid-bg{position:fixed;inset:0;background-image:linear-gradient(rgba(255,43,78,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(255,43,78,.04) 1px,transparent 1px);background-size:60px 60px;z-index:0}
+nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:16px 32px;background:rgba(6,9,13,.85);backdrop-filter:blur(12px);border-bottom:1px solid rgba(255,43,78,.15)}
+.nav-logo{display:flex;align-items:center;gap:10px;font-family:var(--display);font-size:1.3rem;font-weight:700;letter-spacing:2px;color:#fff}
+.nav-logo span{color:var(--red)}
+.nav-links{display:flex;align-items:center;gap:24px}
+.nav-links a{font-family:var(--mono);font-size:.7rem;color:var(--muted);text-decoration:none;letter-spacing:1px;transition:color .2s}
+.nav-links a:hover{color:var(--green)}
+.btn-launch{font-family:var(--mono);font-size:.72rem;letter-spacing:2px;padding:8px 20px;background:transparent;border:1px solid var(--red);color:var(--red);cursor:crosshair;transition:all .2s;text-decoration:none}
+.btn-launch:hover{background:var(--red);color:#fff;box-shadow:0 0 20px rgba(255,43,78,.4)}
+.hero{position:relative;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:120px 24px 80px;z-index:1}
+.hero-eyebrow{font-family:var(--mono);font-size:.65rem;letter-spacing:4px;color:var(--green);margin-bottom:24px;opacity:0;animation:fadeUp .6s ease forwards .2s}
+.hero-title{font-family:var(--display);font-size:clamp(3rem,10vw,7rem);font-weight:700;line-height:.95;letter-spacing:-1px;color:#fff;opacity:0;animation:fadeUp .6s ease forwards .4s}
+.hero-title .red{color:var(--red)}
+.hero-sub{font-size:clamp(.9rem,2vw,1.1rem);font-weight:300;color:var(--muted);max-width:540px;line-height:1.7;margin:24px auto 0;opacity:0;animation:fadeUp .6s ease forwards .5s}
+.hero-sub strong{color:var(--text);font-weight:400}
+.hero-cta{display:flex;gap:16px;margin-top:40px;flex-wrap:wrap;justify-content:center;opacity:0;animation:fadeUp .6s ease forwards .65s}
+.btn-primary{font-family:var(--mono);font-size:.8rem;letter-spacing:2px;padding:14px 36px;background:var(--red);border:none;color:#fff;cursor:crosshair;transition:all .2s;text-decoration:none;display:inline-block;box-shadow:0 0 30px rgba(255,43,78,.3)}
+.btn-primary:hover{box-shadow:0 0 50px rgba(255,43,78,.6);transform:translateY(-2px)}
+.btn-secondary{font-family:var(--mono);font-size:.8rem;letter-spacing:2px;padding:14px 36px;background:transparent;border:1px solid var(--border);color:var(--muted);cursor:crosshair;transition:all .2s;text-decoration:none;display:inline-block}
+.btn-secondary:hover{border-color:var(--green);color:var(--green)}
+.stats-bar{display:flex;justify-content:center;max-width:700px;margin:0 auto 80px;border:1px solid var(--border);position:relative;z-index:1}
+.stat-item{flex:1;text-align:center;padding:20px 16px;border-right:1px solid var(--border)}
+.stat-item:last-child{border-right:none}
+.stat-num{font-family:var(--display);font-size:2rem;font-weight:700;color:var(--red);display:block;line-height:1}
+.stat-num.green{color:var(--green)}
+.stat-label{font-family:var(--mono);font-size:.58rem;letter-spacing:2px;color:var(--muted);display:block;margin-top:6px}
+.live-dot{display:inline-block;width:5px;height:5px;background:var(--green);border-radius:50%;margin-right:4px;animation:pulse 1.5s ease infinite}
+.chain-section{position:relative;z-index:1;text-align:center;padding:60px 24px;border-top:1px solid var(--border);border-bottom:1px solid var(--border);background:var(--bg2)}
+.chain-badge{display:inline-flex;align-items:center;gap:12px;padding:12px 24px;border:1px solid rgba(0,229,160,.2);margin-bottom:16px}
+.chain-dot{width:8px;height:8px;background:var(--green);border-radius:50%;animation:pulse 1.5s ease infinite}
+.chain-text{font-family:var(--mono);font-size:.7rem;letter-spacing:2px;color:var(--green)}
+.contract-addr{font-family:var(--mono);font-size:.7rem;color:var(--muted)}
+.contract-addr span{color:var(--green)}
+.features{position:relative;z-index:1;max-width:1000px;margin:80px auto;padding:0 24px}
+.section-label{font-family:var(--mono);font-size:.65rem;letter-spacing:4px;color:var(--green);margin-bottom:12px}
+.section-title{font-family:var(--display);font-size:clamp(1.8rem,5vw,3rem);font-weight:700;color:#fff;margin-bottom:40px}
+.features-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1px;background:var(--border);border:1px solid var(--border)}
+.feature-card{background:var(--bg2);padding:28px;transition:background .2s;position:relative;overflow:hidden}
+.feature-card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:var(--red);transform:scaleX(0);transition:transform .3s;transform-origin:left}
+.feature-card:hover::before{transform:scaleX(1)}
+.feature-card:hover{background:#0d1520}
+.feature-icon{font-size:1.5rem;margin-bottom:14px}
+.feature-title{font-family:var(--display);font-size:1rem;font-weight:700;color:#fff;letter-spacing:1px;margin-bottom:8px}
+.feature-desc{font-size:.82rem;color:var(--muted);line-height:1.6;font-weight:300}
+.feature-tag{display:inline-block;margin-top:12px;font-family:var(--mono);font-size:.6rem;letter-spacing:1px;padding:3px 8px;border:1px solid var(--border);color:var(--muted)}
+.feature-tag.live{border-color:rgba(0,229,160,.3);color:var(--green)}
+.how{position:relative;z-index:1;max-width:800px;margin:80px auto;padding:0 24px}
+.steps{display:flex;flex-direction:column;border:1px solid var(--border)}
+.step{display:flex;align-items:flex-start;gap:24px;padding:28px 32px;border-bottom:1px solid var(--border);transition:background .2s}
+.step:last-child{border-bottom:none}
+.step:hover{background:#0d1520}
+.step-num{font-family:var(--display);font-size:2.5rem;font-weight:700;color:var(--border);line-height:1;min-width:48px;transition:color .2s}
+.step:hover .step-num{color:var(--red)}
+.step-title{font-family:var(--display);font-size:1rem;font-weight:700;color:#fff;letter-spacing:1px;margin-bottom:6px}
+.step-desc{font-size:.82rem;color:var(--muted);line-height:1.6;font-weight:300}
+footer{position:relative;z-index:1;text-align:center;padding:48px 24px;border-top:1px solid var(--border)}
+.footer-logo{font-family:var(--display);font-size:1.1rem;font-weight:700;letter-spacing:3px;color:#fff;margin-bottom:8px}
+.footer-logo span{color:var(--red)}
+.footer-sub{font-family:var(--mono);font-size:.65rem;letter-spacing:2px;color:var(--muted);margin-bottom:24px}
+.footer-links{display:flex;justify-content:center;gap:24px}
+.footer-links a{font-family:var(--mono);font-size:.65rem;letter-spacing:1px;color:var(--muted);text-decoration:none;transition:color .2s}
+.footer-links a:hover{color:var(--green)}
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+@media(max-width:600px){nav{padding:12px 16px}.nav-links a:not(.btn-launch){display:none}.stats-bar{flex-direction:column}.stat-item{border-right:none;border-bottom:1px solid var(--border)}.stat-item:last-child{border-bottom:none}.step{padding:20px 16px;gap:16px}.step-num{font-size:1.8rem;min-width:36px}}
+</style>
+</head>
+<body>
+<div class="grid-bg"></div>
+<nav>
+  <div class="nav-logo">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="28" height="28"><defs><filter id="ng"><feGaussianBlur stdDeviation="2.5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><polygon points="100,8 168,46 168,122 100,160 32,122 32,46" fill="#0d1117" stroke="#ff2b4e" stroke-width="1.5"/><ellipse cx="100" cy="82" rx="28" ry="26" fill="#111820"/><polygon points="78,60 73,45 83,57" fill="#111820" stroke="#ff2b4e" stroke-width="1" filter="url(#ng)"/><polygon points="122,60 127,45 117,57" fill="#111820" stroke="#ff2b4e" stroke-width="1" filter="url(#ng)"/><circle cx="88" cy="82" r="11" fill="#080c10" stroke="#ff2b4e" stroke-width="1.2" filter="url(#ng)"/><circle cx="112" cy="82" r="11" fill="#080c10" stroke="#ff2b4e" stroke-width="1.2" filter="url(#ng)"/><circle cx="88" cy="82" r="5" fill="#ff2b4e"/><circle cx="112" cy="82" r="5" fill="#ff2b4e"/><polygon points="100,90 95,96 105,96" fill="#ff2b4e" opacity="0.8"/></svg>
+    FRAUD<span>WATCH</span>
+  </div>
+  <div class="nav-links">
+    <a href="#features">FEATURES</a>
+    <a href="#how">HOW IT WORKS</a>
+    <a href="https://testnet.arcscan.app/address/0x623593FA516EAF368369A073E5de9B6504f85607" target="_blank">CONTRACT</a>
+    <a href="fraudwatch.html" class="btn-launch">LAUNCH APP</a>
+  </div>
+</nav>
+<section class="hero">
+  <div class="hero-eyebrow"><span class="live-dot"></span>LIVE ON ARC TESTNET · CHAIN 5042002</div>
+  <div style="margin-bottom:32px;opacity:0;animation:fadeUp .6s ease forwards .3s;filter:drop-shadow(0 0 30px rgba(255,43,78,.5))">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="100" height="100"><defs><radialGradient id="eg" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#ff2b4e" stop-opacity="1"/><stop offset="100%" stop-color="#ff2b4e" stop-opacity="0"/></radialGradient><filter id="glow"><feGaussianBlur stdDeviation="2.5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter><filter id="sg"><feGaussianBlur stdDeviation="4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><polygon points="100,8 168,46 168,122 100,160 32,122 32,46" fill="#0d1117" stroke="#ff2b4e" stroke-width="1.5"/><polygon points="100,16 160,50 160,118 100,152 40,118 40,50" fill="none" stroke="#1a2332" stroke-width="0.5"/><ellipse cx="100" cy="112" rx="32" ry="36" fill="#111820" stroke="#1e2d3d" stroke-width="1"/><path d="M68 100 Q48 95 38 115 Q50 108 68 115 Z" fill="#0f1923" stroke="#1e2d3d" stroke-width="0.8"/><path d="M132 100 Q152 95 162 115 Q150 108 132 115 Z" fill="#0f1923" stroke="#1e2d3d" stroke-width="0.8"/><ellipse cx="100" cy="82" rx="28" ry="26" fill="#111820" stroke="#1e2d3d" stroke-width="1"/><polygon points="78,60 73,45 83,57" fill="#111820" stroke="#ff2b4e" stroke-width="1" filter="url(#glow)"/><polygon points="122,60 127,45 117,57" fill="#111820" stroke="#ff2b4e" stroke-width="1" filter="url(#glow)"/><circle cx="88" cy="82" r="14" fill="url(#eg)" opacity="0.3"/><circle cx="112" cy="82" r="14" fill="url(#eg)" opacity="0.3"/><circle cx="88" cy="82" r="11" fill="#080c10" stroke="#ff2b4e" stroke-width="1.2" filter="url(#glow)"/><circle cx="112" cy="82" r="11" fill="#080c10" stroke="#ff2b4e" stroke-width="1.2" filter="url(#glow)"/><circle cx="88" cy="82" r="6" fill="#ff2b4e" opacity="0.9" filter="url(#sg)"/><circle cx="112" cy="82" r="6" fill="#ff2b4e" opacity="0.9" filter="url(#sg)"/><circle cx="88" cy="82" r="3" fill="#ff6b84"/><circle cx="112" cy="82" r="3" fill="#ff6b84"/><circle cx="90" cy="80" r="1.5" fill="#fff" opacity="0.6"/><circle cx="114" cy="80" r="1.5" fill="#fff" opacity="0.6"/><polygon points="100,90 95,96 105,96" fill="#ff2b4e" opacity="0.8" filter="url(#glow)"/><line x1="88" y1="108" x2="88" y2="120" stroke="#00e5a0" stroke-width="0.6" opacity="0.5"/><line x1="88" y1="114" x2="100" y2="114" stroke="#00e5a0" stroke-width="0.6" opacity="0.5"/><line x1="112" y1="108" x2="112" y2="120" stroke="#00e5a0" stroke-width="0.6" opacity="0.5"/><line x1="112" y1="114" x2="100" y2="114" stroke="#00e5a0" stroke-width="0.6" opacity="0.5"/><circle cx="100" cy="114" r="2" fill="#00e5a0" opacity="0.6"/></svg>
+  </div>
+  <h1 class="hero-title">FRAUD<span class="red">WATCH</span></h1>
+  <p class="hero-sub"><strong>On-chain threat intelligence for Arc Testnet.</strong><br>Report scams, flag wallets, scan risk — stored permanently on-chain with USDC gas.</p>
+  <div class="hero-cta">
+    <a href="fraudwatch.html" class="btn-primary">LAUNCH APP →</a>
+    <a href="https://testnet.arcscan.app/address/0x623593FA516EAF368369A073E5de9B6504f85607" target="_blank" class="btn-secondary">VIEW CONTRACT</a>
+  </div>
+</section>
+<div style="position:relative;z-index:1;padding:0 24px">
+  <div class="stats-bar">
+    <div class="stat-item"><span class="stat-num" id="liveTotal">—</span><span class="stat-label">TOTAL REPORTS</span></div>
+    <div class="stat-item"><span class="stat-num" id="liveToday">—</span><span class="stat-label">TODAY</span></div>
+    <div class="stat-item"><span class="stat-num" style="color:var(--red)" id="liveFlagged">—</span><span class="stat-label">FLAGGED</span></div>
+    <div class="stat-item"><span class="stat-num green" id="liveUpvotes">—</span><span class="stat-label">UPVOTES</span></div>
+  </div>
+</div>
+<div class="chain-section">
+  <div class="chain-badge"><div class="chain-dot"></div><span class="chain-text">ARC TESTNET · CHAIN 5042002 · USDC GAS</span></div>
+  <div class="contract-addr">FraudWatch Contract &nbsp;·&nbsp; <span>0x623593FA516EAF368369A073E5de9B6504f85607</span></div>
+</div>
+<section class="features" id="features">
+  <div class="section-label">CAPABILITIES</div>
+  <div class="section-title">Built for the threat layer</div>
+  <div class="features-grid">
+    <div class="feature-card"><div class="feature-icon">🚨</div><div class="feature-title">ON-CHAIN REPORTS</div><div class="feature-desc">Submit fraud reports permanently to Arc Testnet. Every report is immutable, timestamped, and publicly verifiable.</div><span class="feature-tag live">LIVE</span></div>
+    <div class="feature-card"><div class="feature-icon">🤖</div><div class="feature-title">AI RISK ANALYSIS</div><div class="feature-desc">Scan any wallet for threat signals. Pattern analysis across community reports, categories, and upvote scores.</div><span class="feature-tag live">LIVE</span></div>
+    <div class="feature-card"><div class="feature-icon">🔍</div><div class="feature-title">ADDRESS LOOKUP</div><div class="feature-desc">Search any wallet. Get a full audit — past flags, categories, risk score, and PDF export.</div><span class="feature-tag live">LIVE</span></div>
+    <div class="feature-card"><div class="feature-icon">⚖️</div><div class="feature-title">ESCROW SIMULATION</div><div class="feature-desc">Test Arc programmable escrow flows before going live. Simulate multi-party settlement.</div><span class="feature-tag">DEMO</span></div>
+    <div class="feature-card"><div class="feature-icon">💸</div><div class="feature-title">USDC TRANSFERS</div><div class="feature-desc">Send, swap, and bridge USDC via Circle App Kits on Arc Testnet. Native stablecoin finance.</div><span class="feature-tag">APP KITS</span></div>
+    <div class="feature-card"><div class="feature-icon">📄</div><div class="feature-title">PDF AUDIT EXPORT</div><div class="feature-desc">Generate audit reports for flagged addresses. Exportable evidence packages for community review.</div><span class="feature-tag live">LIVE</span></div>
+  </div>
+</section>
+<section class="how" id="how">
+  <div class="section-label">PROTOCOL</div>
+  <div class="section-title">How it works</div>
+  <div class="steps">
+    <div class="step"><div class="step-num">01</div><div><div class="step-title">CONNECT YOUR WALLET</div><div class="step-desc">Connect MetaMask to Arc Testnet (Chain 5042002). FraudWatch auto-adds the network and detects your wallet on return.</div></div></div>
+    <div class="step"><div class="step-num">02</div><div><div class="step-title">SUBMIT A REPORT</div><div class="step-desc">Flag a wallet with category, risk level, and evidence. Written directly to FraudWatch.sol — permanent and public.</div></div></div>
+    <div class="step"><div class="step-num">03</div><div><div class="step-title">COMMUNITY UPVOTES</div><div class="step-desc">Other users validate reports by upvoting on-chain. Higher upvote count increases the address risk score.</div></div></div>
+    <div class="step"><div class="step-num">04</div><div><div class="step-title">SCAN ANY ADDRESS</div><div class="step-desc">Look up any wallet — see all reports, run AI risk analysis, and export a full PDF audit before you transact.</div></div></div>
+  </div>
+</section>
+<div style="position:relative;z-index:1;text-align:center;padding:80px 24px">
+  <div class="section-label" style="margin-bottom:16px">READY</div>
+  <h2 style="font-family:var(--display);font-size:clamp(2rem,6vw,4rem);font-weight:700;color:#fff;margin-bottom:32px">Start watching.<br><span style="color:var(--red)">Stop getting rugged.</span></h2>
+  <a href="fraudwatch.html" class="btn-primary" style="font-size:.85rem;padding:16px 48px">LAUNCH FRAUDWATCH →</a>
+</div>
+<footer>
+  <div class="footer-logo">FRAUD<span>WATCH</span></div>
+  <div class="footer-sub">ON-CHAIN THREAT INTELLIGENCE · ARC TESTNET</div>
+  <div class="footer-links">
+    <a href="fraudwatch.html">APP</a>
+    <a href="https://testnet.arcscan.app/address/0x623593FA516EAF368369A073E5de9B6504f85607" target="_blank">CONTRACT</a>
+    <a href="https://github.com/mohammedkibrahim3419-hub/Kebsprotocol" target="_blank">GITHUB</a>
+  </div>
+</footer>
+<script>
+async function fetchStats(){
+  try{
+    const res=await fetch('https://fraudwatch-eta.vercel.app/api/stats');
+    const d=await res.json();
+    document.getElementById('liveTotal').textContent=d.total;
+    document.getElementById('liveToday').textContent=d.today;
+    document.getElementById('liveFlagged').textContent=d.flagged;
+    document.getElementById('liveUpvotes').textContent=d.upvotes;
+  }catch(e){
+    ['liveTotal','liveToday','liveFlagged','liveUpvotes'].forEach(id=>document.getElementById(id).textContent='—');
+  }
+}
+fetchStats();
+setInterval(fetchStats,30000);
+</script>
+</body>
+</html>
