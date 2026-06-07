@@ -178,11 +178,6 @@ app.listen(process.env.PORT || 3000, () =>
 );
 
 // Unified Balance endpoint for CreatorPay
-const { UnifiedBalanceKit } = require('@circle-fin/unified-balance-kit');
-
-const ubKit = new UnifiedBalanceKit({
-  apiKey: 'TEST_API_KEY:f0077764175eed2e145ac95948acbd1a:c2e81f4edd73eba352f879fad526d515',
-});
 
 app.get('/api/unified-balance', async (req, res) => {
   try {
