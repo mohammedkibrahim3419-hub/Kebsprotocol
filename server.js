@@ -175,3 +175,45 @@ app.get("/api/freeze/status/:caseId", (req, res) => {
 app.listen(process.env.PORT || 3000, () =>
   console.log("Kebs Protocol running on http://localhost:" + (process.env.PORT || 3000))
 );
+
+// Unified Balance endpoint for CreatorPay
+const { UnifiedBalanceKit } = require('@circle-fin/unified-balance-kit');
+
+const ubKit = new UnifiedBalanceKit({
+  apiKey: 'TEST_API_KEY:f0077764175eed2e145ac95948acbd1a:c2e81f4edd73eba352f879fad526d515',
+});
+
+app.get('/api/unified-balance', async (req, res) => {
+  try {
+    const { address } = req.query;
+    if (!address) return res.status(400).json({ error: 'Address required' });
+    const balance = await ubKit.getBalance({ address });
+    res.json({ success: true, balance });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+app.post('/api/unified-balance/deposit', async (req, res) => {
+  try {
+    const { address, amount, chain } = req.body;
+    const result = await ubKit.deposit({ address, amount, chain, token: 'USDC' });
+    res.json({ success: true, result });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+app.post('/api/unified-balance/spend', async (req, res) => {
+  try {
+    const { amount, recipientAddress } = req.body;
+    const result = await ubKit.spend({
+      amount,
+      to: { chain: 'Arc_Testnet', recipientAddress },
+      token: 'USDC',
+    });
+    res.json({ success: true, result });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
