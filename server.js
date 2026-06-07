@@ -218,3 +218,7 @@ app.post('/api/unified-balance/spend', async (req, res) => {
     res.status(500).json({ error: e.message });
   }
 });
+
+app.get('/', (req, res) => {
+  res.sendFile(__dirname + '/frontend/landing.html');
+});
