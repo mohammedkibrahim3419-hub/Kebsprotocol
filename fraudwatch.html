@@ -799,7 +799,8 @@ window.addEventListener("load", function(){
     window.appKitModal.subscribeAccount(function(state){
       if(state.isConnected && state.address){
         walletAddr = state.address;
-        document.getElementById("walletBtn").textContent = short(walletAddr,6);
+        const addr = state.address;
+        document.getElementById("walletBtn").textContent = addr.slice(0,6)+"..."+addr.slice(-4);
         document.getElementById("walletBtn").classList.add("connected");
       }
     });
