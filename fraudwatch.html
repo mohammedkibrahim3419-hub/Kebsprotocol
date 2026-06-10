@@ -6,7 +6,6 @@
 <title>FraudWatch — On-Chain Threat Intelligence</title>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@600;700&family=Exo+2:wght@400;500;600&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://unpkg.com/@web3modal/standalone@2.4.1/dist/index.umd.js"></script>
 <style>
 :root{--bg:#080b0f;--surface:#0d1117;--card:#111820;--border:#1e2d3d;--border2:#243447;--red:#ff2b4e;--red-dim:#8b1428;--amber:#ffb700;--amber-dim:#7a5800;--green:#00e5a0;--green-dim:#005c41;--blue:#4db8ff;--blue-dim:#0a3a5c;--purple:#a78bfa;--text:#c8d8e8;--muted:#5a7a90;--mono:'Share Tech Mono',monospace;--sans:'Exo 2',sans-serif;--head:'Rajdhani',sans-serif}
 *{box-sizing:border-box;margin:0;padding:0}
@@ -20,7 +19,7 @@ header{position:sticky;top:0;z-index:100;background:rgba(8,11,15,.92);backdrop-f
 #walletBtn{font-family:var(--mono);font-size:.72rem;background:transparent;border:1px solid var(--border2);color:var(--muted);padding:7px 14px;cursor:pointer;transition:all .2s;letter-spacing:1px}
 #walletBtn.connected{border-color:var(--green);color:var(--green);background:rgba(0,229,160,.05)}
 #walletBtn:hover{border-color:var(--blue);color:var(--blue)}
-.tab-bar{overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;position:sticky;top:60px;z-index:90;background:rgba(11,16,22,.95);border-bottom:1px solid var(--border);display:flex;padding:0 12px;gap:0;overflow-x:auto}
+.tab-bar{position:sticky;top:60px;z-index:90;background:rgba(11,16,22,.95);border-bottom:1px solid var(--border);display:flex;padding:0 12px;gap:0;overflow-x:auto}
 .tab-btn{font-family:var(--head);font-size:.8rem;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted);background:none;border:none;padding:13px 14px;cursor:pointer;border-bottom:2px solid transparent;transition:all .2s;display:flex;align-items:center;gap:6px;white-space:nowrap}
 .tab-btn:hover{color:var(--text)}
 .tab-btn.active{color:var(--red);border-bottom-color:var(--red)}
@@ -152,18 +151,15 @@ main{position:relative;z-index:1;padding:28px 24px 80px;max-width:1100px;margin:
 .demo-note{font-family:var(--mono);font-size:.7rem;color:var(--muted);border:1px dashed var(--border);padding:8px 14px;text-align:center;margin-bottom:18px}
 .demo-note span{color:var(--amber)}
 .chain-switch-btn{font-family:var(--head);font-size:.72rem;font-weight:600;letter-spacing:1px;text-transform:uppercase;background:none;padding:5px 12px;cursor:pointer;transition:all .2s;border:1px solid}
-#reportModal.open{display:flex}
 </style>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.umd.min.js"></script>
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Cpolygon points='100,8 168,46 168,122 100,160 32,122 32,46' fill='%230d1117' stroke='%23ff2b4e' stroke-width='1.5'/%3E%3Ccircle cx='88' cy='82' r='11' fill='%23080c10' stroke='%23ff2b4e' stroke-width='1.2'/%3E%3Ccircle cx='112' cy='82' r='11' fill='%23080c10' stroke='%23ff2b4e' stroke-width='1.2'/%3E%3Ccircle cx='88' cy='82' r='6' fill='%23ff2b4e'/%3E%3Ccircle cx='112' cy='82' r='6' fill='%23ff2b4e'/%3E%3Cpolygon points='100,90 95,96 105,96' fill='%23ff2b4e'/%3E%3C/svg%3E">
 </head>
 <body>
 <header>
-  <div class="logo"><div class="logo-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="32" height="32"><defs><radialGradient id="eyeGlow" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#ff2b4e" stop-opacity="1"/><stop offset="60%" stop-color="#ff2b4e" stop-opacity="0.4"/><stop offset="100%" stop-color="#ff2b4e" stop-opacity="0"/></radialGradient><filter id="glow"><feGaussianBlur stdDeviation="2.5" result="coloredBlur"/><feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge></filter><filter id="softglow"><feGaussianBlur stdDeviation="4" result="coloredBlur"/><feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><polygon points="100,8 168,46 168,122 100,160 32,122 32,46" fill="#0d1117" stroke="#ff2b4e" stroke-width="1.5" opacity="0.9"/><ellipse cx="100" cy="112" rx="32" ry="36" fill="#111820" stroke="#1e2d3d" stroke-width="1"/><path d="M68 100 Q48 95 38 115 Q50 108 68 115 Z" fill="#0f1923" stroke="#1e2d3d" stroke-width="0.8"/><path d="M132 100 Q152 95 162 115 Q150 108 132 115 Z" fill="#0f1923" stroke="#1e2d3d" stroke-width="0.8"/><ellipse cx="100" cy="82" rx="28" ry="26" fill="#111820" stroke="#1e2d3d" stroke-width="1"/><polygon points="78,60 73,45 83,57" fill="#111820" stroke="#ff2b4e" stroke-width="1" filter="url(#glow)"/><polygon points="122,60 127,45 117,57" fill="#111820" stroke="#ff2b4e" stroke-width="1" filter="url(#glow)"/><circle cx="88" cy="82" r="11" fill="#080c10" stroke="#ff2b4e" stroke-width="1.2" filter="url(#glow)"/><circle cx="112" cy="82" r="11" fill="#080c10" stroke="#ff2b4e" stroke-width="1.2" filter="url(#glow)"/><circle cx="88" cy="82" r="6" fill="#ff2b4e" opacity="0.9" filter="url(#softglow)"/><circle cx="112" cy="82" r="6" fill="#ff2b4e" opacity="0.9" filter="url(#softglow)"/><circle cx="88" cy="82" r="3" fill="#ff6b84"/><circle cx="112" cy="82" r="3" fill="#ff6b84"/><circle cx="90" cy="80" r="1.5" fill="#ffffff" opacity="0.6"/><circle cx="114" cy="80" r="1.5" fill="#ffffff" opacity="0.6"/><polygon points="100,90 95,96 105,96" fill="#ff2b4e" opacity="0.8" filter="url(#glow)"/><line x1="88" y1="108" x2="88" y2="120" stroke="#00e5a0" stroke-width="0.6" opacity="0.5"/><line x1="88" y1="114" x2="100" y2="114" stroke="#00e5a0" stroke-width="0.6" opacity="0.5"/><circle cx="100" cy="114" r="2" fill="#00e5a0" opacity="0.6"/></svg></div>FRAUD<span>WATCH</span></div>
-  <button id="walletBtn" onclick="toggleWallet()">CONNECT WALLET</button>
+  <div class="logo"><div class="logo-icon">⬡</div>FRAUD<span>WATCH</span></div>
+  <button id="walletBtn" onclick="connectWallet()">CONNECT WALLET</button>
 </header>
 <div class="tab-bar">
-  <button class="tab-btn active" onclick="switchTab('watchlist',this)">👁 Watch <span id="reportBadge" style="background:var(--red);color:#fff;font-size:.6rem;padding:1px 5px;border-radius:8px;margin-left:4px;display:none">0</span></button>
+  <button class="tab-btn active" onclick="switchTab('watchlist',this)">👁 Watch</button>
   <button class="tab-btn" onclick="switchTab('report',this)">🚨 Report</button>
   <button class="tab-btn" onclick="switchTab('lookup',this)">🔍 Lookup</button>
   <button class="tab-btn ai-tab" onclick="switchTab('ai',this)">🤖 AI Risk</button>
@@ -182,7 +178,6 @@ main{position:relative;z-index:1;padding:28px 24px 80px;max-width:1100px;margin:
     <div class="stat-box"><span class="stat-num" id="statVotes">0</span><span class="stat-label">Upvotes</span></div>
   </div>
   <div class="sec-head"><div class="sec-title">THREAT <span class="r">FEED</span> <span class="live-dot" style="margin-left:8px"></span></div></div>
-  <div style="padding:0 0 12px 0"><input id="addrSearch" type="text" placeholder="Search by address..." oninput="searchReports(this.value)" style="width:100%;background:#080c10;border:1px solid var(--border2);color:var(--green);font-family:var(--mono);font-size:.75rem;padding:8px 12px;outline:none;box-sizing:border-box"/></div>
   <div class="filter-bar">
     <button class="filter-btn active" onclick="filterReports('all',this)">ALL</button>
     <button class="filter-btn" onclick="filterReports('Scam',this)">SCAM</button>
@@ -304,7 +299,7 @@ const result = await kit.swap({
   tokenIn: "USDC",
   tokenOut: "EURC",
   amountIn: "0.00",
-  config: { kitKey: YOUR_KIT_KEY_FROM_CIRCLE_CONSOLE },
+  config: { kitKey: process.env.KIT_KEY },
 });</div>
       <div class="form-row" style="margin-bottom:14px">
         <div>
@@ -390,10 +385,10 @@ const result = await kit.bridge({
 <script>
 const CONTRACT='0x9667962F0A9591e9b0bE2AB341F421c068B00e07';
 const USDC_ADDR='0xaFC722Eb3b1748657ce6e702a3aDc2fCC45e4784';
-const ARC_CHAIN_ID='0x4cef52';
-const ARC_RPC='https://arc-testnet.drpc.org';
-const ARCSCAN='https://testnet.arcscan.app/tx/';
-const ARC_CHAIN_PARAMS={chainId:ARC_CHAIN_ID,chainName:'Arc Testnet',nativeCurrency:{name:'ETH',symbol:'ETH',decimals:18},rpcUrls:[ARC_RPC],blockExplorerUrls:['https://testnet.arcscan.app']};
+const ARC_CHAIN_ID='0x4CEB12';
+const ARC_RPC='https://rpc.arc.testnet.circlelabs.io';
+const ARCSCAN='https://arcscan.io/tx/';
+const ARC_CHAIN_PARAMS={chainId:ARC_CHAIN_ID,chainName:'Arc Testnet',nativeCurrency:{name:'ETH',symbol:'ETH',decimals:18},rpcUrls:[ARC_RPC],blockExplorerUrls:['https://arcscan.io']};
 let walletAddr=null,currentFilter='all';
 let reports=[
   {id:1,addr:'0xDead111122223333444455556666777788889999',cat:'Rug Pull',risk:'risk-critical',ev:'Deployed fake DEX, drained 45 ETH from LPs within 6 hours of launch.',votes:14,ts:Date.now()-3600000,reporter:'0x111...222'},
@@ -413,54 +408,15 @@ function switchTab(name,btn){
   if(name==='bridge')refreshBridgeTab();
 }
 
-async function fetchUSDCBalance(addr){
-  try{
-    const provider=new ethers.JsonRpcProvider('https://arc-testnet.drpc.org');
-    const abi=['function balanceOf(address) view returns (uint256)','function decimals() view returns (uint8)'];
-    const usdc=new ethers.Contract('0xaFC72219b0CF53683c6CD0a1a00e7DcDf2784185',abi,provider);
-    const [bal,dec]=await Promise.all([usdc.balanceOf(addr),usdc.decimals()]);
-    const formatted=(Number(bal)/Math.pow(10,Number(dec))).toFixed(2);
-    document.getElementById('walletBtn').title=formatted+' USDC';
-    showToast('Balance: '+formatted+' USDC');
-  }catch(e){console.warn('Balance fetch failed:',e.message);}
-}
-function toggleWallet(){
-  if(walletAddr){
-    walletAddr=null;
-    document.getElementById('walletBtn').textContent='CONNECT WALLET';
-    document.getElementById('walletBtn').classList.remove('connected');
-    document.getElementById('reportWalletWarn').style.display='';
-    refreshSendTab();refreshSwapTab();refreshBridgeTab();
-    showToast('Wallet disconnected');
-  } else {
-    connectWallet();
-  }
-}
 async function connectWallet(){
-  if(window.ethereum){
-    try{
-      const accounts=await window.ethereum.request({method:'eth_requestAccounts'});
-      walletAddr=accounts[0];
-    }catch(e){showToast('Connection rejected',true);return;}
-  } else {
-    try{
-      if(!window.WalletConnectProvider){
-        await new Promise((res,rej)=>{const s=document.createElement('script');s.src='https://unpkg.com/@walletconnect/web3-provider@1.8.0/dist/umd/index.min.js';s.onload=res;s.onerror=rej;document.head.appendChild(s);});
-      }
-      const WCProvider=new WalletConnectProvider.default({rpc:{5042002:'https://arc-testnet.drpc.org'}});
-      await WCProvider.enable();
-      const ethProvider=new ethers.BrowserProvider(WCProvider);
-      const signer=await ethProvider.getSigner();
-      walletAddr=await signer.getAddress();
-      window._wcProvider=WCProvider;
-    }catch(e){showToast('WalletConnect cancelled',true);return;}
-  }
+  if(!window.ethereum){showToast('MetaMask not detected',true);return;}
   try{
-    const dummy=true;
+    const accounts=await window.ethereum.request({method:'eth_requestAccounts'});
+    walletAddr=accounts[0];
     document.getElementById('walletBtn').textContent=short(walletAddr,6);
     document.getElementById('walletBtn').classList.add('connected');
     document.getElementById('reportWalletWarn').style.display='none';
-    showToast('Wallet connected: '+short(walletAddr));fetchUSDCBalance(walletAddr);
+    showToast('Wallet connected: '+short(walletAddr));
     refreshSendTab();refreshSwapTab();refreshBridgeTab();
   }catch(e){showToast('Connection rejected',true);}
 }
@@ -548,7 +504,7 @@ const result = await kit.swap({
   tokenIn: "${tIn}",
   tokenOut: "${tOut}",
   amountIn: "${amt}",
-  config: { kitKey: YOUR_KIT_KEY_FROM_CIRCLE_CONSOLE },
+  config: { kitKey: process.env.KIT_KEY },
 });`;
 }
 
@@ -648,7 +604,7 @@ function renderReports(filter){
   const filtered=filter==='all'?reports:reports.filter(r=>r.cat===filter);
   if(!filtered.length){list.innerHTML='<div class="empty-state"><div style="font-size:2.5rem;opacity:.3;margin-bottom:12px">⬡</div>No reports found.</div>';return;}
   list.innerHTML=filtered.map(r=>`
-    <div class="card ${r.risk}" onclick="showReportModal(${r.id})" style="--risk-color:${riskColor(r.risk)}">
+    <div class="card ${r.risk}" style="--risk-color:${riskColor(r.risk)}">
       <div class="card-top"><div class="card-addr">${r.addr}</div><span class="risk-badge ${r.risk}">${r.risk.replace('risk-','').toUpperCase()}</span></div>
       <div class="card-desc">${r.ev}</div>
       <div class="card-meta">
@@ -664,63 +620,22 @@ function filterReports(cat,btn){
   document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');renderReports(cat);
 }
-async function upvote(id){
+function upvote(id){
   const r=reports.find(x=>x.id===id);
   if(!r)return;
   if(r._voted){showToast('Already voted',true);return;}
-  if(typeof window.ethereum !== 'undefined' && walletAddr && r.onChainId !== undefined){
-    try{
-      showToast('Upvoting on-chain...');
-      const provider=new ethers.BrowserProvider(window.ethereum);
-      const signer=await provider.getSigner();
-      const contract=new ethers.Contract(FW_CONTRACT,FW_ABI,signer);
-      const tx=await contract.upvote(r.onChainId);
-      await tx.wait();
-      showToast('Upvote confirmed on-chain!');
-      fetchOnChainStats();
-    }catch(e){
-      showToast('Upvote failed: '+e.message.slice(0,50),true);return;
-    }
-  } else {
-    showToast('Connect wallet to upvote on-chain',true);
-  }
-  r.votes++;r._voted=true;renderReports(currentFilter);updateStats();
+  r.votes++;r._voted=true;renderReports(currentFilter);updateStats();showToast('Upvote recorded');
 }
-const FW_CONTRACT='0x623593FA516EAF368369A073E5de9B6504f85607';
-const FW_ABI=['function submitReport(address,string,string,string) external','function upvote(uint256) external','function getStats() external view returns (uint256,uint256,uint256,uint256)','function getReports(uint256,uint256) external view returns (tuple(address reporter,address target,string category,string riskLevel,string evidence,uint256 upvotes,bool flagged,uint256 timestamp)[])'];
-async function submitReport(){
+function submitReport(){
   const addr=document.getElementById('repAddr').value.trim();
   const cat=document.getElementById('repCat').value;
   const risk=document.getElementById('repRisk').value;
   const ev=document.getElementById('repDesc').value.trim();
-  const addrRx=/^0x[0-9a-fA-F]{40}$/;
-  if(!addr||!ev){showToast('Address and evidence required',true);return;}
-  if(!addrRx.test(addr)){showToast('Invalid address — must be 0x + 40 hex chars',true);return;}
-  if(addr.toLowerCase()===walletAddr?.toLowerCase()){showToast('Cannot report your own wallet',true);return;}
-  const dup=reports.find(r=>r.addr.toLowerCase()===addr.toLowerCase()&&r.cat===cat);
-  if(dup){showToast('Duplicate: this address already reported for '+cat,true);return;}
-  if(typeof window.ethereum !== 'undefined' && walletAddr){
-    try{
-      showToast('Submitting on-chain...');
-      const provider=new ethers.BrowserProvider(window.ethereum);
-      const signer=await provider.getSigner();
-      const contract=new ethers.Contract(FW_CONTRACT,FW_ABI,signer);
-      const tx=await contract.submitReport(addr,cat,risk,ev);
-      showToast('Waiting for confirmation...');
-      await tx.wait();
-      showToast('Report confirmed on-chain!');
-      fetchOnChainStats();
-    }catch(e){
-      showToast('On-chain failed: '+e.message.slice(0,60),true);
-      return;
-    }
-  } else {
-    showToast('Connect wallet to submit on-chain',true);
-  }
+  if(!addr||!ev){showToast('Address and description required',true);return;}
   reports.unshift({id:Date.now(),addr,cat,risk,ev,votes:0,ts:Date.now(),reporter:walletAddr?short(walletAddr):'0xAnon'});
   document.getElementById('repAddr').value='';
   document.getElementById('repDesc').value='';
-  updateStats();
+  updateStats();showToast('Report submitted!');
 }
 function updateStats(){
   const now=Date.now();
@@ -729,8 +644,6 @@ function updateStats(){
   document.getElementById('statFlagged').textContent=new Set(reports.map(r=>r.addr)).size;
   document.getElementById('statVotes').textContent=reports.reduce((s,r)=>s+r.votes,0);
   renderReports(currentFilter);
-  const badge=document.getElementById('reportBadge');
-  if(badge){badge.textContent=reports.length;badge.style.display=reports.length>0?'inline':'none';}
 }
 let lastLookupAddr='';
 function doLookup(){
@@ -766,7 +679,7 @@ async function runAIScan(){
   const cats=[...new Set(matched.map(r=>r.cat))].join(', ');
   const prompt=`You are a blockchain threat intelligence AI for FraudWatch on Arc Testnet.\nAnalyze wallet: ${addr}\nReports: ${matched.length}, Categories: ${cats||'none'}, Upvotes: ${votes}, Score: ${score}/100\nEvidence: ${matched.map(r=>r.ev).join(' | ')||'none'}\nRespond ONLY with JSON no markdown:\n{"verdict":"CRITICAL|HIGH|MEDIUM|LOW|CLEAN","score":number,"summary":"2 sentence summary","signals":["s1","s2","s3"],"recommendation":"one sentence","tags":["t1","t2"]}`;
   try{
-    const res=await fetch('https://fraudwatch-eta.vercel.app/api/ai-risk',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt})});
+    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,messages:[{role:'user',content:prompt}]})});
     const data=await res.json();
     const raw=data.content.map(i=>i.text||'').join('');
     const parsed=JSON.parse(raw.replace(/```json|```/g,'').trim());
@@ -807,7 +720,7 @@ async function runEscrow(){
   }
 }
 function generatePDF(){
-  const addr=lastLookupAddr;if(!addr){showToast("Run an address lookup first",true);return;}
+  const addr=lastLookupAddr;if(!addr)return;
   const{jsPDF}=window.jspdf;const doc=new jsPDF();
   const matched=reports.filter(r=>r.addr.toLowerCase()===addr.toLowerCase());
   doc.setFillColor(8,11,15);doc.rect(0,0,210,297,'F');
@@ -836,135 +749,21 @@ function riskColor(risk){return{'risk-critical':'var(--red)','risk-high':'var(--
 function riskLabel(score){if(score>=80)return{label:'CRITICAL RISK',color:'var(--red)'};if(score>=50)return{label:'HIGH RISK',color:'var(--amber)'};if(score>=20)return{label:'MEDIUM RISK',color:'#f97316'};if(score>0)return{label:'LOW RISK',color:'var(--blue)'};return{label:'CLEAN',color:'var(--green)'};}
 function showToast(msg,err=false){const t=document.getElementById('toast');t.textContent=msg;t.className='show'+(err?' error':'');setTimeout(()=>t.className='',3000);}
 updateStats();
-
-
-async function loadOnChainReports(){
-  try{
-    const provider=new ethers.JsonRpcProvider('https://arc-testnet.drpc.org');
-    const contract=new ethers.Contract(FW_CONTRACT,FW_ABI,provider);
-    const [total]=await contract.getStats();
-    const count=Number(total);
-    if(count===0)return;
-    const limit=Math.min(count,50);
-    const offset=count>50?count-50:0;
-    const onChain=await contract.getReports(offset,limit);
-    const riskMap={'Critical':'risk-critical','High':'risk-high','Medium':'risk-medium','Low':'risk-low'};
-    const fetched=onChain.map((r,i)=>({
-      id:Number(r.timestamp)*1000+i,
-      onChainId:offset+i,
-      addr:r.target,
-      cat:r.category,
-      risk:riskMap[r.riskLevel]||'risk-low',
-      ev:r.evidence,
-      votes:Number(r.upvotes),
-      ts:Number(r.timestamp)*1000,
-      reporter:r.reporter.slice(0,6)+'...'+r.reporter.slice(-4),
-      _onChain:true
-    }));
-    // Merge: remove local duplicates, prepend on-chain
-    const localOnly=reports.filter(r=>!r._onChain);
-    reports.splice(0,reports.length,...fetched.reverse(),...localOnly);
-    updateStats();
-    showToast('Loaded '+fetched.length+' on-chain reports');
-  }catch(e){
-    console.warn('Failed to load on-chain reports:',e.message);
-  }
-}
-function searchReports(q){
-  const query=q.trim().toLowerCase();
-  if(!query){renderReports(currentFilter);return;}
-  const list=document.getElementById('reportsList');
-  const filtered=reports.filter(r=>r.addr.toLowerCase().includes(query)||r.ev.toLowerCase().includes(query)||r.cat.toLowerCase().includes(query));
-  if(!filtered.length){list.innerHTML='<div class="empty-state"><div style="font-size:2.5rem;opacity:.3;margin-bottom:12px">⬡</div>No results for "'+q+'"</div>';return;}
-  list.innerHTML=filtered.map(r=>`
-    <div class="card ${r.risk}" style="--risk-color:${riskColor(r.risk)}" onclick="showReportModal(${r.id})">
-      <div class="card-top"><div class="card-addr">${r.addr}</div><span class="risk-badge ${r.risk}">${r.risk.replace('risk-','').toUpperCase()}</span></div>
-      <div class="card-desc">${r.ev}</div>
-      <div class="card-meta"><span class="cat-tag">${r.cat}</span><span class="meta-item">🕐 ${timeAgo(r.ts)}</span><span class="meta-item">by ${r.reporter}</span><button class="upvote-btn ${r._voted?'voted':''}" onclick="event.stopPropagation();upvote(${r.id})">▲ ${r.votes}</button></div>
-    </div>`).join('');
-}
-function showReportModal(id){
-  const r=reports.find(x=>x.id===id);
-  if(!r)return;
-  const riskLabel={'risk-critical':'CRITICAL','risk-high':'HIGH','risk-medium':'MEDIUM','risk-low':'LOW'};
-  const scanUrl='https://testnet.arcscan.app/address/'+r.addr;
-  document.getElementById('modalContent').innerHTML=`
-    <div style="font-family:var(--mono);font-size:.7rem;color:var(--muted);margin-bottom:4px">${new Date(r.ts).toLocaleString()}</div>
-    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
-      <span class="risk-badge ${r.risk}">${riskLabel[r.risk]||r.risk}</span>
-      <span class="cat-tag">${r.cat}</span>
-    </div>
-    <div style="font-family:var(--mono);font-size:.75rem;color:var(--green);word-break:break-all;margin-bottom:8px">${r.addr}</div>
-    <div style="font-size:.85rem;color:var(--text);margin-bottom:16px;line-height:1.5">${r.ev}</div>
-    <div style="font-size:.75rem;color:var(--muted);margin-bottom:16px">Reported by: ${r.reporter} &nbsp;|&nbsp; ▲ ${r.votes} upvotes</div>
-    <div style="display:flex;gap:10px">
-      <button onclick="navigator.clipboard.writeText(window.location.href.split('#')[0]+'#'+r.addr);showToast('Link copied!');closeReportModal()" style="flex:1;padding:9px;background:transparent;border:1px solid var(--border2);color:var(--muted);font-family:var(--mono);font-size:.72rem;cursor:pointer">⎘ SHARE</button>
-      <a href="${scanUrl}" target="_blank" style="flex:1;text-align:center;padding:9px;border:1px solid var(--border2);color:var(--green);font-family:var(--mono);font-size:.72rem;text-decoration:none">VIEW ON ARCSCAN ↗</a>
-      <button onclick="upvote(${r.id});closeReportModal()" style="flex:1;padding:9px;background:transparent;border:1px solid var(--border2);color:var(--muted);font-family:var(--mono);font-size:.72rem;cursor:pointer">▲ UPVOTE</button>
-    </div>`;
-  document.getElementById('reportModal').classList.add('open');
-  document.getElementById('reportModal').style.display='flex';
-}
-function closeReportModal(){
-  document.getElementById('reportModal').style.display='none';
-  document.getElementById('reportModal').classList.remove('open');
-}
-async function fetchOnChainStats() {
-  try {
-    const res = await fetch('https://fraudwatch-eta.vercel.app/api/stats');
-    const data = await res.json();
-    if (data.total !== undefined) {
-      document.getElementById('statToday').textContent = data.today;
-      document.getElementById('statTotal').textContent = data.total;
-      document.getElementById('statFlagged').textContent = data.flagged;
-      document.getElementById('statVotes').textContent = data.upvotes;
-    }
-  } catch(e) { console.warn('On-chain stats unavailable:', e.message); }
-}
-
-async function autoReconnect(){
-  if(typeof window.ethereum === 'undefined') return;
-  try{
-    const accounts = await window.ethereum.request({method:'eth_accounts'});
-    if(accounts.length > 0){
-      walletAddr = accounts[0];
-      document.getElementById('walletBtn').textContent = short(walletAddr,6);
-      document.getElementById('walletBtn').classList.add('connected');
-      document.getElementById('reportWalletWarn').style.display = 'none';
-      refreshSendTab();refreshSwapTab();refreshBridgeTab();
-    }
-  }catch(e){ console.warn('Auto-reconnect failed:',e.message); }
-
-  window.ethereum.on('accountsChanged', accounts => {
-    if(accounts.length === 0){
-      walletAddr = null;
-      document.getElementById('walletBtn').textContent = 'CONNECT WALLET';
-      document.getElementById('walletBtn').classList.remove('connected');
-      document.getElementById('reportWalletWarn').style.display = '';
-    } else {
-      walletAddr = accounts[0];
-      document.getElementById('walletBtn').textContent = short(walletAddr,6);
-      document.getElementById('walletBtn').classList.add('connected');
-      document.getElementById('reportWalletWarn').style.display = 'none';
-    }
-    refreshSendTab();refreshSwapTab();refreshBridgeTab();
-  });
-
-  window.ethereum.on('chainChanged', () => window.location.reload());
-}
-fetchOnChainStats();
-loadOnChainReports();
-autoReconnect();
-setInterval(fetchOnChainStats, 30000);
-setInterval(loadOnChainReports, 60000);
-
 </script>
-
-<div id="reportModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:1000;align-items:center;justify-content:center;padding:16px">
-  <div style="background:#0d1117;border:1px solid var(--border2);max-width:480px;width:100%;padding:24px;position:relative">
-    <button onclick="closeReportModal()" style="position:absolute;top:12px;right:16px;background:none;border:none;color:var(--muted);font-size:1.2rem;cursor:pointer">✕</button>
-    <div id="modalContent"></div>
-  </div>
-</div>
-</body>
+<script>
+async function loadFraudStats(){
+  try{
+    const rp=new ethers.JsonRpcProvider('https://arc-testnet.drpc.org');
+    const c=new ethers.Contract('0x623593FA516EAF368369A073E5de9B6504f85607',[
+      'function reportCount() view returns (uint256)',
+      'function todayCount() view returns (uint256)'
+    ],rp);
+    const total=await c.reportCount();
+    const today=await c.todayCount();
+    document.getElementById('statTotal').textContent=total.toString();
+    document.getElementById('statToday').textContent=today.toString();
+  }catch(e){console.log('Stats error:',e.message);}
+}
+window.addEventListener('load',loadFraudStats);
+</script></body>
 </html>
