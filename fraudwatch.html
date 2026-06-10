@@ -5,7 +5,55 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>FraudWatch — On-Chain Threat Intelligence</title>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@600;700&family=Exo+2:wght@400;500;600&family=Share+Tech+Mono&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js">
+async function analyzeRisk(addr){
+  try{
+    const rp=new ethers.JsonRpcProvider('https://arc-testnet.drpc.org');
+    const c=new ethers.Contract('0x623593FA516EAF368369A073E5de9B6504f85607',[
+      'function getReportsByTarget(address) view returns (uint256[])',
+      'function reportCount() view returns (uint256)'
+    ],rp);
+    
+    let reportIds=[];
+    try{ reportIds=await c.getReportsByTarget(addr); }catch(e){}
+    
+    const reportCount=reportIds.length;
+    let score=0;
+    let flags=[];
+    
+    if(reportCount>=5){score+=60;flags.push('Multiple fraud reports on-chain');}
+    else if(reportCount>=3){score+=40;flags.push('Several community reports');}
+    else if(reportCount>=1){score+=20;flags.push('At least one report filed');}
+    
+    const addrLower=addr.toLowerCase();
+    if(addrLower.includes('dead')||addrLower.includes('0000')){score+=30;flags.push('Suspicious address pattern');}
+    
+    if(score===0){flags.push('No reports found on-chain');flags.push('Address appears clean');}
+    
+    let riskLevel='LOW';
+    if(score>=70)riskLevel='CRITICAL';
+    else if(score>=50)riskLevel='HIGH';
+    else if(score>=25)riskLevel='MEDIUM';
+    
+    const summaries={
+      LOW:'No significant threat signals detected for this address.',
+      MEDIUM:'Some risk indicators present. Exercise caution.',
+      HIGH:'Multiple fraud signals detected. Avoid interaction.',
+      CRITICAL:'High-confidence fraud address. Do not interact.'
+    };
+    
+    return {
+      riskScore:Math.min(score,100),
+      riskLevel,
+      summary:summaries[riskLevel],
+      flags:flags.length?flags:['No threat signals detected'],
+      recommendation:score>50?'Avoid this address and report if you have evidence.':'Proceed with standard caution.'
+    };
+  }catch(e){
+    return {riskScore:0,riskLevel:'UNKNOWN',summary:'Could not analyze address.',flags:['Analysis failed: '+e.message],recommendation:'Try again later.'};
+  }
+}
+</script>
 <style>
 :root{--bg:#080b0f;--surface:#0d1117;--card:#111820;--border:#1e2d3d;--border2:#243447;--red:#ff2b4e;--red-dim:#8b1428;--amber:#ffb700;--amber-dim:#7a5800;--green:#00e5a0;--green-dim:#005c41;--blue:#4db8ff;--blue-dim:#0a3a5c;--purple:#a78bfa;--text:#c8d8e8;--muted:#5a7a90;--mono:'Share Tech Mono',monospace;--sans:'Exo 2',sans-serif;--head:'Rajdhani',sans-serif}
 *{box-sizing:border-box;margin:0;padding:0}
@@ -679,11 +727,7 @@ async function runAIScan(){
   const cats=[...new Set(matched.map(r=>r.cat))].join(', ');
   const prompt=`You are a blockchain threat intelligence AI for FraudWatch on Arc Testnet.\nAnalyze wallet: ${addr}\nReports: ${matched.length}, Categories: ${cats||'none'}, Upvotes: ${votes}, Score: ${score}/100\nEvidence: ${matched.map(r=>r.ev).join(' | ')||'none'}\nRespond ONLY with JSON no markdown:\n{"verdict":"CRITICAL|HIGH|MEDIUM|LOW|CLEAN","score":number,"summary":"2 sentence summary","signals":["s1","s2","s3"],"recommendation":"one sentence","tags":["t1","t2"]}`;
   try{
-    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:2000,system:'You are a blockchain fraud analyst. Always respond with valid JSON only. No markdown, no explanation, just JSON.',messages:[{role:'user',content:prompt}]})});
-    const data=await res.json();
-    const raw=data.content.map(i=>i.text||'').join('');
-    let cleaned=raw.replace(/```json|```/g,'').trim();const firstBrace=cleaned.indexOf('{');const lastBrace=cleaned.lastIndexOf('}');if(firstBrace>-1&&lastBrace>-1)cleaned=cleaned.substring(firstBrace,lastBrace+1);const parsed=JSON.parse(cleaned);
-    renderAIResult(parsed,addr);
+    const parsed=await analyzeRisk(addr);renderAIResult(parsed,addr);
   }catch(e){document.getElementById('aiBody').innerHTML=`<div style="padding:24px;font-family:var(--mono);font-size:.82rem;color:var(--red);text-align:center">⚠ AI analysis failed.<br><small>${e.message}</small></div>`;}
   btn.disabled=false;
 }
