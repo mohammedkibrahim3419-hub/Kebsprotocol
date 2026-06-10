@@ -632,11 +632,27 @@ function submitReport(){
   const cat=document.getElementById('repCat').value;
   const risk=document.getElementById('repRisk').value;
   const ev=document.getElementById('repDesc').value.trim();
-  if(!addr||!ev){showToast('Address and description required',true);return;}
+  if(!addr||!ev){showToast('Fill all required fields',true);return;}
+  if(walletAddr&&window.ethereum){
+    try{
+      showToast('Submitting on-chain...');
+      const provider=new ethers.BrowserProvider(window.ethereum);
+      const signer=await provider.getSigner();
+      const contract=new ethers.Contract('0x623593FA516EAF368369A073E5de9B6504f85607',['function submitReport(address,string,string,string) external'],signer);
+      const tx=await contract.submitReport(addr,cat,risk,ev);
+      await tx.wait();
+      reports.unshift({id:Date.now(),addr,cat,risk,ev,votes:0,ts:Date.now(),reporter:short(walletAddr),txHash:tx.hash});
+      document.getElementById('repAddr').value='';
+      document.getElementById('repDesc').value='';
+      updateStats();
+      showToast('On-chain report submitted! <a href="https://testnet.arcscan.app/tx/'+tx.hash+'" target="_blank" style="color:#00ff88">View on ArcScan</a>');
+      return;
+    }catch(e){showToast('On-chain failed: '+e.message,true);}
+  }
   reports.unshift({id:Date.now(),addr,cat,risk,ev,votes:0,ts:Date.now(),reporter:walletAddr?short(walletAddr):'0xAnon'});
   document.getElementById('repAddr').value='';
   document.getElementById('repDesc').value='';
-  updateStats();showToast('Report submitted!');
+  updateStats();showToast('Report submitted (off-chain)!');
 }
 function updateStats(){
   const now=Date.now();
