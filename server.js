@@ -217,3 +217,33 @@ app.post('/api/unified-balance/spend', async (req, res) => {
 app.get('/', (req, res) => {
   res.sendFile(__dirname + '/frontend/landing.html');
 });
+
+// Unified Balance deposit endpoint for CreatorPay
+app.post('/api/creatorpay/deposit', async (req, res) => {
+  try {
+    const { fromChain, amount, walletAddress } = req.body;
+    if (!fromChain || !amount || !walletAddress) {
+      return res.status(400).json({ error: 'fromChain, amount and walletAddress required' });
+    }
+    
+    const chainMap = {
+      'base': 'Base_Sepolia',
+      'arbitrum': 'Arbitrum_Sepolia',
+      'ethereum': 'Ethereum_Sepolia',
+      'arc': 'Arc_Testnet'
+    };
+    
+    const chain = chainMap[fromChain.toLowerCase()] || fromChain;
+    
+    res.json({
+      success: true,
+      message: `Deposit initiated from ${chain}`,
+      amount,
+      destinationChain: 'Arc_Testnet',
+      poolAddress: '0x02d29fb5e7e52598fbee698f11286b78b4562415',
+      status: 'pending'
+    });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
