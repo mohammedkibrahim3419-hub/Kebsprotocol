@@ -696,8 +696,21 @@ async function runAIScan(){
   const cats=[...new Set(matched.map(r=>r.cat))].join(', ');
   const prompt=`You are a blockchain threat intelligence AI for FraudWatch on Arc Testnet.\nAnalyze wallet: ${addr}\nReports: ${matched.length}, Categories: ${cats||'none'}, Upvotes: ${votes}, Score: ${score}/100\nEvidence: ${matched.map(r=>r.ev).join(' | ')||'none'}\nRespond ONLY with JSON no markdown:\n{"verdict":"CRITICAL|HIGH|MEDIUM|LOW|CLEAN","score":number,"summary":"2 sentence summary","signals":["s1","s2","s3"],"recommendation":"one sentence","tags":["t1","t2"]}`;
   try{
-    const parsed=await analyzeRisk(addr);renderAIResult(parsed,addr);
-  }catch(e){document.getElementById('aiBody').innerHTML=`<div style="padding:24px;font-family:var(--mono);font-size:.82rem;color:var(--red);text-align:center">⚠ AI analysis failed.<br><small>${e.message}</small></div>`;}
+    const [aiRes, scanRes] = await Promise.allSettled([
+      fetch('https://fraudwatch-eta.vercel.app/api/ai-risk',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt})}),
+      fetch('https://fraudwatch-eta.vercel.app/api/scan',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({address:addr})})
+    ]);
+    if(aiRes.status==='fulfilled'){
+      const data=await aiRes.value.json();
+      const raw=data.content.map(i=>i.text||'').join('');
+      const parsed=JSON.parse(raw.replace(/```json|```/g,'').trim());
+      renderAIResult(parsed,addr);
+    }
+    if(scanRes.status==='fulfilled'){
+      const scan=await scanRes.value.json();
+      renderScanResult(scan);
+    }
+  }catch(e){document.getElementById('aiBody').innerHTML=`<div style="padding:24px;font-family:var(--mono);font-size:.82rem;color:var(--red);text-align:center">⚠ Analysis failed.<br><small>${e.message}</small></div>`;}
   btn.disabled=false;
 }
 function renderAIResult(d,addr){
@@ -762,6 +775,142 @@ function riskColor(risk){return{'risk-critical':'var(--red)','risk-high':'var(--
 function riskLabel(score){if(score>=80)return{label:'CRITICAL RISK',color:'var(--red)'};if(score>=50)return{label:'HIGH RISK',color:'var(--amber)'};if(score>=20)return{label:'MEDIUM RISK',color:'#f97316'};if(score>0)return{label:'LOW RISK',color:'var(--blue)'};return{label:'CLEAN',color:'var(--green)'};}
 function showToast(msg,err=false){const t=document.getElementById('toast');t.textContent=msg;t.className='show'+(err?' error':'');setTimeout(()=>t.className='',3000);}
 updateStats();
+
+
+async function loadOnChainReports(){
+  try{
+    const provider=new ethers.JsonRpcProvider('https://arc-testnet.drpc.org');
+    const contract=new ethers.Contract(FW_CONTRACT,FW_ABI,provider);
+    const [total]=await contract.getStats();
+    const count=Number(total);
+    if(count===0)return;
+    const limit=Math.min(count,50);
+    const offset=count>50?count-50:0;
+    const onChain=await contract.getReports(offset,limit);
+    const riskMap={'Critical':'risk-critical','High':'risk-high','Medium':'risk-medium','Low':'risk-low'};
+    const fetched=onChain.map((r,i)=>({
+      id:Number(r.timestamp)*1000+i,
+      onChainId:offset+i,
+      addr:r.target,
+      cat:r.category,
+      risk:riskMap[r.riskLevel]||'risk-low',
+      ev:r.evidence,
+      votes:Number(r.upvotes),
+      ts:Number(r.timestamp)*1000,
+      reporter:r.reporter.slice(0,6)+'...'+r.reporter.slice(-4),
+      _onChain:true
+    }));
+    // Merge: remove local duplicates, prepend on-chain
+    const localOnly=reports.filter(r=>!r._onChain);
+    reports.splice(0,reports.length,...fetched.reverse(),...localOnly);
+    updateStats();
+    showToast('Loaded '+fetched.length+' on-chain reports');
+  }catch(e){
+    console.warn('Failed to load on-chain reports:',e.message);
+  }
+}
+function searchReports(q){
+  const query=q.trim().toLowerCase();
+  if(!query){renderReports(currentFilter);return;}
+  const list=document.getElementById('reportsList');
+  const filtered=reports.filter(r=>r.addr.toLowerCase().includes(query)||r.ev.toLowerCase().includes(query)||r.cat.toLowerCase().includes(query));
+  if(!filtered.length){list.innerHTML='<div class="empty-state"><div style="font-size:2.5rem;opacity:.3;margin-bottom:12px">⬡</div>No results for "'+q+'"</div>';return;}
+  list.innerHTML=filtered.map(r=>`
+    <div class="card ${r.risk}" style="--risk-color:${riskColor(r.risk)}" onclick="showReportModal(${r.id})">
+      <div class="card-top"><div class="card-addr">${r.addr}</div><span class="risk-badge ${r.risk}">${r.risk.replace('risk-','').toUpperCase()}</span></div>
+      <div class="card-desc">${r.ev}</div>
+      <div class="card-meta"><span class="cat-tag">${r.cat}</span><span class="meta-item">🕐 ${timeAgo(r.ts)}</span><span class="meta-item">by ${r.reporter}</span><button class="upvote-btn ${r._voted?'voted':''}" onclick="event.stopPropagation();upvote(${r.id})">▲ ${r.votes}</button></div>
+    </div>`).join('');
+}
+function showReportModal(id){
+  const r=reports.find(x=>x.id===id);
+  if(!r)return;
+  const riskLabel={'risk-critical':'CRITICAL','risk-high':'HIGH','risk-medium':'MEDIUM','risk-low':'LOW'};
+  const scanUrl='https://testnet.arcscan.app/address/'+r.addr;
+  document.getElementById('modalContent').innerHTML=`
+    <div style="font-family:var(--mono);font-size:.7rem;color:var(--muted);margin-bottom:4px">${new Date(r.ts).toLocaleString()}</div>
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+      <span class="risk-badge ${r.risk}">${riskLabel[r.risk]||r.risk}</span>
+      <span class="cat-tag">${r.cat}</span>
+    </div>
+    <div style="font-family:var(--mono);font-size:.75rem;color:var(--green);word-break:break-all;margin-bottom:8px">${r.addr}</div>
+    <div style="font-size:.85rem;color:var(--text);margin-bottom:16px;line-height:1.5">${r.ev}</div>
+    <div style="font-size:.75rem;color:var(--muted);margin-bottom:16px">Reported by: ${r.reporter} &nbsp;|&nbsp; ▲ ${r.votes} upvotes</div>
+    <div style="display:flex;gap:10px">
+      <button onclick="navigator.clipboard.writeText(window.location.href.split('#')[0]+'#'+r.addr);showToast('Link copied!');closeReportModal()" style="flex:1;padding:9px;background:transparent;border:1px solid var(--border2);color:var(--muted);font-family:var(--mono);font-size:.72rem;cursor:pointer">⎘ SHARE</button>
+      <a href="${scanUrl}" target="_blank" style="flex:1;text-align:center;padding:9px;border:1px solid var(--border2);color:var(--green);font-family:var(--mono);font-size:.72rem;text-decoration:none">VIEW ON ARCSCAN ↗</a>
+      <button onclick="upvote(${r.id});closeReportModal()" style="flex:1;padding:9px;background:transparent;border:1px solid var(--border2);color:var(--muted);font-family:var(--mono);font-size:.72rem;cursor:pointer">▲ UPVOTE</button>
+    </div>`;
+  document.getElementById('reportModal').classList.add('open');
+  document.getElementById('reportModal').style.display='flex';
+}
+function closeReportModal(){
+  document.getElementById('reportModal').style.display='none';
+  document.getElementById('reportModal').classList.remove('open');
+}
+async function fetchOnChainStats() {
+  try {
+    const res = await fetch('https://fraudwatch-eta.vercel.app/api/stats');
+    const data = await res.json();
+    if (data.total !== undefined) {
+      document.getElementById('statToday').textContent = data.today;
+      document.getElementById('statTotal').textContent = data.total;
+      document.getElementById('statFlagged').textContent = data.flagged;
+      document.getElementById('statVotes').textContent = data.upvotes;
+    }
+  } catch(e) { console.warn('On-chain stats unavailable:', e.message); }
+}
+
+async function autoReconnect(){
+  if(typeof window.ethereum === 'undefined') return;
+  try{
+    const accounts = await window.ethereum.request({method:'eth_accounts'});
+    if(accounts.length > 0){
+      walletAddr = accounts[0];
+      document.getElementById('walletBtn').textContent = short(walletAddr,6);
+      document.getElementById('walletBtn').classList.add('connected');
+      document.getElementById('reportWalletWarn').style.display = 'none';
+      refreshSendTab();refreshSwapTab();refreshBridgeTab();
+    }
+  }catch(e){ console.warn('Auto-reconnect failed:',e.message); }
+
+  window.ethereum.on('accountsChanged', accounts => {
+    if(accounts.length === 0){
+      walletAddr = null;
+      document.getElementById('walletBtn').textContent = 'CONNECT WALLET';
+      document.getElementById('walletBtn').classList.remove('connected');
+      document.getElementById('reportWalletWarn').style.display = '';
+    } else {
+      walletAddr = accounts[0];
+      document.getElementById('walletBtn').textContent = short(walletAddr,6);
+      document.getElementById('walletBtn').classList.add('connected');
+      document.getElementById('reportWalletWarn').style.display = 'none';
+    }
+    refreshSendTab();refreshSwapTab();refreshBridgeTab();
+  });
+
+  window.ethereum.on('chainChanged', () => window.location.reload());
+}
+fetchOnChainStats();
+loadOnChainReports();
+autoReconnect();
+setInterval(fetchOnChainStats, 30000);
+setInterval(loadOnChainReports, 60000);
+
+function renderScanResult(s){
+  if(!s||s.error)return;
+  const score=s.riskScore||0;
+  const color=score>=75?"var(--red)":score>=50?"var(--amber)":"var(--green)";
+  const existing=document.getElementById("contractIntelResult");
+  const el=existing||document.createElement("div");
+  el.id="contractIntelResult";
+  el.style="margin-top:12px;padding:14px;border:1px solid "+color+";border-radius:8px;font-family:var(--mono);font-size:.78rem;";
+  el.innerHTML="<div style=color:"+color+";font-weight:700;margin-bottom:6px>CONTRACT INTEL Risk Score: "+score+"/100</div>"
+    +"<div style=color:var(--muted);margin-bottom:6px>"+(s.summary||"")+"</div>"
+    +"<div>"+(s.riskFactors||[]).map(function(f){return "<span style=margin:2px 4px;padding:2px 7px;border:1px solid "+color+";border-radius:3px>"+f+"</span>";}).join("")+"</div>";
+  if(!existing)document.getElementById("aiBody").appendChild(el);
+}
+
 </script>
 <script>
 async function loadFraudStats(){
