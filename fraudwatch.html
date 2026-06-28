@@ -683,7 +683,7 @@ function doLookup(){
     :'<div style="font-family:var(--mono);font-size:.8rem;color:var(--green);padding:12px 0">✓ No reports found for this address.</div>';
   document.getElementById('lookupResult').classList.add('show');
 }
-async function runAIScan(){
+async async function runAIScan(){
   const addr=document.getElementById('aiAddr').value.trim();
   if(!addr)return;
   const btn=document.getElementById('aiScanBtn');
