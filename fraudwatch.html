@@ -911,22 +911,6 @@ function renderScanResult(s){
   if(!existing)document.getElementById("aiBody").appendChild(el);
 }
 
-</script>
-<script>
-async function loadFraudStats(){
-  try{
-    const rp=new ethers.JsonRpcProvider('https://arc-testnet.drpc.org');
-    const c=new ethers.Contract('0x623593FA516EAF368369A073E5de9B6504f85607',[
-      'function reportCount() view returns (uint256)',
-      'function todayCount() view returns (uint256)'
-    ],rp);
-    const total=await c.reportCount();
-    const today=await c.todayCount();
-    document.getElementById('statTotal').textContent=total.toString();
-    document.getElementById('statToday').textContent=today.toString();
-  }catch(e){console.log('Stats error:',e.message);}
-}
-window.addEventListener('load',loadFraudStats);
 </script><script>
 async function loadFraudStats(){
   try{
