@@ -222,7 +222,7 @@ main{position:relative;z-index:1;padding:28px 24px 80px;max-width:1100px;margin:
   </div>
 </div>
 <!-- AI -->
-<div id="tab-ai" class="tab-panel"><div style="background:red;color:white;padding:20px;font-size:24px">AI TAB IS VISIBLE</div>
+<div id="tab-ai" class="tab-panel">
   <div class="sec-head"><div class="sec-title"><span class="ai">AI</span> RISK ANALYSIS</div></div>
   <div class="ai-scanner-wrap">
     <div class="ai-input-box">
@@ -399,10 +399,10 @@ let reports=[
   {id:5,addr:'0xHack123456789abcdef123456789abcdef12345',cat:'Hack',risk:'risk-critical',ev:'Exploited reentrancy in yield vault. 120k drained across 3 txs.',votes:18,ts:Date.now()-3600000*12,reporter:'0x777...888'}
 ];
 
-function switchTab(name,btn){
-  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+function switchTab(name,btn){["watchlist","report","lookup","ai","escrow","send","swap","bridge"].forEach(function(t){var p=document.getElementById("tab-"+t);if(p)p.style.display="none";});
+  
   document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
-  const el=document.getElementById('tab-'+name);if(el){el.classList.add('active');document.title="Tab:"+name;}else{document.title="MISSING:tab-"+name;}
+  var panel=document.getElementById("tab-"+name);if(panel)panel.style.display="block";
   btn.classList.add('active');
   if(name==='send')refreshSendTab();
   if(name==='swap')refreshSwapTab();
