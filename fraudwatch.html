@@ -402,7 +402,7 @@ let reports=[
 function switchTab(name,btn){
   document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
-  document.getElementById('tab-'+name).classList.add('active');
+  const el=document.getElementById('tab-'+name);if(el){el.classList.add('active');document.title="Tab:"+name;}else{document.title="MISSING:tab-"+name;}
   btn.classList.add('active');
   if(name==='send')refreshSendTab();
   if(name==='swap')refreshSwapTab();
