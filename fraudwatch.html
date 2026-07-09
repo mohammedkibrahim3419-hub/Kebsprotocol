@@ -227,7 +227,7 @@ main{position:relative;z-index:1;padding:28px 24px 80px;max-width:1100px;margin:
   <div class="ai-scanner-wrap">
     <div class="ai-input-box">
       <input class="form-input" id="aiAddr" placeholder="Enter wallet address 0x..."/>
-      <button class="btn-ai" id="aiScanBtn" onclick="alert(42);runAIScan()">SCAN</button>
+      <button class="btn-ai" id="aiScanBtn" onclick="runAIScan().catch(function(e){alert('Error: '+e.message)})">SCAN</button>
     </div>
     <p class="ai-hint">// Claude AI analyses on-chain patterns, community reports and risk signals</p>
     <div class="ai-result" id="aiResult">
