@@ -684,7 +684,7 @@ function doLookup(){
   document.getElementById('lookupResult').classList.add('show');
 }
 async function runAIScan(){
-  const addr=document.getElementById('aiAddr').value.trim();
+  document.getElementById('aiBody').innerHTML='<div style="color:lime;padding:10px">SCAN STARTED</div>';const addr=document.getElementById('aiAddr').value.trim();
   if(!addr)return;
   const btn=document.getElementById('aiScanBtn');
   const result=document.getElementById('aiResult');
