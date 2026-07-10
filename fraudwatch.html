@@ -684,11 +684,10 @@ function doLookup(){
   document.getElementById('lookupResult').classList.add('show');
 }
 async function runAIScan(){
-  document.getElementById('aiBody').innerHTML='<div style="color:lime;padding:10px">SCAN STARTED</div>';const addr=document.getElementById('aiAddr').value.trim();
+  const result=document.getElementById('aiResult');result.style.display='block';document.getElementById('aiBody').innerHTML='<div style="color:lime;padding:20px;font-size:18px">SCAN STARTED</div>';const addr=document.getElementById('aiAddr').value.trim();
   if(!addr)return;
   const btn=document.getElementById('aiScanBtn');
-  const result=document.getElementById('aiResult');
-  btn.disabled=true;result.classList.add('show');try{
+  btn.disabled=true;try{
   document.getElementById('aiBody').innerHTML='<div class="ai-loading"><div class="ai-loading-bars"><span></span><span></span><span></span><span></span><span></span></div><div class="ai-loading-text">ANALYSING THREAT PATTERNS...</div></div>';
   const matched=reports.filter(r=>r.addr.toLowerCase()===addr.toLowerCase());
   const votes=matched.reduce((s,r)=>s+r.votes,0);
