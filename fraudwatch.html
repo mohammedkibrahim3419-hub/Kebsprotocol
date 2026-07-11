@@ -227,7 +227,7 @@ main{position:relative;z-index:1;padding:28px 24px 80px;max-width:1100px;margin:
   <div class="ai-scanner-wrap">
     <div class="ai-input-box">
       <input class="form-input" id="aiAddr" placeholder="Enter wallet address 0x..."/>
-      <button class="btn-ai" id="aiScanBtn" onclick="runAIScan()">SCAN</button>
+      <button class="btn-ai" id="aiScanBtn" onclick="testScan()">SCAN</button>
     </div>
     <p class="ai-hint">// Claude AI analyses on-chain patterns, community reports and risk signals</p>
     <div class="ai-result" id="aiResult">
@@ -683,7 +683,7 @@ function doLookup(){
     :'<div style="font-family:var(--mono);font-size:.8rem;color:var(--green);padding:12px 0">✓ No reports found for this address.</div>';
   document.getElementById('lookupResult').classList.add('show');
 }
-async function runAIScan(){
+function testScan(){document.getElementById("aiBody").style.display="block";document.getElementById("aiResult").style.display="block";document.getElementById("aiBody").innerHTML="<h1 style=color:lime>IT WORKS</h1>";}async function runAIScan(){
   const result=document.getElementById('aiResult');result.style.display='block';document.getElementById('aiBody').innerHTML='<div style="color:lime;padding:20px;font-size:18px">SCAN STARTED</div>';const addr=document.getElementById('aiAddr').value.trim();
   if(!addr)return;
   const btn=document.getElementById('aiScanBtn');
