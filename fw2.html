@@ -1,0 +1,946 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><script src="appkit.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.umd.min.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FW-TEST-99 FraudWatch — On-Chain Threat Intelligence</title>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@600;700&family=Exo+2:wght@400;500;600&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js">
+</script>
+<style>
+:root{--bg:#080b0f;--surface:#0d1117;--card:#111820;--border:#1e2d3d;--border2:#243447;--red:#ff2b4e;--red-dim:#8b1428;--amber:#ffb700;--amber-dim:#7a5800;--green:#00e5a0;--green-dim:#005c41;--blue:#4db8ff;--blue-dim:#0a3a5c;--purple:#a78bfa;--text:#c8d8e8;--muted:#5a7a90;--mono:'Share Tech Mono',monospace;--sans:'Exo 2',sans-serif;--head:'Rajdhani',sans-serif}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:100vh;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(255,43,78,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(255,43,78,.03) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0}
+header{position:sticky;top:0;z-index:100;background:rgba(8,11,15,.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:0 24px;display:flex;align-items:center;justify-content:space-between;height:60px}
+.logo{display:flex;align-items:center;gap:10px;font-family:var(--head);font-weight:700;font-size:1.35rem;letter-spacing:2px;text-transform:uppercase;color:#fff}
+.logo-icon{width:32px;height:32px;background:var(--red);clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);display:flex;align-items:center;justify-content:center;font-size:.8rem;color:#fff;font-weight:900;animation:pulse-hex 2s ease-in-out infinite}
+@keyframes pulse-hex{0%,100%{filter:drop-shadow(0 0 4px var(--red))}50%{filter:drop-shadow(0 0 12px var(--red))}}
+.logo span{color:var(--red)}
+#walletBtn{font-family:var(--mono);font-size:.72rem;background:transparent;border:1px solid var(--border2);color:var(--muted);padding:7px 14px;cursor:pointer;transition:all .2s;letter-spacing:1px}
+#walletBtn.connected{border-color:var(--green);color:var(--green);background:rgba(0,229,160,.05)}
+#walletBtn:hover{border-color:var(--blue);color:var(--blue)}
+.tab-bar{position:sticky;top:60px;z-index:90;background:rgba(11,16,22,.95);border-bottom:1px solid var(--border);display:flex;padding:0 12px;gap:0;overflow-x:auto}
+.tab-btn{font-family:var(--head);font-size:.8rem;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted);background:none;border:none;padding:13px 14px;cursor:pointer;border-bottom:2px solid transparent;transition:all .2s;display:flex;align-items:center;gap:6px;white-space:nowrap}
+.tab-btn:hover{color:var(--text)}
+.tab-btn.active{color:var(--red);border-bottom-color:var(--red)}
+.tab-btn.ai-tab.active{color:var(--purple);border-bottom-color:var(--purple)}
+.tab-btn.send-tab.active{color:var(--green);border-bottom-color:var(--green)}
+.tab-btn.swap-tab.active{color:var(--amber);border-bottom-color:var(--amber)}
+.tab-btn.bridge-tab.active{color:var(--blue);border-bottom-color:var(--blue)}
+main{position:relative;z-index:1;padding:28px 24px 80px;max-width:1100px;margin:0 auto}
+.tab-panel{display:none}.tab-panel.active{display:block}
+.sec-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.sec-title{font-family:var(--head);font-size:1.3rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#fff}
+.sec-title .r{color:var(--red)}.sec-title .ai{color:var(--purple)}.sec-title .g{color:var(--green)}.sec-title .a{color:var(--amber)}.sec-title .b{color:var(--blue)}
+.card{background:var(--card);border:1px solid var(--border);padding:20px 22px;margin-bottom:14px;transition:border-color .2s,transform .15s;position:relative;overflow:hidden}
+.card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--risk-color,var(--muted))}
+.card:hover{border-color:var(--border2);transform:translateX(2px)}
+.card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:10px}
+.card-addr{font-family:var(--mono);font-size:.8rem;color:var(--blue);word-break:break-all}
+.risk-badge{font-family:var(--head);font-size:.7rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;padding:3px 10px;border:1px solid currentColor;white-space:nowrap;flex-shrink:0}
+.risk-critical{color:var(--red);--risk-color:var(--red)}.risk-high{color:var(--amber);--risk-color:var(--amber)}
+.risk-medium{color:#f97316;--risk-color:#f97316}.risk-low{color:var(--green);--risk-color:var(--green)}
+.card-desc{font-size:.875rem;color:var(--text);line-height:1.5;margin-bottom:10px}
+.card-meta{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.meta-item{font-family:var(--mono);font-size:.72rem;color:var(--muted);display:flex;align-items:center;gap:5px}
+.cat-tag{font-family:var(--head);font-size:.68rem;font-weight:600;letter-spacing:1px;text-transform:uppercase;padding:2px 8px;background:rgba(77,184,255,.1);border:1px solid rgba(77,184,255,.25);color:var(--blue)}
+.upvote-btn{display:flex;align-items:center;gap:5px;background:none;border:1px solid var(--border2);color:var(--muted);font-family:var(--mono);font-size:.72rem;padding:4px 10px;cursor:pointer;transition:all .2s}
+.upvote-btn:hover{border-color:var(--amber);color:var(--amber)}.upvote-btn.voted{border-color:var(--amber);color:var(--amber);background:rgba(255,183,0,.08)}
+.filter-bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:22px}
+.filter-btn{font-family:var(--head);font-size:.75rem;font-weight:600;letter-spacing:1px;text-transform:uppercase;background:none;border:1px solid var(--border);color:var(--muted);padding:6px 14px;cursor:pointer;transition:all .18s}
+.filter-btn:hover,.filter-btn.active{border-color:var(--red);color:var(--red);background:rgba(255,43,78,.06)}
+.stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:28px}
+.stat-box{background:var(--card);border:1px solid var(--border);padding:16px 18px;text-align:center}
+.stat-num{font-family:var(--mono);font-size:1.8rem;color:var(--red);display:block}
+.stat-label{font-family:var(--head);font-size:.7rem;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-top:4px;display:block}
+.form-group{margin-bottom:18px}
+.form-label{display:block;font-family:var(--head);font-size:.78rem;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:7px}
+.form-label span{color:var(--red);margin-left:3px}
+.form-input,.form-select,.form-textarea{width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);font-family:var(--mono);font-size:.85rem;padding:10px 14px;outline:none;transition:border-color .2s;resize:vertical}
+.form-input:focus,.form-select:focus,.form-textarea:focus{border-color:var(--red);box-shadow:0 0 0 2px rgba(255,43,78,.1)}
+.form-select option{background:var(--surface)}.form-textarea{min-height:100px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:600px){.form-row{grid-template-columns:1fr}}
+.btn-primary{font-family:var(--head);font-size:.9rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;background:var(--red);color:#fff;border:none;padding:13px 32px;cursor:pointer;transition:background .2s,transform .1s;clip-path:polygon(0 0,calc(100% - 10px) 0,100% 10px,100% 100%,10px 100%,0 calc(100% - 10px))}
+.btn-primary:hover{background:#ff4060;transform:translateY(-1px)}.btn-primary:disabled{background:var(--red-dim);cursor:not-allowed}
+.wallet-warn{display:flex;align-items:center;gap:10px;background:rgba(255,183,0,.06);border:1px solid var(--amber-dim);padding:12px 16px;margin-bottom:20px;font-family:var(--mono);font-size:.78rem;color:var(--amber)}
+.lookup-box{display:flex;gap:10px;margin-bottom:28px}
+.lookup-box .form-input{flex:1;font-size:.78rem}
+.btn-search{font-family:var(--head);font-size:.85rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;background:none;border:1px solid var(--blue);color:var(--blue);padding:10px 22px;cursor:pointer;transition:all .2s;white-space:nowrap}
+.btn-search:hover{background:rgba(77,184,255,.1)}
+.lookup-result{background:var(--card);border:1px solid var(--border);padding:24px;display:none}.lookup-result.show{display:block}
+.risk-meter{display:flex;align-items:center;gap:14px;margin-bottom:20px}
+.risk-circle{width:70px;height:70px;border-radius:50%;border:3px solid;display:flex;align-items:center;justify-content:center;font-family:var(--head);font-size:1.1rem;font-weight:700;flex-shrink:0}
+.risk-info h3{font-family:var(--head);font-size:1.1rem;font-weight:700;letter-spacing:1px;text-transform:uppercase}
+.risk-info p{font-family:var(--mono);font-size:.76rem;color:var(--muted);margin-top:4px}
+.lookup-addr-display{font-family:var(--mono);font-size:.8rem;color:var(--blue);background:var(--surface);padding:10px 14px;border:1px solid var(--border);margin-bottom:18px;word-break:break-all}
+#toast{position:fixed;bottom:30px;right:28px;z-index:999;background:var(--card);border:1px solid var(--border2);padding:14px 20px;font-family:var(--mono);font-size:.8rem;color:var(--green);transform:translateY(80px);opacity:0;transition:all .35s cubic-bezier(.22,1,.36,1);max-width:340px;border-left:3px solid var(--green)}
+#toast.show{transform:translateY(0);opacity:1}#toast.error{color:var(--red);border-left-color:var(--red)}
+.live-dot{width:7px;height:7px;background:var(--green);border-radius:50%;display:inline-block;animation:blink 1.4s ease-in-out infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
+.empty-state{text-align:center;padding:60px 20px;font-family:var(--mono);font-size:.85rem;color:var(--muted)}
+.ai-scanner-wrap{max-width:720px;margin:0 auto}
+.ai-input-box{display:flex;gap:10px;margin-bottom:12px}
+.ai-input-box .form-input{flex:1;font-size:.82rem;border-color:rgba(167,139,250,.3)}
+.ai-input-box .form-input:focus{border-color:var(--purple);box-shadow:0 0 0 2px rgba(167,139,250,.1)}
+.btn-ai{font-family:var(--head);font-size:.9rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;background:linear-gradient(135deg,#7c3aed,var(--purple));color:#fff;border:none;padding:13px 28px;cursor:pointer;transition:all .2s;clip-path:polygon(0 0,calc(100% - 10px) 0,100% 10px,100% 100%,10px 100%,0 calc(100% - 10px));white-space:nowrap}
+.btn-ai:hover{filter:brightness(1.1);transform:translateY(-1px)}.btn-ai:disabled{opacity:.5;cursor:not-allowed}
+.ai-hint{font-family:var(--mono);font-size:.7rem;color:var(--muted);margin-bottom:24px;letter-spacing:.5px}
+.ai-result{background:var(--card);border:1px solid rgba(167,139,250,.2);display:none;overflow:hidden}.ai-result.show{display:block}
+.ai-result-header{background:rgba(167,139,250,.06);border-bottom:1px solid rgba(167,139,250,.2);padding:16px 20px;display:flex;align-items:center;justify-content:space-between}
+.ai-result-title{font-family:var(--head);font-size:.9rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--purple)}
+.ai-score-badge{font-family:var(--mono);font-size:.8rem;padding:4px 12px;border:1px solid;font-weight:700}
+.ai-body{padding:20px}.ai-section{margin-bottom:20px}
+.ai-section-title{font-family:var(--head);font-size:.75rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid var(--border)}
+.ai-section-content{font-family:var(--mono);font-size:.8rem;color:var(--text);line-height:1.7}
+.ai-tags{display:flex;flex-wrap:wrap;gap:7px;margin-top:8px}
+.ai-tag{font-family:var(--head);font-size:.68rem;font-weight:600;letter-spacing:1px;text-transform:uppercase;padding:3px 10px;border:1px solid rgba(167,139,250,.3);color:var(--purple);background:rgba(167,139,250,.07)}
+.ai-tag.red{border-color:rgba(255,43,78,.3);color:var(--red);background:rgba(255,43,78,.07)}
+.ai-tag.green{border-color:rgba(0,229,160,.3);color:var(--green);background:rgba(0,229,160,.07)}
+.ai-tag.amber{border-color:rgba(255,183,0,.3);color:var(--amber);background:rgba(255,183,0,.07)}
+.ai-verdict{font-family:var(--head);font-size:1.1rem;font-weight:700;letter-spacing:1px;padding:14px 18px;border:1px solid;margin-bottom:20px}
+.ai-loading{padding:40px 20px;text-align:center}
+.ai-loading-bars{display:flex;align-items:flex-end;justify-content:center;gap:4px;height:40px;margin-bottom:16px}
+.ai-loading-bars span{width:4px;background:var(--purple);border-radius:2px;animation:bar-bounce 1s ease-in-out infinite}
+.ai-loading-bars span:nth-child(2){animation-delay:.1s}.ai-loading-bars span:nth-child(3){animation-delay:.2s}
+.ai-loading-bars span:nth-child(4){animation-delay:.3s}.ai-loading-bars span:nth-child(5){animation-delay:.4s}
+@keyframes bar-bounce{0%,100%{height:8px;opacity:.4}50%{height:36px;opacity:1}}
+.ai-loading-text{font-family:var(--mono);font-size:.78rem;color:var(--purple);letter-spacing:1px}
+.score-ring-wrap{display:flex;justify-content:center;margin-bottom:20px}
+.score-ring{width:110px;height:110px;border-radius:50%;border:4px solid;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.score-ring .score-num{font-family:var(--head);font-size:2rem;font-weight:800;line-height:1}
+.score-ring .score-label{font-family:var(--mono);font-size:.6rem;letter-spacing:1px;margin-top:3px}
+.ai-checklist{list-style:none;display:flex;flex-direction:column;gap:6px}
+.ai-checklist li{font-family:var(--mono);font-size:.78rem;color:var(--text);display:flex;align-items:flex-start;gap:8px;line-height:1.5}
+.ai-checklist li::before{content:'→';color:var(--purple);flex-shrink:0}
+.ai-checklist li.danger::before{content:'✗';color:var(--red)}
+.ai-checklist li.safe::before{content:'✓';color:var(--green)}
+.es-log{background:var(--surface);border:1px solid var(--border);padding:14px;font-family:var(--mono);font-size:.75rem;line-height:1.8;min-height:120px;max-height:200px;overflow-y:auto;margin-top:14px}
+.log-info{color:var(--blue)}.log-warn{color:var(--amber)}.log-ok{color:var(--green)}.log-err{color:var(--red)}
+.kit-wrap{max-width:620px;margin:0 auto}
+.kit-network-bar{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;margin-bottom:22px;border:1px solid}
+.kit-network-dot{width:8px;height:8px;border-radius:50%;animation:blink 1.4s ease-in-out infinite}
+.kit-card{background:var(--card);border:1px solid var(--border);padding:24px;margin-bottom:16px}
+.kit-card-title{font-family:var(--head);font-size:.8rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:18px;padding-bottom:10px;border-bottom:1px solid var(--border)}
+.kit-label{display:block;font-family:var(--head);font-size:.74rem;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:7px}
+.kit-input{width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);font-family:var(--mono);font-size:.85rem;padding:11px 14px;outline:none;transition:border-color .2s;margin-bottom:14px}
+.kit-input:focus{box-shadow:0 0 0 2px rgba(0,229,160,.08)}
+.kit-amt-wrap{position:relative;margin-bottom:14px}
+.kit-amt-wrap .kit-input{padding-right:70px;margin-bottom:0}
+.kit-token-label{position:absolute;right:12px;top:50%;transform:translateY(-50%);font-family:var(--head);font-size:.75rem;font-weight:700;letter-spacing:1px}
+.kit-info-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-family:var(--mono);font-size:.76rem}
+.kit-info-row:last-child{border-bottom:none}
+.kit-info-label{color:var(--muted)}.kit-info-val{color:var(--text)}
+.kit-code{background:var(--surface);border:1px solid var(--border);padding:14px;font-family:var(--mono);font-size:.72rem;color:var(--green);line-height:1.7;margin-bottom:16px;overflow-x:auto;white-space:pre}
+.kit-status{background:var(--surface);border:1px solid var(--border);padding:16px 18px;margin-top:16px;display:none;font-family:var(--mono);font-size:.8rem;line-height:1.8}
+.kit-status.show{display:block}
+.kit-status.success{border-color:var(--green-dim);color:var(--green);background:rgba(0,229,160,.03)}
+.kit-status.error{border-color:var(--red-dim);color:var(--red)}
+.kit-status.pending{border-color:var(--amber-dim);color:var(--amber)}
+.kit-status a{color:inherit;text-decoration:underline}
+.btn-kit-send{width:100%;font-family:var(--head);font-size:.95rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;border:none;padding:14px;cursor:pointer;transition:all .2s;clip-path:polygon(0 0,calc(100% - 12px) 0,100% 12px,100% 100%,12px 100%,0 calc(100% - 12px));color:#fff}
+.btn-kit-send:hover{filter:brightness(1.15);transform:translateY(-1px)}.btn-kit-send:disabled{opacity:.45;cursor:not-allowed;filter:none;transform:none}
+.btn-kit-send.green{background:linear-gradient(135deg,#005c41,#00c87a)}
+.btn-kit-send.amber{background:linear-gradient(135deg,#7a5800,#ffb700);color:#000}
+.btn-kit-send.blue{background:linear-gradient(135deg,#0a3a5c,#4db8ff)}
+.btn-use-reporter{font-family:var(--head);font-size:.72rem;font-weight:600;letter-spacing:1px;text-transform:uppercase;background:none;border:1px solid rgba(255,43,78,.3);color:var(--red);padding:5px 12px;cursor:pointer;transition:all .2s;margin-top:6px;display:inline-block}
+.btn-use-reporter:hover{background:rgba(255,43,78,.07);border-color:var(--red)}
+.chain-select-row{display:flex;gap:10px;margin-bottom:14px}
+.chain-select-row .kit-input{margin-bottom:0}
+.chain-arrow{display:flex;align-items:center;justify-content:center;color:var(--blue);font-size:1.2rem;padding:0 4px;flex-shrink:0;margin-top:11px}
+.demo-note{font-family:var(--mono);font-size:.7rem;color:var(--muted);border:1px dashed var(--border);padding:8px 14px;text-align:center;margin-bottom:18px}
+.demo-note span{color:var(--amber)}
+.chain-switch-btn{font-family:var(--head);font-size:.72rem;font-weight:600;letter-spacing:1px;text-transform:uppercase;background:none;padding:5px 12px;cursor:pointer;transition:all .2s;border:1px solid}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo"><div class="logo-icon">⬡</div>FRAUD<span>WATCH</span></div>
+  <button id="walletBtn" onclick="connectWallet()">CONNECT WALLET</button>
+</header>
+<div class="tab-bar">
+  <button class="tab-btn active" onclick="switchTab('watchlist',this)">👁 Watch</button>
+  <button class="tab-btn" onclick="switchTab('report',this)">🚨 Report</button>
+  <button class="tab-btn" onclick="switchTab('lookup',this)">🔍 Lookup</button>
+  <button class="tab-btn ai-tab" onclick="switchTab('ai',this)">🤖 AI Risk</button>
+  <button class="tab-btn" onclick="switchTab('escrow',this)">⚖️ Escrow</button>
+  <button class="tab-btn send-tab" onclick="switchTab('send',this)">💸 Send</button>
+  <button class="tab-btn swap-tab" onclick="switchTab('swap',this)">🔄 Swap</button>
+  <button class="tab-btn bridge-tab" onclick="switchTab('bridge',this)">🌉 Bridge</button>
+</div>
+<main>
+<!-- WATCHLIST -->
+<div id="tab-watchlist" class="tab-panel active">
+  <div class="stats-row">
+    <div class="stat-box"><span class="stat-num" id="statToday">0</span><span class="stat-label">Today</span></div>
+    <div class="stat-box"><span class="stat-num" id="statTotal">0</span><span class="stat-label">Total Reports</span></div>
+    <div class="stat-box"><span class="stat-num" id="statFlagged">0</span><span class="stat-label">Flagged</span></div>
+    <div class="stat-box"><span class="stat-num" id="statVotes">0</span><span class="stat-label">Upvotes</span></div>
+  </div>
+  <div class="sec-head"><div class="sec-title">THREAT <span class="r">FEED</span> <span class="live-dot" style="margin-left:8px"></span></div></div>
+  <div class="filter-bar">
+    <button class="filter-btn active" onclick="filterReports('all',this)">ALL</button>
+    <button class="filter-btn" onclick="filterReports('Scam',this)">SCAM</button>
+    <button class="filter-btn" onclick="filterReports('Phishing',this)">PHISHING</button>
+    <button class="filter-btn" onclick="filterReports('Rug Pull',this)">RUG PULL</button>
+    <button class="filter-btn" onclick="filterReports('Fraud',this)">FRAUD</button>
+  </div>
+  <div id="reportsList"></div>
+</div>
+<!-- REPORT -->
+<div id="tab-report" class="tab-panel">
+  <div class="sec-head"><div class="sec-title">SUBMIT <span class="r">REPORT</span></div></div>
+  <div class="wallet-warn" id="reportWalletWarn">⚠ Connect wallet to submit on-chain. Demo mode active.</div>
+  <div class="form-group"><label class="form-label">Wallet Address <span>*</span></label><input class="form-input" id="repAddr" placeholder="0x..."/></div>
+  <div class="form-row">
+    <div class="form-group"><label class="form-label">Category <span>*</span></label>
+      <select class="form-select" id="repCat"><option>Scam</option><option>Phishing</option><option>Rug Pull</option><option>Fraud</option><option>Hack</option><option>Other</option></select>
+    </div>
+    <div class="form-group"><label class="form-label">Risk Level <span>*</span></label>
+      <select class="form-select" id="repRisk"><option value="risk-critical">Critical</option><option value="risk-high">High</option><option value="risk-medium">Medium</option><option value="risk-low">Low</option></select>
+    </div>
+  </div>
+  <div class="form-group"><label class="form-label">Evidence <span>*</span></label><textarea class="form-textarea" id="repDesc" placeholder="Describe what happened, tx hashes, links..."></textarea></div>
+  <button class="btn-primary" onclick="submitReport()">SUBMIT REPORT</button>
+</div>
+<!-- LOOKUP -->
+<div id="tab-lookup" class="tab-panel">
+  <div class="sec-head"><div class="sec-title">ADDRESS <span class="r">LOOKUP</span></div></div>
+  <div class="lookup-box">
+    <input class="form-input" id="lookupInput" placeholder="Enter wallet address 0x..."/>
+    <button class="btn-search" onclick="doLookup()">SCAN</button>
+  </div>
+  <div class="lookup-result" id="lookupResult">
+    <div class="lookup-addr-display" id="lookupAddr"></div>
+    <div class="risk-meter">
+      <div class="risk-circle" id="lookupCircle"></div>
+      <div class="risk-info"><h3 id="lookupRiskLabel"></h3><p id="lookupRiskSub"></p></div>
+    </div>
+    <div id="lookupReports"></div>
+    <button class="btn-primary" style="margin-top:14px;font-size:.78rem;padding:9px 20px" onclick="generatePDF()">📄 EXPORT PDF AUDIT</button>
+  </div>
+</div>
+<!-- AI -->
+<div id="tab-ai" class="tab-panel" style="display:block!important;border:3px solid red">
+  <div class="sec-head"><div class="sec-title"><span class="ai">AI</span> RISK ANALYSIS</div></div>
+  <div class="ai-scanner-wrap">
+    <div class="ai-input-box">
+      <input class="form-input" id="aiAddr" placeholder="Enter wallet address 0x..."/>
+      <button class="btn-ai" id="aiScanBtn" onclick="testScan()">SCAN</button>
+    </div>
+    <p class="ai-hint">// Claude AI analyses on-chain patterns, community reports and risk signals</p>
+    <div class="ai-result" id="aiResult">
+      <div class="ai-result-header"><span class="ai-result-title">⬡ AI THREAT ASSESSMENT</span><span class="ai-score-badge" id="aiScoreBadge"></span></div>
+      <div class="ai-body" id="aiBody"></div>
+    </div>
+  </div>
+</div>
+<!-- ESCROW -->
+<div id="tab-escrow" class="tab-panel">
+  <div class="sec-head"><div class="sec-title">ESCROW <span class="r">SIMULATION</span></div></div>
+  <div class="demo-note">⚠ <span>SIMULATION MODE</span> — No real funds moved</div>
+  <div class="form-group"><label class="form-label">Sender Address</label><input class="form-input" id="esSender" placeholder="0x... (leave blank for mock)"/></div>
+  <div class="form-group"><label class="form-label">Amount (USDC)</label><input class="form-input" id="esAmt" placeholder="100" type="number"/></div>
+  <button class="btn-primary" onclick="runEscrow()">RUN SIMULATION</button>
+  <div class="es-log" id="esLog"><span class="log-info">[READY] Enter a sender address and click Run.</span></div>
+</div>
+<!-- SEND -->
+<div id="tab-send" class="tab-panel">
+  <div class="sec-head"><div class="sec-title">SEND <span class="g">USDC</span> <small style="font-size:.65rem;color:var(--green);letter-spacing:1px;margin-left:8px">APP KITS</small></div></div>
+  <div class="kit-wrap">
+    <div class="kit-network-bar" style="background:rgba(0,229,160,.04);border-color:rgba(0,229,160,.15)">
+      <div style="display:flex;align-items:center;gap:10px;font-family:var(--mono);font-size:.75rem;color:var(--green)">
+        <div class="kit-network-dot" style="background:var(--green)"></div>ARC TESTNET · CHAIN 5042002
+      </div>
+      <button class="chain-switch-btn" id="sendChainBtn" onclick="switchToArc()" style="border-color:rgba(0,229,160,.3);color:var(--green)">SWITCH NETWORK</button>
+    </div>
+    <div id="sendDemoNote" class="demo-note"><span>DEMO MODE</span> — Connect MetaMask on Arc Testnet to send real USDC</div>
+    <div class="kit-card">
+      <div class="kit-card-title">kit.send() — Transfer Tokens Same Chain</div>
+      <div class="kit-code" id="sendKitCode">// Arc App Kits — Send SDK
+const result = await kit.send({
+  from: { adapter, chain: "Arc_Testnet" },
+  to: "RECIPIENT_ADDRESS",
+  amount: "0.00",
+  token: "USDC",
+});</div>
+      <label class="kit-label">Recipient Address</label>
+      <input class="kit-input" id="sendRecipient" placeholder="0x..." oninput="updateSendCode()"/>
+      <button class="btn-use-reporter" onclick="useTopReporter()">USE TOP REPORTER ↑</button>
+      <div style="margin-top:14px"></div>
+      <label class="kit-label">Amount</label>
+      <div class="kit-amt-wrap"><input class="kit-input" id="sendAmount" placeholder="0.00" type="number" min="0" step="any" oninput="updateSendCode()"/><span class="kit-token-label" style="color:var(--green)">USDC</span></div>
+      <div class="kit-info-row"><span class="kit-info-label">Token Contract</span><span class="kit-info-val" style="font-size:.68rem">0xaFC722...4784</span></div>
+      <div class="kit-info-row"><span class="kit-info-label">Network</span><span class="kit-info-val" style="color:var(--green)">Arc Testnet</span></div>
+      <div class="kit-info-row"><span class="kit-info-label">Your Balance</span><span class="kit-info-val" id="sendBalance">— USDC</span></div>
+      <div class="kit-info-row"><span class="kit-info-label">Wallet</span><span class="kit-info-val" id="sendWalletDisplay">Not connected</span></div>
+      <div style="margin-top:18px"></div>
+      <button class="btn-kit-send green" id="sendBtn" onclick="executeSend()">SEND USDC</button>
+    </div>
+    <div class="kit-status" id="sendStatus"></div>
+  </div>
+</div>
+<!-- SWAP -->
+<div id="tab-swap" class="tab-panel">
+  <div class="sec-head"><div class="sec-title">SWAP <span class="a">TOKENS</span> <small style="font-size:.65rem;color:var(--amber);letter-spacing:1px;margin-left:8px">APP KITS</small></div></div>
+  <div class="kit-wrap">
+    <div class="kit-network-bar" style="background:rgba(255,183,0,.04);border-color:rgba(255,183,0,.15)">
+      <div style="display:flex;align-items:center;gap:10px;font-family:var(--mono);font-size:.75rem;color:var(--amber)">
+        <div class="kit-network-dot" style="background:var(--amber)"></div>ARC TESTNET · SAME-CHAIN SWAP
+      </div>
+      <span style="font-family:var(--mono);font-size:.7rem;color:var(--muted)">via Arc App Kits</span>
+    </div>
+    <div id="swapDemoNote" class="demo-note"><span>DEMO MODE</span> — Shows kit.swap() call. Connect wallet to execute.</div>
+    <div class="kit-card">
+      <div class="kit-card-title">kit.swap() — Exchange Tokens on Arc Testnet</div>
+      <div class="kit-code" id="swapKitCode">// Arc App Kits — Swap SDK
+const result = await kit.swap({
+  from: { adapter: viemAdapter, chain: "Arc_Testnet" },
+  tokenIn: "USDC",
+  tokenOut: "EURC",
+  amountIn: "0.00",
+  config: { kitKey: process.env.KIT_KEY },
+});</div>
+      <div class="form-row" style="margin-bottom:14px">
+        <div>
+          <label class="kit-label">Token In</label>
+          <select class="form-select" id="swapTokenIn" onchange="updateSwapCode()" style="border-color:var(--border)">
+            <option value="USDC">USDC</option>
+            <option value="EURC">EURC</option>
+            <option value="ETH">ETH</option>
+          </select>
+        </div>
+        <div>
+          <label class="kit-label">Token Out</label>
+          <select class="form-select" id="swapTokenOut" onchange="updateSwapCode()" style="border-color:var(--border)">
+            <option value="EURC">EURC</option>
+            <option value="USDC">USDC</option>
+            <option value="ETH">ETH</option>
+          </select>
+        </div>
+      </div>
+      <label class="kit-label">Amount In</label>
+      <div class="kit-amt-wrap"><input class="kit-input" id="swapAmountIn" placeholder="0.00" type="number" min="0" step="any" oninput="updateSwapCode()"/><span class="kit-token-label" id="swapTokenInLabel" style="color:var(--amber)">USDC</span></div>
+      <div class="kit-info-row"><span class="kit-info-label">Chain</span><span class="kit-info-val" style="color:var(--amber)">Arc Testnet</span></div>
+      <div class="kit-info-row"><span class="kit-info-label">Kit Key</span><span class="kit-info-val">Circle Console → App Kits</span></div>
+      <div class="kit-info-row"><span class="kit-info-label">Wallet</span><span class="kit-info-val" id="swapWalletDisplay">Not connected</span></div>
+      <div style="margin-top:18px"></div>
+      <button class="btn-kit-send amber" id="swapBtn" onclick="executeSwap()">SWAP TOKENS</button>
+    </div>
+    <div class="kit-status" id="swapStatus"></div>
+  </div>
+</div>
+<!-- BRIDGE -->
+<div id="tab-bridge" class="tab-panel">
+  <div class="sec-head"><div class="sec-title">BRIDGE <span class="b">USDC</span> <small style="font-size:.65rem;color:var(--blue);letter-spacing:1px;margin-left:8px">APP KITS + CCTP</small></div></div>
+  <div class="kit-wrap">
+    <div class="kit-network-bar" style="background:rgba(77,184,255,.04);border-color:rgba(77,184,255,.15)">
+      <div style="display:flex;align-items:center;gap:10px;font-family:var(--mono);font-size:.75rem;color:var(--blue)">
+        <div class="kit-network-dot" style="background:var(--blue)"></div>CROSS-CHAIN · CIRCLE CCTP
+      </div>
+      <span style="font-family:var(--mono);font-size:.7rem;color:var(--muted)">via Arc App Kits</span>
+    </div>
+    <div class="demo-note"><span>DEMO MODE</span> — Shows kit.bridge() call. Requires npm @circle-fin/app-kit in production.</div>
+    <div class="kit-card">
+      <div class="kit-card-title">kit.bridge() — Move USDC Across Chains via CCTP</div>
+      <div class="kit-code" id="bridgeKitCode">// Arc App Kits — Bridge SDK (CCTP)
+const result = await kit.bridge({
+  from: { adapter: viemAdapter, chain: "Ethereum_Sepolia" },
+  to:   { adapter: viemAdapter, chain: "Arc_Testnet" },
+  amount: "0.00",
+});</div>
+      <div class="chain-select-row">
+        <div style="flex:1">
+          <label class="kit-label">From Chain</label>
+          <select class="form-select" id="bridgeFrom" onchange="updateBridgeCode()" style="border-color:var(--border)">
+            <option value="Ethereum_Sepolia">Ethereum Sepolia</option>
+            <option value="Base_Sepolia">Base Sepolia</option>
+            <option value="Arbitrum_Sepolia">Arbitrum Sepolia</option>
+            <option value="Polygon_Amoy">Polygon Amoy</option>
+          </select>
+        </div>
+        <div class="chain-arrow">→</div>
+        <div style="flex:1">
+          <label class="kit-label">To Chain</label>
+          <select class="form-select" id="bridgeTo" onchange="updateBridgeCode()" style="border-color:var(--border)">
+            <option value="Arc_Testnet">Arc Testnet</option>
+            <option value="Ethereum_Sepolia">Ethereum Sepolia</option>
+            <option value="Base_Sepolia">Base Sepolia</option>
+          </select>
+        </div>
+      </div>
+      <label class="kit-label">Amount (USDC)</label>
+      <div class="kit-amt-wrap"><input class="kit-input" id="bridgeAmount" placeholder="0.00" type="number" min="0" step="any" oninput="updateBridgeCode()"/><span class="kit-token-label" style="color:var(--blue)">USDC</span></div>
+      <div class="kit-info-row"><span class="kit-info-label">Protocol</span><span class="kit-info-val" style="color:var(--blue)">Circle CCTP</span></div>
+      <div class="kit-info-row"><span class="kit-info-label">Token</span><span class="kit-info-val">USDC (native mint)</span></div>
+      <div class="kit-info-row"><span class="kit-info-label">Wallet</span><span class="kit-info-val" id="bridgeWalletDisplay">Not connected</span></div>
+      <div style="margin-top:18px"></div>
+      <button class="btn-kit-send blue" id="bridgeBtn" onclick="executeBridge()">BRIDGE USDC</button>
+    </div>
+    <div class="kit-status" id="bridgeStatus"></div>
+  </div>
+</div>
+</main>
+<div id="toast"></div>
+<script>
+const CONTRACT='0x9667962F0A9591e9b0bE2AB341F421c068B00e07';
+const USDC_ADDR='0xaFC722Eb3b1748657ce6e702a3aDc2fCC45e4784';
+const ARC_CHAIN_ID='0x4CEB12';
+const ARC_RPC='https://rpc.arc.testnet.circlelabs.io';
+const ARCSCAN='https://arcscan.io/tx/';
+const ARC_CHAIN_PARAMS={chainId:ARC_CHAIN_ID,chainName:'Arc Testnet',nativeCurrency:{name:'ETH',symbol:'ETH',decimals:18},rpcUrls:[ARC_RPC],blockExplorerUrls:['https://arcscan.io']};
+let walletAddr=null,currentFilter='all';
+let reports=[
+  {id:1,addr:'0xDead111122223333444455556666777788889999',cat:'Rug Pull',risk:'risk-critical',ev:'Deployed fake DEX, drained 45 ETH from LPs within 6 hours of launch.',votes:14,ts:Date.now()-3600000,reporter:'0x111...222'},
+  {id:2,addr:'0xBad0000AAAA1111BBBB2222CCCC3333DDDD4444',cat:'Phishing',risk:'risk-high',ev:'Cloned KebsProtocol frontend with typosquat domain. Harvested 23 wallet approvals.',votes:9,ts:Date.now()-7200000,reporter:'0x333...444'},
+  {id:3,addr:'0xScam999988887777666655554444333322221111',cat:'Scam',risk:'risk-high',ev:'Fake airdrop site. Required unlimited token approval then drained within minutes.',votes:11,ts:Date.now()-10800000,reporter:'0x555...666'},
+  {id:4,addr:'0xFraud444444444444444444444444444444fr4ud',cat:'Fraud',risk:'risk-medium',ev:'Fake P2P trade, took ETH never sent USDC.',votes:7,ts:Date.now()-3600000*5,reporter:'0x555...666'},
+  {id:5,addr:'0xHack123456789abcdef123456789abcdef12345',cat:'Hack',risk:'risk-critical',ev:'Exploited reentrancy in yield vault. 120k drained across 3 txs.',votes:18,ts:Date.now()-3600000*12,reporter:'0x777...888'}
+];
+
+function switchTab(name,btn){["watchlist","report","lookup","ai","escrow","send","swap","bridge"].forEach(function(t){var p=document.getElementById("tab-"+t);if(p)p.style.display="none";});
+  
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  var panel=document.getElementById("tab-"+name);if(panel)panel.style.display="block";
+  btn.classList.add('active');
+  if(name==='send')refreshSendTab();
+  if(name==='swap')refreshSwapTab();
+  if(name==='bridge')refreshBridgeTab();
+}
+
+async function connectWallet(){
+  if(!window.ethereum){showToast('MetaMask not detected',true);return;}
+  try{
+    const accounts=await window.ethereum.request({method:'eth_requestAccounts'});
+    walletAddr=accounts[0];
+    document.getElementById('walletBtn').textContent=short(walletAddr,6);
+    document.getElementById('walletBtn').classList.add('connected');
+    document.getElementById('reportWalletWarn').style.display='none';
+    showToast('Wallet connected: '+short(walletAddr));
+    refreshSendTab();refreshSwapTab();refreshBridgeTab();
+  }catch(e){showToast('Connection rejected',true);}
+}
+
+async function switchToArc(){
+  if(!window.ethereum){showToast('MetaMask not detected',true);return;}
+  try{
+    await window.ethereum.request({method:'wallet_switchEthereumChain',params:[{chainId:ARC_CHAIN_ID}]});
+    showToast('Switched to Arc Testnet');refreshSendTab();
+  }catch(e){
+    if(e.code===4902){
+      try{
+        await window.ethereum.request({method:'wallet_addEthereumChain',params:[ARC_CHAIN_PARAMS]});
+        showToast('Arc Testnet added');refreshSendTab();
+      }catch(e2){showToast('Failed to add network',true);}
+    }else{showToast('Network switch failed',true);}
+  }
+}
+
+async function refreshSendTab(){
+  const balEl=document.getElementById('sendBalance');
+  const walletEl=document.getElementById('sendWalletDisplay');
+  const demoNote=document.getElementById('sendDemoNote');
+  const chainBtn=document.getElementById('sendChainBtn');
+  if(!walletAddr){walletEl.textContent='Not connected';balEl.textContent='— USDC';demoNote.style.display='block';return;}
+  walletEl.textContent=short(walletAddr,8);
+  try{
+    const chainId=await window.ethereum.request({method:'eth_chainId'});
+    const onArc=chainId.toLowerCase()===ARC_CHAIN_ID.toLowerCase();
+    if(onArc){
+      chainBtn.textContent='✓ ARC TESTNET';chainBtn.style.color='var(--green)';
+      demoNote.style.display='none';await fetchUSDCBalance();
+    }else{
+      chainBtn.textContent='SWITCH NETWORK';chainBtn.style.color='var(--amber)';
+      demoNote.innerHTML='<span>WRONG NETWORK</span> — Click Switch Network';
+      demoNote.style.display='block';balEl.textContent='— USDC';
+    }
+  }catch(e){balEl.textContent='— USDC';}
+}
+
+function refreshSwapTab(){
+  const el=document.getElementById('swapWalletDisplay');
+  if(el)el.textContent=walletAddr?short(walletAddr,8):'Not connected';
+}
+
+function refreshBridgeTab(){
+  const el=document.getElementById('bridgeWalletDisplay');
+  if(el)el.textContent=walletAddr?short(walletAddr,8):'Not connected';
+}
+
+async function fetchUSDCBalance(){
+  if(!walletAddr||!window.ethereum)return;
+  try{
+    const data='0x70a08231'+walletAddr.slice(2).padStart(64,'0');
+    const result=await window.ethereum.request({method:'eth_call',params:[{to:USDC_ADDR,data},'latest']});
+    const decResult=await window.ethereum.request({method:'eth_call',params:[{to:USDC_ADDR,data:'0x313ce567'},'latest']});
+    const decimals=parseInt(decResult,16)||6;
+    const bal=Number(BigInt(result||'0x0'))/Math.pow(10,decimals);
+    document.getElementById('sendBalance').textContent=bal.toFixed(2)+' USDC';
+  }catch(e){document.getElementById('sendBalance').textContent='— USDC';}
+}
+
+function updateSendCode(){
+  const r=document.getElementById('sendRecipient').value||'RECIPIENT_ADDRESS';
+  const a=document.getElementById('sendAmount').value||'0.00';
+  document.getElementById('sendKitCode').textContent=
+`// Arc App Kits — Send SDK
+const result = await kit.send({
+  from: { adapter, chain: "Arc_Testnet" },
+  to: "${r}",
+  amount: "${a}",
+  token: "USDC",
+});`;
+}
+
+function updateSwapCode(){
+  const tIn=document.getElementById('swapTokenIn').value;
+  const tOut=document.getElementById('swapTokenOut').value;
+  const amt=document.getElementById('swapAmountIn').value||'0.00';
+  document.getElementById('swapTokenInLabel').textContent=tIn;
+  document.getElementById('swapKitCode').textContent=
+`// Arc App Kits — Swap SDK
+const result = await kit.swap({
+  from: { adapter: viemAdapter, chain: "Arc_Testnet" },
+  tokenIn: "${tIn}",
+  tokenOut: "${tOut}",
+  amountIn: "${amt}",
+  config: { kitKey: process.env.KIT_KEY },
+});`;
+}
+
+function updateBridgeCode(){
+  const from=document.getElementById('bridgeFrom').value;
+  const to=document.getElementById('bridgeTo').value;
+  const amt=document.getElementById('bridgeAmount').value||'0.00';
+  document.getElementById('bridgeKitCode').textContent=
+`// Arc App Kits — Bridge SDK (CCTP)
+const result = await kit.bridge({
+  from: { adapter: viemAdapter, chain: "${from}" },
+  to:   { adapter: viemAdapter, chain: "${to}" },
+  amount: "${amt}",
+});`;
+}
+
+function useTopReporter(){
+  const sorted=[...reports].sort((a,b)=>b.votes-a.votes);
+  if(sorted.length){document.getElementById('sendRecipient').value=sorted[0].addr;updateSendCode();showToast('Top flagged address prefilled');}
+}
+
+async function executeSend(){
+  const recipient=document.getElementById('sendRecipient').value.trim();
+  const amountStr=document.getElementById('sendAmount').value.trim();
+  if(!recipient||!recipient.startsWith('0x')||recipient.length<42){showKitStatus('send','error','✗ Invalid recipient address');return;}
+  if(!amountStr||isNaN(amountStr)||parseFloat(amountStr)<=0){showKitStatus('send','error','✗ Enter a valid amount');return;}
+  const amount=parseFloat(amountStr);
+  if(!walletAddr||!window.ethereum){
+    const amountRaw=BigInt(Math.round(amount*1e6));
+    const calldata='0xa9059cbb'+recipient.slice(2).padStart(64,'0')+amountRaw.toString(16).padStart(64,'0');
+    showKitStatus('send','pending',
+      '⬡ DEMO — kit.send() would execute:\n\n'+
+      'Contract : '+USDC_ADDR+'\n'+
+      'To       : '+recipient+'\n'+
+      'Amount   : '+amount+' USDC\n'+
+      'Raw data : '+calldata.slice(0,34)+'...\n\n'+
+      'Connect MetaMask on Arc Testnet to send real USDC.');
+    return;
+  }
+  try{
+    const chainId=await window.ethereum.request({method:'eth_chainId'});
+    if(chainId.toLowerCase()!==ARC_CHAIN_ID.toLowerCase()){showKitStatus('send','error','✗ Wrong network. Switch to Arc Testnet first.');return;}
+  }catch(e){showKitStatus('send','error','✗ Could not detect network.');return;}
+  const amountRaw=BigInt(Math.round(amount*1e6));
+  const transferData='0xa9059cbb'+recipient.slice(2).padStart(64,'0')+amountRaw.toString(16).padStart(64,'0');
+  showKitStatus('send','pending','⏳ Waiting for MetaMask signature...');
+  document.getElementById('sendBtn').disabled=true;
+  try{
+    const txHash=await window.ethereum.request({method:'eth_sendTransaction',params:[{from:walletAddr,to:USDC_ADDR,data:transferData,gas:'0x186A0'}]});
+    showKitStatus('send','success','✓ kit.send() executed!\n\nHash   : '+txHash+'\nTo     : '+short(recipient,10)+'\nAmount : '+amount+' USDC\n\n<a href="'+ARCSCAN+txHash+'" target="_blank">View on Arcscan ↗</a>');
+    showToast('USDC sent: '+amount+' → '+short(recipient));
+    await fetchUSDCBalance();
+  }catch(e){
+    showKitStatus('send','error',e.code===4001?'✗ Rejected by user.':'✗ Failed: '+(e.message||e));
+  }finally{document.getElementById('sendBtn').disabled=false;}
+}
+
+async function executeSwap(){
+  const tIn=document.getElementById('swapTokenIn').value;
+  const tOut=document.getElementById('swapTokenOut').value;
+  const amt=document.getElementById('swapAmountIn').value;
+  if(!amt||parseFloat(amt)<=0){showKitStatus('swap','error','✗ Enter a valid amount');return;}
+  if(tIn===tOut){showKitStatus('swap','error','✗ Token In and Token Out must be different');return;}
+  showKitStatus('swap','pending',
+    '⬡ kit.swap() preview:\n\n'+
+    'From    : Arc Testnet\n'+
+    'tokenIn : '+tIn+'\n'+
+    'tokenOut: '+tOut+'\n'+
+    'Amount  : '+amt+' '+tIn+'\n\n'+
+    'Install @circle-fin/app-kit + @circle-fin/adapter-viem-v2\n'+
+    'and add your KIT_KEY from Circle Console to execute live swaps.');
+}
+
+async function executeBridge(){
+  const from=document.getElementById('bridgeFrom').value;
+  const to=document.getElementById('bridgeTo').value;
+  const amt=document.getElementById('bridgeAmount').value;
+  if(!amt||parseFloat(amt)<=0){showKitStatus('bridge','error','✗ Enter a valid amount');return;}
+  if(from===to){showKitStatus('bridge','error','✗ From and To chains must be different');return;}
+  showKitStatus('bridge','pending',
+    '⬡ kit.bridge() preview:\n\n'+
+    'From    : '+from+'\n'+
+    'To      : '+to+'\n'+
+    'Amount  : '+amt+' USDC\n'+
+    'Protocol: Circle CCTP\n\n'+
+    'Install @circle-fin/app-kit and run via Node.js\n'+
+    'or integrate into your React/Next.js frontend.');
+}
+
+function showKitStatus(tab,type,msg){
+  const el=document.getElementById(tab+'Status');
+  el.className='kit-status show '+type;
+  el.innerHTML=msg.replace(/\n/g,'<br>');
+}
+function renderReports(filter){
+  const list=document.getElementById('reportsList');
+  const filtered=filter==='all'?reports:reports.filter(r=>r.cat===filter);
+  if(!filtered.length){list.innerHTML='<div class="empty-state"><div style="font-size:2.5rem;opacity:.3;margin-bottom:12px">⬡</div>No reports found.</div>';return;}
+  list.innerHTML=filtered.map(r=>`
+    <div class="card ${r.risk}" style="--risk-color:${riskColor(r.risk)}">
+      <div class="card-top"><div class="card-addr">${r.addr}</div><span class="risk-badge ${r.risk}">${r.risk.replace('risk-','').toUpperCase()}</span></div>
+      <div class="card-desc">${r.ev}</div>
+      <div class="card-meta">
+        <span class="cat-tag">${r.cat}</span>
+        <span class="meta-item">🕐 ${timeAgo(r.ts)}</span>
+        <span class="meta-item">by ${r.reporter}</span>
+        <button class="upvote-btn ${r._voted?'voted':''}" onclick="upvote(${r.id})">▲ ${r.votes}</button>
+      </div>
+    </div>`).join('');
+}
+function filterReports(cat,btn){
+  currentFilter=cat;
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');renderReports(cat);
+}
+function upvote(id){
+  const r=reports.find(x=>x.id===id);
+  if(!r)return;
+  if(r._voted){showToast('Already voted',true);return;}
+  r.votes++;r._voted=true;renderReports(currentFilter);updateStats();showToast('Upvote recorded');
+}
+function submitReport(){
+  const addr=document.getElementById('repAddr').value.trim();
+  const cat=document.getElementById('repCat').value;
+  const risk=document.getElementById('repRisk').value;
+  const ev=document.getElementById('repDesc').value.trim();
+  if(!addr||!ev){showToast('Fill all required fields',true);return;}
+  if(walletAddr&&window.ethereum){
+    try{
+      showToast('Submitting on-chain...');
+      const provider=new ethers.BrowserProvider(window.ethereum);
+      const signer=await provider.getSigner();
+      const contract=new ethers.Contract('0x623593FA516EAF368369A073E5de9B6504f85607',['function submitReport(address,string,string,string) external'],signer);
+      const tx=await contract.submitReport(addr,cat,risk,ev);
+      await tx.wait();
+      reports.unshift({id:Date.now(),addr,cat,risk,ev,votes:0,ts:Date.now(),reporter:short(walletAddr),txHash:tx.hash});
+      document.getElementById('repAddr').value='';
+      document.getElementById('repDesc').value='';
+      updateStats();
+      showToast('On-chain report submitted! <a href="https://testnet.arcscan.app/tx/'+tx.hash+'" target="_blank" style="color:#00ff88">View on ArcScan</a>');
+      return;
+    }catch(e){showToast('On-chain failed: '+e.message,true);}
+  }
+  reports.unshift({id:Date.now(),addr,cat,risk,ev,votes:0,ts:Date.now(),reporter:walletAddr?short(walletAddr):'0xAnon'});
+  document.getElementById('repAddr').value='';
+  document.getElementById('repDesc').value='';
+  updateStats();showToast('Report submitted (off-chain)!');
+}
+function updateStats(){
+  const now=Date.now();
+  document.getElementById('statToday').textContent=reports.filter(r=>now-r.ts<86400000).length;
+  document.getElementById('statTotal').textContent=reports.length;
+  document.getElementById('statFlagged').textContent=new Set(reports.map(r=>r.addr)).size;
+  document.getElementById('statVotes').textContent=reports.reduce((s,r)=>s+r.votes,0);
+  renderReports(currentFilter);
+}
+let lastLookupAddr='';
+function doLookup(){
+  const addr=document.getElementById('lookupInput').value.trim();
+  if(!addr)return;
+  lastLookupAddr=addr;
+  const matched=reports.filter(r=>r.addr.toLowerCase()===addr.toLowerCase());
+  const votes=matched.reduce((s,r)=>s+r.votes,0);
+  const score=Math.min(100,matched.length*20+votes*2);
+  const{label,color}=riskLabel(score);
+  document.getElementById('lookupAddr').textContent=addr;
+  document.getElementById('lookupCircle').textContent=score;
+  document.getElementById('lookupCircle').style.borderColor=color;
+  document.getElementById('lookupCircle').style.color=color;
+  document.getElementById('lookupRiskLabel').textContent=label;
+  document.getElementById('lookupRiskLabel').style.color=color;
+  document.getElementById('lookupRiskSub').textContent=matched.length+' report(s) · '+votes+' upvotes';
+  document.getElementById('lookupReports').innerHTML=matched.length
+    ?matched.map(r=>`<div class="card ${r.risk}" style="margin-bottom:10px;--risk-color:${riskColor(r.risk)}"><div class="card-top"><span class="cat-tag">${r.cat}</span><span class="risk-badge ${r.risk}">${r.risk.replace('risk-','').toUpperCase()}</span></div><div class="card-desc">${r.ev}</div></div>`).join('')
+    :'<div style="font-family:var(--mono);font-size:.8rem;color:var(--green);padding:12px 0">✓ No reports found for this address.</div>';
+  document.getElementById('lookupResult').classList.add('show');
+}
+function testScan(){document.getElementById("aiBody").style.display="block";document.getElementById("aiResult").style.display="block";document.getElementById("aiBody").innerHTML="<h1 style=color:lime>IT WORKS</h1>";}async function runAIScan(){
+  const result=document.getElementById('aiResult');result.style.display='block';document.getElementById('aiBody').innerHTML='<div style="color:lime;padding:20px;font-size:18px">SCAN STARTED</div>';const addr=document.getElementById('aiAddr').value.trim();
+  if(!addr)return;
+  const btn=document.getElementById('aiScanBtn');
+  btn.disabled=true;try{
+  document.getElementById('aiBody').innerHTML='<div class="ai-loading"><div class="ai-loading-bars"><span></span><span></span><span></span><span></span><span></span></div><div class="ai-loading-text">ANALYSING THREAT PATTERNS...</div></div>';
+  const matched=reports.filter(r=>r.addr.toLowerCase()===addr.toLowerCase());
+  const votes=matched.reduce((s,r)=>s+r.votes,0);
+  const score=Math.min(100,matched.length*20+votes*2);
+  const cats=[...new Set(matched.map(r=>r.cat))].join(', ');
+  const prompt=`You are a blockchain threat intelligence AI for FraudWatch on Arc Testnet.\nAnalyze wallet: ${addr}\nReports: ${matched.length}, Categories: ${cats||'none'}, Upvotes: ${votes}, Score: ${score}/100\nEvidence: ${matched.map(r=>r.ev).join(' | ')||'none'}\nRespond ONLY with JSON no markdown:\n{"verdict":"CRITICAL|HIGH|MEDIUM|LOW|CLEAN","score":number,"summary":"2 sentence summary","signals":["s1","s2","s3"],"recommendation":"one sentence","tags":["t1","t2"]}`;
+  try{
+    const [aiRes, scanRes] = await Promise.allSettled([
+      fetch('https://fraudwatch-eta.vercel.app/api/ai-risk',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt})}),
+      fetch('https://fraudwatch-eta.vercel.app/api/scan',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({address:addr})})
+    ]);
+    if(aiRes.status==='fulfilled'){
+      const data=await aiRes.value.json();
+      const raw=data.content.map(i=>i.text||'').join('');
+      const parsed=JSON.parse(raw.replace(/```json|```/g,'').trim());
+      renderAIResult(parsed,addr);
+    }
+    if(scanRes.status==='fulfilled'){
+      const scan=await scanRes.value.json();
+      renderScanResult(scan);
+    }
+  }catch(e){document.getElementById('aiBody').innerHTML=`<div style="padding:24px;font-family:var(--mono);font-size:.82rem;color:var(--red);text-align:center">⚠ Analysis failed.<br><small>${e.message}</small></div>`;}
+  btn.disabled=false;
+}catch(err){document.getElementById('aiBody').innerHTML='<div style="color:red;padding:20px">ERROR: '+err.message+'</div>';btn.disabled=false;}
+function renderAIResult(d,addr){
+  const colors={CRITICAL:'var(--red)',HIGH:'var(--amber)',MEDIUM:'#f97316',LOW:'#60a5fa',CLEAN:'var(--green)'};
+  const c=colors[d.verdict]||'var(--muted)';
+  document.getElementById('aiScoreBadge').textContent=d.score+'/100';
+  document.getElementById('aiScoreBadge').style.borderColor=c;
+  document.getElementById('aiScoreBadge').style.color=c;
+  document.getElementById('aiBody').innerHTML=`
+    <div class="ai-verdict" style="border-color:${c};color:${c};background:${c}18">⬡ VERDICT: ${d.verdict} — ${short(addr,12)}</div>
+    <div class="score-ring-wrap"><div class="score-ring" style="border-color:${c};color:${c}"><span class="score-num">${d.score}</span><span class="score-label">RISK</span></div></div>
+    <div class="ai-section"><div class="ai-section-title">Summary</div><div class="ai-section-content">${d.summary}</div></div>
+    <div class="ai-section"><div class="ai-section-title">Signals</div><ul class="ai-checklist">${(d.signals||[]).map((s,i)=>`<li class="${i===0&&(d.verdict==='CRITICAL'||d.verdict==='HIGH')?'danger':'safe'}">${s}</li>`).join('')}</ul></div>
+    <div class="ai-section"><div class="ai-section-title">Recommendation</div><div class="ai-section-content">${d.recommendation}</div></div>
+    <div class="ai-section"><div class="ai-section-title">Tags</div><div class="ai-tags">${(d.tags||[]).map(t=>`<span class="ai-tag ${d.verdict==='CRITICAL'||d.verdict==='HIGH'?'red':d.verdict==='CLEAN'?'green':'amber'}">${t}</span>`).join('')}</div></div>`;
+}
+async function runEscrow(){
+  const sender=document.getElementById('esSender').value.trim()||'0xMockSender';
+  const amt=parseFloat(document.getElementById('esAmt').value)||100;
+  const log=document.getElementById('esLog');
+  const add=(msg,cls,delay)=>new Promise(r=>setTimeout(()=>{log.innerHTML+=`<div class="${cls}">${msg}</div>`;log.scrollTop=log.scrollHeight;r();},delay));
+  log.innerHTML='';
+  await add('[SIM] Initiating: '+short(sender,6)+' → '+amt+' USDC','log-info',0);
+  const flagged=reports.some(r=>r.addr.toLowerCase()===sender.toLowerCase());
+  await add('[CHECK] Registry: '+(flagged?'⚠ ADDRESS FLAGGED':'✓ Clean'),flagged?'log-warn':'log-ok',600);
+  if(flagged){
+    await add('[HOLD] '+amt+' USDC placed in escrow. 72h window.','log-warn',800);
+    await add('[DAO] Dispute vote initiated.','log-info',1200);
+    await add('[PENDING] Awaiting quorum. Funds locked.','log-warn',1600);
+  }else{
+    await add('[RELEASE] '+amt+' USDC released to recipient.','log-ok',800);
+    await add('[DONE] Transaction complete.','log-ok',1200);
+  }
+}
+function generatePDF(){
+  const addr=lastLookupAddr;if(!addr)return;
+  const{jsPDF}=window.jspdf;const doc=new jsPDF();
+  const matched=reports.filter(r=>r.addr.toLowerCase()===addr.toLowerCase());
+  doc.setFillColor(8,11,15);doc.rect(0,0,210,297,'F');
+  doc.setTextColor(255,43,78);doc.setFontSize(18);doc.setFont('helvetica','bold');
+  doc.text('FRAUDWATCH AUDIT REPORT',20,25);
+  doc.setTextColor(90,122,144);doc.setFontSize(8);doc.text('Arc Testnet · On-Chain Scam Registry',20,33);
+  doc.setTextColor(200,216,232);doc.setFontSize(10);
+  doc.text('Address: '+addr,20,48);
+  doc.text('Reports: '+matched.length,20,58);
+  doc.text('Upvotes: '+matched.reduce((s,r)=>s+r.votes,0),20,66);
+  doc.text('Generated: '+new Date().toISOString(),20,74);
+  let y=90;
+  matched.forEach(r=>{
+    doc.setTextColor(255,183,0);doc.setFontSize(9);
+    doc.text('['+r.cat.toUpperCase()+'] '+r.risk.replace('risk-','').toUpperCase(),20,y);
+    doc.setTextColor(200,216,232);doc.setFontSize(8);
+    doc.text(r.ev.substring(0,80),20,y+7);y+=20;
+  });
+  doc.setTextColor(74,96,128);doc.setFontSize(7);
+  doc.text('FraudWatch · '+CONTRACT+' · Arc Testnet',20,285);
+  doc.save('FraudWatch-'+addr.slice(0,10)+'.pdf');
+}
+function short(addr,n=6){if(!addr||addr.length<10)return addr;return addr.slice(0,n)+'...'+addr.slice(-4);}
+function timeAgo(ts){const s=Math.floor((Date.now()-ts)/1000);if(s<60)return s+'s ago';if(s<3600)return Math.floor(s/60)+'m ago';return Math.floor(s/3600)+'h ago';}
+function riskColor(risk){return{'risk-critical':'var(--red)','risk-high':'var(--amber)','risk-medium':'#f97316','risk-low':'var(--green)'}[risk]||'var(--muted)';}
+function riskLabel(score){if(score>=80)return{label:'CRITICAL RISK',color:'var(--red)'};if(score>=50)return{label:'HIGH RISK',color:'var(--amber)'};if(score>=20)return{label:'MEDIUM RISK',color:'#f97316'};if(score>0)return{label:'LOW RISK',color:'var(--blue)'};return{label:'CLEAN',color:'var(--green)'};}
+function showToast(msg,err=false){const t=document.getElementById('toast');t.textContent=msg;t.className='show'+(err?' error':'');setTimeout(()=>t.className='',3000);}
+updateStats();
+
+
+async function loadOnChainReports(){
+  try{
+    const provider=new ethers.JsonRpcProvider('https://arc-testnet.drpc.org');
+    const contract=new ethers.Contract(FW_CONTRACT,FW_ABI,provider);
+    const [total]=await contract.getStats();
+    const count=Number(total);
+    if(count===0)return;
+    const limit=Math.min(count,50);
+    const offset=count>50?count-50:0;
+    const onChain=await contract.getReports(offset,limit);
+    const riskMap={'Critical':'risk-critical','High':'risk-high','Medium':'risk-medium','Low':'risk-low'};
+    const fetched=onChain.map((r,i)=>({
+      id:Number(r.timestamp)*1000+i,
+      onChainId:offset+i,
+      addr:r.target,
+      cat:r.category,
+      risk:riskMap[r.riskLevel]||'risk-low',
+      ev:r.evidence,
+      votes:Number(r.upvotes),
+      ts:Number(r.timestamp)*1000,
+      reporter:r.reporter.slice(0,6)+'...'+r.reporter.slice(-4),
+      _onChain:true
+    }));
+    // Merge: remove local duplicates, prepend on-chain
+    const localOnly=reports.filter(r=>!r._onChain);
+    reports.splice(0,reports.length,...fetched.reverse(),...localOnly);
+    updateStats();
+    showToast('Loaded '+fetched.length+' on-chain reports');
+  }catch(e){
+    console.warn('Failed to load on-chain reports:',e.message);
+  }
+}
+function searchReports(q){
+  const query=q.trim().toLowerCase();
+  if(!query){renderReports(currentFilter);return;}
+  const list=document.getElementById('reportsList');
+  const filtered=reports.filter(r=>r.addr.toLowerCase().includes(query)||r.ev.toLowerCase().includes(query)||r.cat.toLowerCase().includes(query));
+  if(!filtered.length){list.innerHTML='<div class="empty-state"><div style="font-size:2.5rem;opacity:.3;margin-bottom:12px">⬡</div>No results for "'+q+'"</div>';return;}
+  list.innerHTML=filtered.map(r=>`
+    <div class="card ${r.risk}" style="--risk-color:${riskColor(r.risk)}" onclick="showReportModal(${r.id})">
+      <div class="card-top"><div class="card-addr">${r.addr}</div><span class="risk-badge ${r.risk}">${r.risk.replace('risk-','').toUpperCase()}</span></div>
+      <div class="card-desc">${r.ev}</div>
+      <div class="card-meta"><span class="cat-tag">${r.cat}</span><span class="meta-item">🕐 ${timeAgo(r.ts)}</span><span class="meta-item">by ${r.reporter}</span><button class="upvote-btn ${r._voted?'voted':''}" onclick="event.stopPropagation();upvote(${r.id})">▲ ${r.votes}</button></div>
+    </div>`).join('');
+}
+function showReportModal(id){
+  const r=reports.find(x=>x.id===id);
+  if(!r)return;
+  const riskLabel={'risk-critical':'CRITICAL','risk-high':'HIGH','risk-medium':'MEDIUM','risk-low':'LOW'};
+  const scanUrl='https://testnet.arcscan.app/address/'+r.addr;
+  document.getElementById('modalContent').innerHTML=`
+    <div style="font-family:var(--mono);font-size:.7rem;color:var(--muted);margin-bottom:4px">${new Date(r.ts).toLocaleString()}</div>
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+      <span class="risk-badge ${r.risk}">${riskLabel[r.risk]||r.risk}</span>
+      <span class="cat-tag">${r.cat}</span>
+    </div>
+    <div style="font-family:var(--mono);font-size:.75rem;color:var(--green);word-break:break-all;margin-bottom:8px">${r.addr}</div>
+    <div style="font-size:.85rem;color:var(--text);margin-bottom:16px;line-height:1.5">${r.ev}</div>
+    <div style="font-size:.75rem;color:var(--muted);margin-bottom:16px">Reported by: ${r.reporter} &nbsp;|&nbsp; ▲ ${r.votes} upvotes</div>
+    <div style="display:flex;gap:10px">
+      <button onclick="navigator.clipboard.writeText(window.location.href.split('#')[0]+'#'+r.addr);showToast('Link copied!');closeReportModal()" style="flex:1;padding:9px;background:transparent;border:1px solid var(--border2);color:var(--muted);font-family:var(--mono);font-size:.72rem;cursor:pointer">⎘ SHARE</button>
+      <a href="${scanUrl}" target="_blank" style="flex:1;text-align:center;padding:9px;border:1px solid var(--border2);color:var(--green);font-family:var(--mono);font-size:.72rem;text-decoration:none">VIEW ON ARCSCAN ↗</a>
+      <button onclick="upvote(${r.id});closeReportModal()" style="flex:1;padding:9px;background:transparent;border:1px solid var(--border2);color:var(--muted);font-family:var(--mono);font-size:.72rem;cursor:pointer">▲ UPVOTE</button>
+    </div>`;
+  document.getElementById('reportModal').classList.add('open');
+  document.getElementById('reportModal').style.display='flex';
+}
+function closeReportModal(){
+  document.getElementById('reportModal').style.display='none';
+  document.getElementById('reportModal').classList.remove('open');
+}
+async function fetchOnChainStats() {
+  try {
+    const res = await fetch('https://fraudwatch-eta.vercel.app/api/stats');
+    const data = await res.json();
+    if (data.total !== undefined) {
+      document.getElementById('statToday').textContent = data.today;
+      document.getElementById('statTotal').textContent = data.total;
+      document.getElementById('statFlagged').textContent = data.flagged;
+      document.getElementById('statVotes').textContent = data.upvotes;
+    }
+  } catch(e) { console.warn('On-chain stats unavailable:', e.message); }
+}
+
+async function autoReconnect(){
+  if(typeof window.ethereum === 'undefined') return;
+  try{
+    const accounts = await window.ethereum.request({method:'eth_accounts'});
+    if(accounts.length > 0){
+      walletAddr = accounts[0];
+      document.getElementById('walletBtn').textContent = short(walletAddr,6);
+      document.getElementById('walletBtn').classList.add('connected');
+      document.getElementById('reportWalletWarn').style.display = 'none';
+      refreshSendTab();refreshSwapTab();refreshBridgeTab();
+    }
+  }catch(e){ console.warn('Auto-reconnect failed:',e.message); }
+
+  window.ethereum.on('accountsChanged', accounts => {
+    if(accounts.length === 0){
+      walletAddr = null;
+      document.getElementById('walletBtn').textContent = 'CONNECT WALLET';
+      document.getElementById('walletBtn').classList.remove('connected');
+      document.getElementById('reportWalletWarn').style.display = '';
+    } else {
+      walletAddr = accounts[0];
+      document.getElementById('walletBtn').textContent = short(walletAddr,6);
+      document.getElementById('walletBtn').classList.add('connected');
+      document.getElementById('reportWalletWarn').style.display = 'none';
+    }
+    refreshSendTab();refreshSwapTab();refreshBridgeTab();
+  });
+
+  window.ethereum.on('chainChanged', () => window.location.reload());
+}
+fetchOnChainStats();
+loadOnChainReports();
+autoReconnect();
+setInterval(fetchOnChainStats, 30000);
+setInterval(loadOnChainReports, 60000);
+
+function renderScanResult(s){
+  if(!s||s.error)return;
+  const score=s.riskScore||0;
+  const color=score>=75?"var(--red)":score>=50?"var(--amber)":"var(--green)";
+  const existing=document.getElementById("contractIntelResult");
+  const el=existing||document.createElement("div");
+  el.id="contractIntelResult";
+  el.style="margin-top:12px;padding:14px;border:1px solid "+color+";border-radius:8px;font-family:var(--mono);font-size:.78rem;";
+  el.innerHTML="<div style=color:"+color+";font-weight:700;margin-bottom:6px>CONTRACT INTEL Risk Score: "+score+"/100</div>"
+    +"<div style=color:var(--muted);margin-bottom:6px>"+(s.summary||"")+"</div>"
+    +"<div>"+(s.riskFactors||[]).map(function(f){return "<span style=margin:2px 4px;padding:2px 7px;border:1px solid "+color+";border-radius:3px>"+f+"</span>";}).join("")+"</div>";
+  if(!existing)document.getElementById("aiBody").appendChild(el);
+}
+
+</script>
+<script>
+</script><script>
+async function loadFraudStats(){
+  try{
+    const rp=new ethers.JsonRpcProvider('https://arc-testnet.drpc.org');
+    const c=new ethers.Contract('0x623593FA516EAF368369A073E5de9B6504f85607',[
+      'function reportCount() view returns (uint256)',
+      'function todayCount() view returns (uint256)'
+    ],rp);
+    const total=await c.reportCount();
+    const today=await c.todayCount();
+    document.getElementById('statTotal').textContent=total.toString();
+    document.getElementById('statToday').textContent=today.toString();
+  }catch(e){console.log('Stats error:',e.message);}
+}
+</script><script>async function analyzeRisk(addr){try{if(typeof ethers==="undefined")throw new Error("ethers not loaded");const rp=new ethers.JsonRpcProvider("https://arc-testnet.drpc.org");let reportCount=0;try{const c=new ethers.Contract("0x623593FA516EAF368369A073E5de9B6504f85607",["function reportCount() view returns (uint256)"],rp);reportCount=parseInt(await c.reportCount());}catch(e){}let score=0;let flags=[];if(reportCount>=5){score+=60;flags.push("Multiple on-chain fraud reports");}else if(reportCount>=3){score+=40;flags.push("Several community reports filed");}else if(reportCount>=1){score+=20;flags.push("At least one report on record");}if(score===0)flags.push("No reports found - address appears clean");let riskLevel="LOW";if(score>=70)riskLevel="CRITICAL";else if(score>=50)riskLevel="HIGH";else if(score>=25)riskLevel="MEDIUM";const s={LOW:"No significant threats detected.",MEDIUM:"Some risk signals present. Proceed with caution.",HIGH:"Multiple fraud signals detected.",CRITICAL:"High-confidence fraud address. Avoid."};return{riskScore:Math.min(score,100),score:Math.min(score,100),riskLevel,verdict:riskLevel,summary:s[riskLevel],flags,signals:flags,recommendation:score>50?"Avoid this address.":"Proceed with standard caution."};}catch(e){return{riskScore:0,riskLevel:"UNKNOWN",verdict:"UNKNOWN",summary:"Analysis failed.",flags:[e.message],signals:[e.message],recommendation:"Try again."};}};</script><script>
+window.addEventListener("load", function(){loadFraudStats();renderReports("all");updateStats();
+  if(window.appKitModal){
+    window.appKitModal.subscribeAccount(function(state){
+      if(state.isConnected && state.address){
+        walletAddr = state.address;
+        const addr = state.address;
+        document.getElementById("walletBtn").textContent = addr.slice(0,6)+"..."+addr.slice(-4);
+        document.getElementById("walletBtn").classList.add("connected");
+      }
+    });
+    document.getElementById("walletBtn").addEventListener("click", function(){
+      if(window.appKitModal) window.appKitModal.open();
+    });
+  }
+});
+</script></body>
+</html>
