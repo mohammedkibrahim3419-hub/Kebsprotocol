@@ -627,7 +627,7 @@ function upvote(id){
   if(r._voted){showToast('Already voted',true);return;}
   r.votes++;r._voted=true;renderReports(currentFilter);updateStats();showToast('Upvote recorded');
 }
-function submitReport(){
+async function submitReport(){
   const addr=document.getElementById('repAddr').value.trim();
   const cat=document.getElementById('repCat').value;
   const risk=document.getElementById('repRisk').value;
@@ -712,6 +712,7 @@ function testScan(){document.getElementById("aiBody").style.display="block";docu
   }catch(e){document.getElementById('aiBody').innerHTML=`<div style="padding:24px;font-family:var(--mono);font-size:.82rem;color:var(--red);text-align:center">⚠ Analysis failed.<br><small>${e.message}</small></div>`;}
   btn.disabled=false;
 }catch(err){document.getElementById('aiBody').innerHTML='<div style="color:red;padding:20px">ERROR: '+err.message+'</div>';btn.disabled=false;}
+}
 function renderAIResult(d,addr){
   const colors={CRITICAL:'var(--red)',HIGH:'var(--amber)',MEDIUM:'#f97316',LOW:'#60a5fa',CLEAN:'var(--green)'};
   const c=colors[d.verdict]||'var(--muted)';
