@@ -943,6 +943,7 @@ window.addEventListener("load", function(){loadFraudStats();renderReports("all")
         const addr = state.address;
         document.getElementById("walletBtn").textContent = addr.slice(0,6)+"..."+addr.slice(-4);
         document.getElementById("walletBtn").classList.add("connected");
+        document.getElementById("reportWalletWarn").style.display = "none";
       }
     });
     document.getElementById("walletBtn").addEventListener("click", function(){
