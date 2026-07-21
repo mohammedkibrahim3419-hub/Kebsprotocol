@@ -385,6 +385,13 @@ const result = await kit.bridge({
 <div id="toast"></div>
 <script>
 const CONTRACT='0x9667962F0A9591e9b0bE2AB341F421c068B00e07';
+const FW_CONTRACT='0x623593FA516EAF368369A073E5de9B6504f85607';
+const FW_ABI=[
+  "function submitReport(address,string,string,string) external",
+  "function upvote(uint256) external",
+  "function getStats() view returns (uint256 total, uint256 today, uint256 flagged, uint256 totalUpvotes)",
+  "function getReports(uint256 offset, uint256 limit) view returns (tuple(address reporter,address target,string category,string riskLevel,string evidence,uint256 upvotes,bool flagged,uint256 timestamp)[])"
+];
 const USDC_ADDR='0xaFC722Eb3b1748657ce6e702a3aDc2fCC45e4784';
 const ARC_CHAIN_ID='0x4CEB12';
 const ARC_RPC='https://rpc.arc.testnet.circlelabs.io';
