@@ -385,7 +385,7 @@ const result = await kit.bridge({
 <div id="toast"></div>
 <script>
 const CONTRACT='0x9667962F0A9591e9b0bE2AB341F421c068B00e07';
-const FW_CONTRACT='0x623593FA516EAF368369A073E5de9B6504f85607';
+const FW_CONTRACT='0xeAf44eA95Aa01Ed6f8C1eb4c2339F7652356de16';
 const FW_ABI=[
   "function submitReport(address,string,string,string) external",
   "function upvote(uint256) external",
@@ -645,7 +645,7 @@ async function submitReport(){
       showToast('Submitting on-chain...');
       const provider=new ethers.BrowserProvider(window.ethereum);
       const signer=await provider.getSigner();
-      const contract=new ethers.Contract('0x623593FA516EAF368369A073E5de9B6504f85607',['function submitReport(address,string,string,string) external'],signer);
+      const contract=new ethers.Contract('0xeAf44eA95Aa01Ed6f8C1eb4c2339F7652356de16',['function submitReport(address,string,string,string) external'],signer);
       const tx=await contract.submitReport(addr,cat,risk,ev);
       await tx.wait();
       reports.unshift({id:Date.now(),addr,cat,risk,ev,votes:0,ts:Date.now(),reporter:short(walletAddr),txHash:tx.hash});
@@ -924,17 +924,17 @@ function renderScanResult(s){
 async function loadFraudStats(){
   try{
     const rp=new ethers.JsonRpcProvider('https://arc-testnet.drpc.org');
-    const c=new ethers.Contract('0x623593FA516EAF368369A073E5de9B6504f85607',[
-      'function reportCount() view returns (uint256)',
-      'function todayCount() view returns (uint256)'
+    const c=new ethers.Contract('0xeAf44eA95Aa01Ed6f8C1eb4c2339F7652356de16',[
+      'function getStats() view returns (uint256 total, uint256 today, uint256 flagged, uint256 totalUpvotes)'
     ],rp);
-    const total=await c.reportCount();
-    const today=await c.todayCount();
+    const stats=await c.getStats();
+    const total=stats.total;
+    const today=stats.today;
     document.getElementById('statTotal').textContent=total.toString();
     document.getElementById('statToday').textContent=today.toString();
   }catch(e){console.log('Stats error:',e.message);}
 }
-</script><script>async function analyzeRisk(addr){try{if(typeof ethers==="undefined")throw new Error("ethers not loaded");const rp=new ethers.JsonRpcProvider("https://arc-testnet.drpc.org");let reportCount=0;try{const c=new ethers.Contract("0x623593FA516EAF368369A073E5de9B6504f85607",["function reportCount() view returns (uint256)"],rp);reportCount=parseInt(await c.reportCount());}catch(e){}let score=0;let flags=[];if(reportCount>=5){score+=60;flags.push("Multiple on-chain fraud reports");}else if(reportCount>=3){score+=40;flags.push("Several community reports filed");}else if(reportCount>=1){score+=20;flags.push("At least one report on record");}if(score===0)flags.push("No reports found - address appears clean");let riskLevel="LOW";if(score>=70)riskLevel="CRITICAL";else if(score>=50)riskLevel="HIGH";else if(score>=25)riskLevel="MEDIUM";const s={LOW:"No significant threats detected.",MEDIUM:"Some risk signals present. Proceed with caution.",HIGH:"Multiple fraud signals detected.",CRITICAL:"High-confidence fraud address. Avoid."};return{riskScore:Math.min(score,100),score:Math.min(score,100),riskLevel,verdict:riskLevel,summary:s[riskLevel],flags,signals:flags,recommendation:score>50?"Avoid this address.":"Proceed with standard caution."};}catch(e){return{riskScore:0,riskLevel:"UNKNOWN",verdict:"UNKNOWN",summary:"Analysis failed.",flags:[e.message],signals:[e.message],recommendation:"Try again."};}};</script><script>
+</script><script>async function analyzeRisk(addr){try{if(typeof ethers==="undefined")throw new Error("ethers not loaded");const rp=new ethers.JsonRpcProvider("https://arc-testnet.drpc.org");let reportCount=0;try{const c=new ethers.Contract("0xeAf44eA95Aa01Ed6f8C1eb4c2339F7652356de16",["function getStats() view returns (uint256 total, uint256 today, uint256 flagged, uint256 totalUpvotes)"],rp);const st=await c.getStats();reportCount=parseInt(st.total);}catch(e){}let score=0;let flags=[];if(reportCount>=5){score+=60;flags.push("Multiple on-chain fraud reports");}else if(reportCount>=3){score+=40;flags.push("Several community reports filed");}else if(reportCount>=1){score+=20;flags.push("At least one report on record");}if(score===0)flags.push("No reports found - address appears clean");let riskLevel="LOW";if(score>=70)riskLevel="CRITICAL";else if(score>=50)riskLevel="HIGH";else if(score>=25)riskLevel="MEDIUM";const s={LOW:"No significant threats detected.",MEDIUM:"Some risk signals present. Proceed with caution.",HIGH:"Multiple fraud signals detected.",CRITICAL:"High-confidence fraud address. Avoid."};return{riskScore:Math.min(score,100),score:Math.min(score,100),riskLevel,verdict:riskLevel,summary:s[riskLevel],flags,signals:flags,recommendation:score>50?"Avoid this address.":"Proceed with standard caution."};}catch(e){return{riskScore:0,riskLevel:"UNKNOWN",verdict:"UNKNOWN",summary:"Analysis failed.",flags:[e.message],signals:[e.message],recommendation:"Try again."};}};</script><script>
 window.addEventListener("load", function(){loadFraudStats();renderReports("all");updateStats();
   if(window.appKitModal){
     window.appKitModal.subscribeAccount(function(state){
