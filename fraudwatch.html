@@ -416,17 +416,56 @@ function switchTab(name,btn){["watchlist","report","lookup","ai","escrow","send"
   if(name==='bridge')refreshBridgeTab();
 }
 
+let activeProvider=null;
+
+async function getActiveProvider(){
+  if(activeProvider) return activeProvider;
+  if(window.ethereum) return window.ethereum;
+  if(window.appKitModal){
+    const p=window.appKitModal.getWalletProvider();
+    if(p) return p;
+  }
+  return null;
+}
+
 async function connectWallet(){
-  if(!window.ethereum){showToast('MetaMask not detected',true);return;}
-  try{
-    const accounts=await window.ethereum.request({method:'eth_requestAccounts'});
-    walletAddr=accounts[0];
-    document.getElementById('walletBtn').textContent=short(walletAddr,6);
-    document.getElementById('walletBtn').classList.add('connected');
-    document.getElementById('reportWalletWarn').style.display='none';
-    showToast('Wallet connected: '+short(walletAddr));
-    refreshSendTab();refreshSwapTab();refreshBridgeTab();
-  }catch(e){showToast('Connection rejected',true);}
+  if(window.ethereum){
+    try{
+      const accounts=await window.ethereum.request({method:'eth_requestAccounts'});
+      walletAddr=accounts[0];
+      activeProvider=window.ethereum;
+      document.getElementById('walletBtn').textContent=short(walletAddr,6);
+      document.getElementById('walletBtn').classList.add('connected');
+      document.getElementById('reportWalletWarn').style.display='none';
+      showToast('Wallet connected: '+short(walletAddr));
+      refreshSendTab();refreshSwapTab();refreshBridgeTab();
+    }catch(e){showToast('Connection rejected',true);}
+    return;
+  }
+  if(window.appKitModal){
+    window.appKitModal.open();
+    return;
+  }
+  showToast('No wallet connector available',true);
+}
+
+if(window.appKitModal){
+  window.appKitModal.subscribeProvider(function(state){
+    if(state.isConnected && state.address){
+      walletAddr=state.address;
+      activeProvider=state.provider;
+      document.getElementById('walletBtn').textContent=short(walletAddr,6);
+      document.getElementById('walletBtn').classList.add('connected');
+      document.getElementById('reportWalletWarn').style.display='none';
+      refreshSendTab();refreshSwapTab();refreshBridgeTab();
+    } else {
+      walletAddr=null;
+      activeProvider=null;
+      document.getElementById('walletBtn').textContent='CONNECT WALLET';
+      document.getElementById('walletBtn').classList.remove('connected');
+      document.getElementById('reportWalletWarn').style.display='';
+    }
+  });
 }
 
 async function switchToArc(){
@@ -640,10 +679,11 @@ async function submitReport(){
   const risk=document.getElementById('repRisk').value;
   const ev=document.getElementById('repDesc').value.trim();
   if(!addr||!ev){showToast('Fill all required fields',true);return;}
-  if(walletAddr&&window.ethereum){
+  const activeProv=await getActiveProvider();
+  if(walletAddr&&activeProv){
     try{
       showToast('Submitting on-chain...');
-      const provider=new ethers.BrowserProvider(window.ethereum);
+      const provider=new ethers.BrowserProvider(activeProv);
       const signer=await provider.getSigner();
       const contract=new ethers.Contract('0xeAf44eA95Aa01Ed6f8C1eb4c2339F7652356de16',['function submitReport(address,string,string,string) external'],signer);
       const tx=await contract.submitReport(addr,cat,risk,ev);
@@ -938,5 +978,6 @@ async function loadFraudStats(){
 window.addEventListener("load", function(){loadFraudStats();renderReports("all");updateStats();
   // AppKit/WalletConnect modal disabled - conflicts with window.ethereum-based flow used everywhere else
 });
-</script><script src="https://cdn.jsdelivr.net/npm/eruda"></script><script>eruda.init();</script></body>
+</script><script src="appkit-bundle.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/eruda"></script><script>eruda.init();</script></body>
 </html>
