@@ -383,6 +383,7 @@ const result = await kit.bridge({
 </div>
 </main>
 <div id="toast"></div>
+<script src="appkit-bundle.js"></script>
 <script>
 const CONTRACT='0x9667962F0A9591e9b0bE2AB341F421c068B00e07';
 const FW_CONTRACT='0xeAf44eA95Aa01Ed6f8C1eb4c2339F7652356de16';
@@ -978,6 +979,5 @@ async function loadFraudStats(){
 window.addEventListener("load", function(){loadFraudStats();renderReports("all");updateStats();
   // AppKit/WalletConnect modal disabled - conflicts with window.ethereum-based flow used everywhere else
 });
-</script><script src="appkit-bundle.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/eruda"></script><script>eruda.init();</script></body>
+</script><script src="https://cdn.jsdelivr.net/npm/eruda"></script><script>eruda.init();</script></body>
 </html>
